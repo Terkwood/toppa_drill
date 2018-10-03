@@ -1,0 +1,32 @@
+#![enable(implicit_some)]
+Container(
+    transform: (
+        id: "main_menu_credits_screen",
+        anchor: Middle,
+        stretch: XY( x_margin: 0., y_margin: 0.),
+        width: 1920.,
+        height: 1080.,
+    ),
+    background: (
+        image: Data(Rgba((0.117, 0.231, 0.333, 1.0), ())),
+    ),
+    children: [
+        Text(
+            transform: (
+                id: "main_menu_credits_screen_title",
+                anchor: TopMiddle,
+                x: 0.,
+                y: -128.,
+                width: 600.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                text: "Credits",
+                font_size: 25.,
+                color: (0.515, 0.650, 0.658, 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        )
+    ]
+)

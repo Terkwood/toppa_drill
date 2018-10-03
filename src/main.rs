@@ -58,10 +58,10 @@ fn main() -> Result<(), amethyst::Error> {
                 Some(display_config)
             )
             .with_sprite_sheet_processor()
-            .with_sprite_visibility_sorting(&["transform_system"]),
+            .with_sprite_visibility_sorting(&["transform_system", "ui_transform"]),
         )?;
 
-    let mut game = Application::new("./", StartupState::new(), toppa_game_data)?;
+    let mut game = Application::new("./", StartupState::new().build(), toppa_game_data)?;
 
     game.run();
 

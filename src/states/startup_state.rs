@@ -20,28 +20,36 @@ use amethyst::{
     }
 };
 
-use ToppaGameData;
+use {
+    ToppaGameData,
+    states::main_menu,
+};
 
 /// The default state after opening Toppa Drill.
 /// It should display a short amethyst logo, and then transist over to the Main Menu State.
 pub struct StartupState{
     progress_counter: ProgressCounter,
+    menu_screen: Option<Handle<UiPrefab>>, 
     ls_devby: Option<Handle<UiPrefab>>,
     ls_poweredbyamethyst: Option<Entity>,
+    display_duration: f32,
     duration: f32,
     b_displaying_devs: bool,
 }
 
 impl StartupState{
     /// Creates a new StartupState instance with a progress counter for asset-load tracking.
-    pub fn new() -> Self{
+    /// The display duration specifies how long each subscreen should be shown before moving on.
+    pub fn new(display_duration: f32) -> Self{
         let progress_counter = ProgressCounter::new();
         info!("ProgressCounter created.");
 
         StartupState {
             progress_counter,
+            menu_screen: None,
             ls_devby: None,
             ls_poweredbyamethyst: None,
+            display_duration,
             duration: 0.0,
             b_displaying_devs: false,
         }
@@ -70,24 +78,43 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>)
+    fn update(&mut self, data: StateData<ToppaGameData<'a, 'b>>)
     -> Trans<ToppaGameData<'a, 'b>, ()>{
-        let StateData {world, data} = data;
-        self.duration += world.read_resource::<Time>().delta_seconds();
+        let StateData {mut world, mut data} = data;
         data.update_menu(&world);
 
-        if self.duration > 5.0{
+        self.duration += world.read_resource::<Time>().delta_seconds();
+        
+        if self.duration > self.display_duration{
             // If developers haven't been displayed yet, display them (if possible),
             // otherwise trans to main menu.
             if !self.b_displaying_devs{
                 use self::Completion::*;
                 match self.progress_counter.complete(){
                     Failed =>{
-                        error!("Failed to load DevelopedByTelzhaak.ron, skipping it.");
+                        warn!("Failed to load asset(s).");
                         self.b_displaying_devs = true;
                         self.duration = 2.0;
 
-                        Trans::None
+                        let mut trans = Trans::None;
+
+                        for err in self.progress_counter.errors(){
+                            warn!(
+                                "Asset type: {}\terror: {}",
+                                err.asset_type_name, err.error
+                            );
+
+                            if err.asset_name == "resources/ui/StartupScreen/DevelopedByTelzhaak.ron" {
+                                warn!("Skipping *Developed By* screen.");
+                                trans = Trans::None
+                            }
+                            else{
+                                error!("Main Menu screen could not be loaded. Closing application.");
+                                trans = Trans::Quit
+                            }
+                        }
+
+                        trans
                     }
                     Complete =>{
                         info!("Loaded DevelopedByTelzhaak.ron successfully.");
@@ -112,8 +139,13 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                 }
             }
             else{
-                // TODO: Switch to Main menu state!
-                Trans::None
+                Trans::Switch(
+                    Box::new(
+                        main_menu::CentreState::new(&mut world)
+                    )
+                )
+
+                //Trans::None
             }
         }
         else{
@@ -133,6 +165,12 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
         self.ls_devby = Some(
             world.exec(|mut loader: UiLoader| {                
                     loader.load("resources/ui/StartupScreen/DevelopedByTelzhaak.ron", &mut self.progress_counter)
+                }
+            )
+        );
+        self.menu_screen = Some(
+            world.exec(|mut loader: UiLoader| {                
+                    loader.load("resources/ui/MenuScreens/Centre.ron", &mut self.progress_counter)
                 }
             )
         );

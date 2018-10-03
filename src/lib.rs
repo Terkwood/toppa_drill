@@ -19,7 +19,9 @@ mod utilities;
 // public stuff
 
 pub use self::{
-    states::StartupState,
+    states::{
+        StartupState,
+    },
     toppa_game_data::{
         ToppaGameData,
         ToppaGameDataBuilder,

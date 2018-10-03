@@ -16,9 +16,6 @@ use amethyst::{
 pub struct ToppaGameData<'a, 'b> {
     /// `Core` dispatcher responsible for input gathering, rendering and audio.
     pub core: Dispatcher<'a, 'b>,
-    /// A special dispatcher displaying the credits of the game.
-    /// Useabe from both `main menu` and `ingame`.
-    pub credits: Dispatcher<'a, 'b>,
     /// Dispatches the base functionalities of a running game session.
     /// This includes for example total play time tracking and background music.
     pub ingame_core: Dispatcher<'a, 'b>,
@@ -41,22 +38,12 @@ impl<'a, 'b> ToppaGameData<'a, 'b>{
         self.main_menu_core.dispatch(&world.res);
         self.core.dispatch(&world.res);
     }
-
-    /// A special dispatcher running down the credits.
-    /// No state dispatcher should run simultaneously.
-    /// 
-    /// Can be used from both the menu and ingame, covering the whole screen.
-    pub fn dispatch_credits(&mut self, world: &World){
-        self.credits.dispatch(&world.res);
-        self.core.dispatch(&world.res);
-    }
 }
 
 /// Responsible for building the dispatchers in the [ToppaGameData](struct.ToppaGameData.html).
 /// Allows adding systems and bundles to each dispatcher individually.
 pub struct ToppaGameDataBuilder<'a, 'b>{
     core: DispatcherBuilder<'a, 'b>,
-    credits: DispatcherBuilder<'a, 'b>,
     ingame_core: DispatcherBuilder<'a, 'b>,
     main_menu_core: DispatcherBuilder<'a, 'b>,
 }
@@ -73,7 +60,6 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
     pub fn new() -> Self{
         ToppaGameDataBuilder {
             core: DispatcherBuilder::new(),
-            credits: DispatcherBuilder::new(),
             ingame_core: DispatcherBuilder::new(),
             main_menu_core: DispatcherBuilder::new(),
         }
@@ -120,19 +106,6 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
         self.main_menu_core.add(system, name, dependencies);
         self
     }
-    /// Add a system to the `credits` dispatcher.
-    pub fn with_credits<S>(
-        mut self,
-        system: S, 
-        name: &str, 
-        dependencies: &[&str]
-    ) -> Self
-    where
-        for<'c> S: System<'c> + Send + 'a,
-    {
-        self.credits.add(system, name, dependencies);
-        self
-    }
 }
 
 impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
@@ -166,16 +139,6 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
             .map_err(|err| Error::Core(err))?;
         Ok(self)
     }
-    /// Add a system bundle to the `credits` dispatcher.
-    pub fn with_credits_bundle<B>(mut self, bundle: B) -> Result<Self>
-    where
-        B: SystemBundle<'a, 'b>,
-    {
-        bundle
-            .build(&mut self.credits)
-            .map_err(|err| Error::Core(err))?;
-        Ok(self)
-    }
 }
 
 impl<'a, 'b> DataInit<ToppaGameData<'a, 'b>> for ToppaGameDataBuilder<'a, 'b> {
@@ -201,15 +164,8 @@ impl<'a, 'b> DataInit<ToppaGameData<'a, 'b>> for ToppaGameDataBuilder<'a, 'b> {
         let mut main_menu_core = self.main_menu_core.build();
         main_menu_core.setup(&mut world.res);
 
-        #[cfg(not(no_threading))]
-        let mut credits = self.credits.with_pool(pool.clone()).build();
-        #[cfg(no_threading)]
-        let mut credits = self.credits.build();
-        credits.setup(&mut world.res);
-
         ToppaGameData{
             core,
-            credits,
             ingame_core,
             main_menu_core,
         }
