@@ -1,0 +1,11 @@
+(
+    axes:{
+        "right": Emulated(
+            pos: Key(D),
+            neg: Key(A),
+        ),
+    },
+    actions:{
+        "shoot": Key(Space),
+    },
+)

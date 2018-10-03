@@ -1,0 +1,22 @@
+[package]
+name = "toppa_drill"
+version = "0.1.0"
+authors = ["Daniel A. <da.ahrens@outlook.de>"]
+publish = false
+
+include = ["src/**", "Cargo.toml"]
+
+[lib]
+name = "toppa_drill_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "toppa_drill"
+path = "src/main.rs"
+
+[dependencies]
+amethyst = { git = "https://github.com/amethyst/amethyst", rev = "5a2a729a0d87e46ad8f85e66a3927d7731cf3dc9", features = ["nightly"]}
+log = "0.4.5"
+
+[build-dependencies]
+ron = "0.1.3"
