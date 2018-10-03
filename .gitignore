@@ -1,0 +1,4 @@
+target/*
+*.xcf
+Cargo.lock
+.vscode/*
