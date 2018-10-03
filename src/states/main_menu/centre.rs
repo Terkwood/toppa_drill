@@ -84,7 +84,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>)
+    fn update(&mut self, data: StateData<ToppaGameData<'a, 'b>>)
     -> Trans<ToppaGameData<'a, 'b>, ()>{
         let StateData {world, data} = data;
         //self.dispatch(world);
@@ -121,7 +121,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
         }
     }
 
-    fn on_start(&mut self, data: StateData<ToppaGameData>) {        
+    fn on_start(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {        
         let StateData {world, data} = data;
 
         self.ui_ref_options = Some(
@@ -147,17 +147,17 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
     }
 
 // For the sake of completeness: 
-    fn on_stop(&mut self, data: StateData<ToppaGameData>) {
+    fn on_stop(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
         let StateData {world, data} = data;
         // Executed when this game state exits
     }
 
-    fn on_pause(&mut self, data: StateData<ToppaGameData>) {
+    fn on_pause(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
         let StateData {world, data} = data;
         // Executed when another game state is pushed onto the stack
     }
 
-    fn on_resume(&mut self, data: StateData<ToppaGameData>) {
+    fn on_resume(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
         let StateData {world, data} = data;
         // Executed when the application returns to this game state, 
         // after another gamestate was popped from the stack

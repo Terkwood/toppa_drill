@@ -138,14 +138,14 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                     }
                 }
             }
-            else{
+            else{/*
                 Trans::Switch(
                     Box::new(
                         main_menu::CentreState::new(&mut world)
                     )
-                )
+                )*/
 
-                //Trans::None
+                Trans::None
             }
         }
         else{
@@ -177,17 +177,17 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
     }
 
 // For the sake of completeness: 
-    fn on_stop(&mut self, data: StateData<ToppaGameData>) {
+    fn on_stop(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
         let StateData {world, data} = data;
         // Executed when this game state exits
     }
 
-    fn on_pause(&mut self, data: StateData<ToppaGameData>) {
+    fn on_pause(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
         let StateData {world, data} = data;
         // Executed when another game state is pushed onto the stack
     }
 
-    fn on_resume(&mut self, data: StateData<ToppaGameData>) {
+    fn on_resume(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
         let StateData {world, data} = data;
         // Executed when the application returns to this game state, 
         // after another gamestate was popped from the stack
