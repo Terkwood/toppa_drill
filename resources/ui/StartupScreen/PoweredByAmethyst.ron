@@ -1,0 +1,49 @@
+#![enable(implicit_some)]
+Container(
+    transform: (
+        id: "powered_by_amethyst_thumb",
+        anchor: Middle,
+        stretch: XY( x_margin: 0., y_margin: 0.),
+        width: 1920.,
+        height: 1080.,
+    ),
+    background: (
+        image: File("Assets/StartupScreen/amethyst_thumb_FHD.png", Png, ()),
+    ),
+    children: [
+        Text(
+            transform: (
+                id: "loading",
+                anchor: BottomMiddle,
+                x: 0.,
+                y: 25.,
+                width: 200.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                text: "Loading",
+                font_size: 25.,
+                color: (1., 1., 1., 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        ),
+        Text(
+            transform: (
+                id: "powered_by_amethyst_text",
+                anchor: Middle,
+                x: 0.,
+                y: -180.,
+                width: 600.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                text: "Powered by Amethyst",
+                font_size: 25.,
+                color: (1., 1., 1., 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        ),
+    ]
+)

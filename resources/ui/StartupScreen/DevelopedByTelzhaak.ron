@@ -1,0 +1,66 @@
+#![enable(implicit_some)]
+Container(
+    transform: (
+        id: "developed_by_thumb",
+        anchor: Middle,
+        stretch: XY( x_margin: 0., y_margin: 0.),
+        width: 1920.,
+        height: 1080.,
+    ),
+    background: (
+        image: File("Assets/StartupScreen/drill_thumb.png", Png, ()),
+    ),
+    children:[
+        Text(
+            transform: (
+                id: "loading",
+                anchor: BottomMiddle,
+                x: 0.,
+                y: 25.,
+                width: 200.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                text: "Loading",
+                font_size: 25.,
+                color: (1., 1., 1., 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        ),
+        Text(
+            transform: (
+                id: "toppa_drill",
+                anchor: Middle,
+                x: 0.,
+                y: -180.,
+                width: 600.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                text: "Toppa Drill",
+                font_size: 44.,
+                color: (1., 1., 1., 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        ),
+        Text(
+            transform: (
+                id: "developed_by_text",
+                anchor: Middle,
+                x: 0.,
+                y: -240.,
+                width: 600.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                text: "Developed By Telzhaak",
+                font_size: 32.,
+                color: (1., 1., 1., 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        )
+    ]
+)
