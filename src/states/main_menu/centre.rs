@@ -27,12 +27,12 @@ use {
 
 /// The default state after opening Toppa Drill.
 /// It should display a short amethyst logo, and then transist over to the Main Menu State.
-pub struct CentreState<'a, 'b>{
+pub struct CentreState<'d, 'e>{
     menu_duration: f32,
     ui_centre: Option<Entity>,
 
     // TODO: Get rid of the Option<>
-    dispatcher: Dispatcher<'a, 'b>,
+    dispatcher: Dispatcher<'d, 'e>,
 
     progress_counter: ProgressCounter,
     ui_ref_options: Option<Handle<UiPrefab>>,
@@ -42,7 +42,7 @@ pub struct CentreState<'a, 'b>{
     b_menu_screens_loaded: bool,
 }
 
-impl<'a, 'b> CentreState<'a, 'b>{
+impl<'d, 'e> CentreState<'d, 'e>{
     pub fn new(world: &mut World) -> Self{
         let dispatcher = DispatcherBuilder::new()
             .with(DummySystem, "dummy_system", &[])
@@ -62,7 +62,7 @@ impl<'a, 'b> CentreState<'a, 'b>{
     }
 }
 
-impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
+impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
     fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
     -> Trans<ToppaGameData<'a, 'b>, ()>{
         // let StateData {world, data} = data;
@@ -84,7 +84,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData<'a, 'b>>)
+    fn update(&mut self, data: StateData<ToppaGameData>)
     -> Trans<ToppaGameData<'a, 'b>, ()>{
         let StateData {world, data} = data;
         //self.dispatch(world);
@@ -121,7 +121,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
         }
     }
 
-    fn on_start(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {        
+    fn on_start(&mut self, data: StateData<ToppaGameData>) {        
         let StateData {world, data} = data;
 
         self.ui_ref_options = Some(
@@ -147,17 +147,17 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for CentreState<'a, 'b>{
     }
 
 // For the sake of completeness: 
-    fn on_stop(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
+    fn on_stop(&mut self, data: StateData<ToppaGameData>) {
         let StateData {world, data} = data;
         // Executed when this game state exits
     }
 
-    fn on_pause(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
+    fn on_pause(&mut self, data: StateData<ToppaGameData>) {
         let StateData {world, data} = data;
         // Executed when another game state is pushed onto the stack
     }
 
-    fn on_resume(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
+    fn on_resume(&mut self, data: StateData<ToppaGameData>) {
         let StateData {world, data} = data;
         // Executed when the application returns to this game state, 
         // after another gamestate was popped from the stack

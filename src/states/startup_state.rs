@@ -138,14 +138,14 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                     }
                 }
             }
-            else{/*
+            else{
                 Trans::Switch(
                     Box::new(
                         main_menu::CentreState::new(&mut world)
                     )
-                )*/
+                )
 
-                Trans::None
+                //Trans::None
             }
         }
         else{
