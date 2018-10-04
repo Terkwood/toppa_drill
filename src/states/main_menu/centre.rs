@@ -43,14 +43,23 @@ pub struct CentreState<'d, 'e>{
 }
 
 impl<'d, 'e> CentreState<'d, 'e>{
-    pub fn new(world: &mut World) -> Self{
+    pub fn new(world: &mut World, ui_centre_opt: Option<Handle<UiPrefab>>) -> Self{
         let dispatcher = DispatcherBuilder::new()
             .with(DummySystem, "dummy_system", &[])
             .build();
 
+        let mut ui_centre = None;
+        if let Some(ui_centre_handle) = ui_centre_opt{
+            ui_centre = Some(
+                world.create_entity()
+                    .with(ui_centre_handle.clone())
+                    .build()
+            );
+        }
+
         CentreState{
             menu_duration: 0.0,
-            ui_centre: None,
+            ui_centre,
             progress_counter: ProgressCounter::new(),
             ui_ref_options: None,
             ui_ref_new_game: None,

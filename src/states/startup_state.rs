@@ -31,7 +31,7 @@ pub struct StartupState{
     progress_counter: ProgressCounter,
     menu_screen: Option<Handle<UiPrefab>>, 
     ls_devby: Option<Handle<UiPrefab>>,
-    ls_poweredbyamethyst: Option<Entity>,
+    current_screen: Option<Entity>,
     display_duration: f32,
     duration: f32,
     b_displaying_devs: bool,
@@ -48,7 +48,7 @@ impl StartupState{
             progress_counter,
             menu_screen: None,
             ls_devby: None,
-            ls_poweredbyamethyst: None,
+            current_screen: None,
             display_duration,
             duration: 0.0,
             b_displaying_devs: false,
@@ -119,13 +119,15 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                     Complete =>{
                         info!("Loaded DevelopedByTelzhaak.ron successfully.");
                         // Removing "Powered By Amethyst" from screen.
-                        if let Some(entity) = self.ls_poweredbyamethyst{
+                        if let Some(entity) = self.current_screen{
                             let _ = world.delete_entity(entity);
                         };
                         if let Some(ref ui_prefab) = self.ls_devby{
-                            world.create_entity()
-                                .with(ui_prefab.clone())
-                                .build();
+                            self.current_screen = Some(
+                                world.create_entity()
+                                    .with(ui_prefab.clone())
+                                    .build()
+                            )
                         };
 
                         self.b_displaying_devs = true;
@@ -141,7 +143,12 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
             else{
                 Trans::Switch(
                     Box::new(
-                        main_menu::CentreState::new(&mut world)
+                        {
+                            if let Some(entity) = self.current_screen{
+                                let _ = world.delete_entity(entity);
+                            };
+                            main_menu::CentreState::new(&mut world, self.menu_screen.clone())
+                        }
                     )
                 )
 
@@ -156,7 +163,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
     fn on_start(&mut self, data: StateData<ToppaGameData>) {        
         let StateData {world, data} = data;
 
-        self.ls_poweredbyamethyst = Some(
+        self.current_screen = Some(
             world.exec(|mut creator: UiCreator| {                
                     creator.create("resources/ui/StartupScreen/PoweredByAmethyst.ron", ())
                 }
