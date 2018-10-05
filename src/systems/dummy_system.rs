@@ -3,7 +3,9 @@ use amethyst::{
     ecs::prelude::{Read, System},
 };
 
-pub struct DummySystem;
+pub struct DummySystem{
+    pub counter: u64,
+}
 
 impl<'a> System<'a> for DummySystem {
     type SystemData = (
@@ -11,6 +13,10 @@ impl<'a> System<'a> for DummySystem {
     );
 
     fn run(&mut self, time: Self::SystemData) {
-        println!("{}", time.absolute_real_time_seconds());
+        if self.counter > 100{
+            println!("{}", time.absolute_real_time_seconds());
+            self.counter = 0;
+        }
+        self.counter = self.counter + 1;
     }
 }

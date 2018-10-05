@@ -22,7 +22,10 @@ use amethyst::{
 
 use {
     ToppaGameData,
-    states::main_menu,
+    states::{
+        main_menu,
+        ToppaState,
+    },
 };
 
 /// The default state after opening Toppa Drill.
