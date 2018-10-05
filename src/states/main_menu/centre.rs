@@ -23,24 +23,17 @@ use amethyst::{
 use {
     ToppaGameData,
     systems::DummySystem,
-    states::ToppaState,
+    super::super::ToppaState,
+    super::*,
 };
 
-#[derive(PartialEq, Eq, Hash, Debug)]
-enum CentreButtons{
+#[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
+pub enum CentreButtons{
     NewGame,
     Load,
     Options,
     Credits,
     Exit,
-}
-
-#[derive(PartialEq, Eq, Hash, Debug)]
-enum ReachableScreens{
-    NewGame,
-    Load,
-    Options,
-    Credits
 }
 
 /// The default state after opening Toppa Drill.
@@ -57,8 +50,9 @@ pub struct CentreState<'d, 'e>{
     // Map of the Ui Button entities and the corresponding button type.
     ui_buttons: HashMap<Entity, CentreButtons>,
     // Map of the PrefabHandles for all reachable states (convenient for the `ToppaState::new()` call on State change)
-    ui_screens: HashMap<ReachableScreens, Handle<UiPrefab>>,
+    ui_screens: HashMap<super::MenuScreens, Handle<UiPrefab>>,
     b_menu_screens_loaded: bool,
+    b_buttons_found: bool,
 }
 
 impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
@@ -91,6 +85,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
     }
 
     fn enable_current_screen(&mut self, world: &mut World){
+        self.b_buttons_found = false;
         if let Some(ref prefab_handle) = self.ui_centre{
             self.current_screen = Some(
                 world.create_entity()
@@ -109,6 +104,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
             ui_buttons: HashMap::new(),
             ui_screens: HashMap::new(),
             b_menu_screens_loaded: false,
+            b_buttons_found: false,
             dispatcher: None,
         }
     }
@@ -117,7 +113,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
 impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
     fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
     -> Trans<ToppaGameData<'a, 'b>, ()>{
-        // let StateData {world, data} = data;
+        let StateData {mut world, data} = data;
         match &event {
             StateEvent::Window(wnd_event) => {
                 if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape) {
@@ -131,7 +127,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                 use self::UiEventType::*;
                 match ui_event.event_type{
                     Click => {
-                        self.btn_click(ui_event.target)
+                        self.btn_click(&mut world, ui_event.target)
                     },
                     _ => Trans::None
                 }
@@ -149,6 +145,16 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
         data.update_menu(&world);
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
+        if !self.b_buttons_found{
+            error!("Buttons not found!");
+            self.insert_button(world, CentreButtons::NewGame, "newgame_button");
+            self.insert_button(world, CentreButtons::Load, "load_button");
+            self.insert_button(world, CentreButtons::Options, "options_button");
+            self.insert_button(world, CentreButtons::Credits, "credits_button");
+            self.insert_button(world, CentreButtons::Exit, "exit_button");
+            self.b_buttons_found = true;
+        }
+
         if !self.b_menu_screens_loaded{
             use self::Completion::*;
             match self.progress_counter.complete(){
@@ -162,10 +168,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                             err.asset_type_name, err.error
                         );
                         match err.asset_name.as_ref(){
-                            "resources/ui/MenuScreens/Options.ron" => {self.ui_screens.remove(&ReachableScreens::Options);},
-                            "resources/ui/MenuScreens/Load.ron" => {self.ui_screens.remove(&ReachableScreens::Load);},
-                            "resources/ui/MenuScreens/Credits.ron" => {self.ui_screens.remove(&ReachableScreens::Credits);},
-                            "resources/ui/MenuScreens/NewGame.ron" => {self.ui_screens.remove(&ReachableScreens::NewGame);},
+                            "resources/ui/MenuScreens/Options.ron" => {self.ui_screens.remove(&MenuScreens::Options);},
+                            "resources/ui/MenuScreens/Load.ron" => {self.ui_screens.remove(&MenuScreens::Load);},
+                            "resources/ui/MenuScreens/Credits.ron" => {self.ui_screens.remove(&MenuScreens::Credits);},
+                            "resources/ui/MenuScreens/NewGame.ron" => {self.ui_screens.remove(&MenuScreens::NewGame);},
                             _ => {warn!("Non implemented asset_name detected.");},
                         };
                         for (key, _) in self.ui_screens.iter(){
@@ -178,16 +184,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                     self.b_menu_screens_loaded = true;
                     info!("Loaded menu screen prefabs successfully.");
                     
-                    self.insert_ui_screen(world, ReachableScreens::Options, "resources/ui/MenuScreens/Options.ron");
-                    self.insert_ui_screen(world, ReachableScreens::Credits, "resources/ui/MenuScreens/Credits.ron");
-                    self.insert_ui_screen(world, ReachableScreens::NewGame, "resources/ui/MenuScreens/NewGame.ron");
-                    self.insert_ui_screen(world, ReachableScreens::Load, "resources/ui/MenuScreens/Load.ron");
-
-                    self.insert_ui_button(world, CentreButtons::NewGame, "newgame_button");
-                    self.insert_ui_button(world, CentreButtons::Load, "load_button");
-                    self.insert_ui_button(world, CentreButtons::Options, "options_button");
-                    self.insert_ui_button(world, CentreButtons::Credits, "credits_button");
-                    self.insert_ui_button(world, CentreButtons::Exit, "exit_button");
+                    self.insert_reachable_menu(world, MenuScreens::Options, "resources/ui/MenuScreens/Options.ron");
+                    self.insert_reachable_menu(world, MenuScreens::Credits, "resources/ui/MenuScreens/Credits.ron");
+                    self.insert_reachable_menu(world, MenuScreens::NewGame, "resources/ui/MenuScreens/NewGame.ron");
+                    self.insert_reachable_menu(world, MenuScreens::Load, "resources/ui/MenuScreens/Load.ron");
                     Trans::None
                 }
                 Loading => {
@@ -231,18 +231,18 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
 }
 
 impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
-    fn insert_ui_screen(&mut self, world: &mut World, screen: ReachableScreens, path: &str){
-        let buffer_entity = world.exec(|mut loader: UiLoader| {                
+    fn insert_reachable_menu(&mut self, world: &mut World, screen: MenuScreens, path: &str){
+        let prefab_handle = world.exec(|mut loader: UiLoader| {                
             loader.load(path, &mut self.progress_counter)
         });
 
         self.ui_screens.insert(
             screen,
-            buffer_entity
+            prefab_handle
         );
     }
 
-    fn insert_ui_button(&mut self, world: &mut World, button: CentreButtons, button_name: &str){
+    fn insert_button(&mut self, world: &mut World, button: CentreButtons, button_name: &str){
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name){
                 info!("Found {}.", button_name);
@@ -257,15 +257,15 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         });
     }
 
-    fn btn_click(&self, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
         use self::CentreButtons::*;
         if let Some(button) = self.ui_buttons.get(&target){
             match button{
-                NewGame => self.btn_new_game(),
-                Load => self.btn_load(),
-                Options => self.btn_options(),
-                Credits => self.btn_credits(),
-                Exit => self.btn_exit(),
+                NewGame => self.btn_new_game(world),
+                Load => self.btn_load(world),
+                Options => self.btn_options(world),
+                Credits => self.btn_credits(world),
+                Exit => self.btn_exit(world),
                 _ => {
                     error!("Non-implemented CentreButton detected!");
                     Trans::None
@@ -277,13 +277,13 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         }
     }
 
-    fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_exit(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("Shutting down.");
         // TODO: User prompt : Are you sure you want to exit?
         Trans::Quit
     }
 
-    fn btn_credits(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_credits(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("Show credits.");
         // TODO: Credits screen
         /*Trans::Push(
@@ -294,18 +294,29 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         Trans::None
     }
 
-    fn btn_new_game(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_new_game(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("New game setup screen.");
         Trans::None
     }
 
-    fn btn_load(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("Load savegame screen.");
         Trans::None
     }
 
-    fn btn_options(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_options(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("Options screen.");
-        Trans::None
+        Trans::Push(
+            Box::new(
+                {
+                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::Options){
+                        OptionsState::new(world, Some({*handle}.clone()))
+                    }
+                    else{
+                        OptionsState::new(world, None)
+                    }
+                }
+            )
+        )
     }
 }
