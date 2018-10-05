@@ -20,6 +20,7 @@ use amethyst::{
         SystemBundle,
     },
 };
+//use amethyst::renderer::Hidden;
 use {
     ToppaGameData,
     systems::DummySystem,
@@ -81,11 +82,16 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
     fn disable_current_screen(&mut self, world: &mut World){
         if let Some(entity) = self.current_screen{
             let _ = world.delete_entity(entity);
+            /*
+            let mut hidden_component_storage = world.write_storage::<Hidden>();
+            hidden_component_storage.remove(entity);
+            */
         };
     }
 
     fn enable_current_screen(&mut self, world: &mut World){
         self.b_buttons_found = false;
+        
         if let Some(ref prefab_handle) = self.ui_centre{
             self.current_screen = Some(
                 world.create_entity()
@@ -93,13 +99,33 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
                     .build()
             );
         };
+        
+        /*match self.current_screen{
+            None => {
+                if let Some(ref prefab_handle) = self.ui_centre{
+                    self.current_screen = Some(
+                        world.create_entity()
+                            .with(prefab_handle.clone())
+                            .build()
+                    );
+                }
+            },
+            Some(entity) => {
+                let mut hidden_component_storage = world.write_storage::<Hidden>();
+                match hidden_component_storage.insert(entity, Hidden::default()){
+                    Ok(v) => {},
+                    Err(e) => error!("Failed to add HiddenComponent to CentreState Ui. {:?}", e),
+                };
+            }
+        };
+        */
     }
 
     fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
         CentreState{
             menu_duration: 0.0,
             current_screen: None,
-            ui_centre: screen_opt,
+            ui_centre: screen_opt.clone(),
             progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             ui_screens: HashMap::new(),
@@ -259,10 +285,19 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
 
     fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
         use self::CentreButtons::*;
+        let entity = target.clone();
         if let Some(button) = self.ui_buttons.get(&target){
             match button{
                 NewGame => self.btn_new_game(world),
-                Load => self.btn_load(world),
+                Load => /*{
+                    let mut hidden_component_storage = world.write_storage::<Hidden>();
+                    match hidden_component_storage.insert(entity, Hidden::default()){
+                        Ok(v) => {},
+                        Err(e) => error!("Failed to add HiddenComponent to CentreState Ui. {:?}", e),
+                    };
+                    Trans::None
+                },*/
+                self.btn_load(world),
                 Options => self.btn_options(world),
                 Credits => self.btn_credits(world),
                 Exit => self.btn_exit(world),

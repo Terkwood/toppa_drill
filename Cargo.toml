@@ -15,7 +15,8 @@ name = "toppa_drill"
 path = "src/main.rs"
 
 [dependencies]
-amethyst = { git = "https://github.com/amethyst/amethyst", rev = "5a2a729a0d87e46ad8f85e66a3927d7731cf3dc9", features = ["nightly"]}
+# amethyst = { git = "https://github.com/amethyst/amethyst", rev = "5a2a729a0d87e46ad8f85e66a3927d7731cf3dc9", features = ["nightly"]}
+amethyst = { path = "E:/Workspaces/Rust/Amethyst/00_Fork", features = ["nightly"]}
 log = "0.4.5"
 
 [build-dependencies]
