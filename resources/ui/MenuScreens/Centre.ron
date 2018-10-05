@@ -27,6 +27,122 @@ Container(
                 color: (0.515, 0.650, 0.658, 1.),
                 font: File("Assets/Fonts/square.ttf", Ttf, ()),
             ),
-        )
+        ),
+        // NewGame Button
+        Button(
+            transform: (
+                id: "newgame_button",
+                y: 540.,
+                width: 128.,
+                height: 64.,
+                tab_order: 1,
+                anchor: BottomMiddle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "New Game",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.75, 0.75, 0.9, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, ()),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, ()),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, ()),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Load Button
+        Button(
+            transform: (
+                id: "load_button",
+                y: 465.,
+                width: 128.,
+                height: 64.,
+                tab_order: 2,
+                anchor: BottomMiddle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "Load",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.4, 0.4, 0.55, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, ()),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, ()),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, ()),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Options Button
+        Button(
+            transform: (
+                id: "options_button",
+                y: 390.,
+                width: 128.,
+                height: 64.,
+                tab_order: 3,
+                anchor: BottomMiddle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "Options",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.4, 0.4, 0.55, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, ()),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, ()),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, ()),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Credits Button
+        Button(
+            transform: (
+                id: "credits_button",
+                x: -75.,
+                y: 40.,
+                width: 128.,
+                height: 64.,
+                tab_order: 5,
+                anchor: BottomRight,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "Credits",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.4, 0.4, 0.55, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, ()),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, ()),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, ()),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Exit Button
+        Button(
+            transform: (
+                id: "exit_button",
+                y: 315.,
+                width: 128.,
+                height: 64.,
+                tab_order: 4,
+                anchor: BottomMiddle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "Exit",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.8, 0.6, 0.6, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, ()),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, ()),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, ()),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
     ]
 )

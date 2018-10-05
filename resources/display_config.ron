@@ -1,6 +1,6 @@
 (
   title: "ToppaDrill",
-  dimensions: None,
+  dimensions: Some((720, 540)),
   max_dimensions: None,
   min_dimensions: None,
   fullscreen: true,
