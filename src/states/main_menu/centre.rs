@@ -20,13 +20,15 @@ use amethyst::{
         SystemBundle,
     },
 };
-//use amethyst::renderer::Hidden;
+use amethyst::renderer::Hidden;
 use {
     ToppaGameData,
     systems::DummySystem,
     super::super::ToppaState,
     super::*,
 };
+
+static mut Loaded_visible: bool = true;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum CentreButtons{
@@ -47,12 +49,12 @@ pub struct CentreState<'d, 'e>{
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
     // The Handle of the Prefab for the displayed Ui Entity.
-    ui_centre: Option<Handle<UiPrefab>>,
+    ui_screen: Option<Handle<UiPrefab>>,
     // Map of the Ui Button entities and the corresponding button type.
     ui_buttons: HashMap<Entity, CentreButtons>,
     // Map of the PrefabHandles for all reachable states (convenient for the `ToppaState::new()` call on State change)
     ui_screens: HashMap<super::MenuScreens, Handle<UiPrefab>>,
-    b_menu_screens_loaded: bool,
+    b_screens_loaded: bool,
     b_buttons_found: bool,
 }
 
@@ -75,34 +77,21 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
         self.dispatcher = None;
     }
 
-    fn get_current_screen(&self) -> Option<Entity>{
-        self.current_screen
-    }
-
     fn disable_current_screen(&mut self, world: &mut World){
         if let Some(entity) = self.current_screen{
-            let _ = world.delete_entity(entity);
-            /*
             let mut hidden_component_storage = world.write_storage::<Hidden>();
-            hidden_component_storage.remove(entity);
-            */
+            match hidden_component_storage.insert(entity, Hidden::default()){
+                Ok(v) => {},
+                Err(e) => error!("Failed to add HiddenComponent to CentreState Ui. {:?}", e),
+            };
         };
     }
 
     fn enable_current_screen(&mut self, world: &mut World){
-        self.b_buttons_found = false;
-        
-        if let Some(ref prefab_handle) = self.ui_centre{
-            self.current_screen = Some(
-                world.create_entity()
-                    .with(prefab_handle.clone())
-                    .build()
-            );
-        };
-        
-        /*match self.current_screen{
+        self.b_buttons_found = false;        
+        match self.current_screen{
             None => {
-                if let Some(ref prefab_handle) = self.ui_centre{
+                if let Some(ref prefab_handle) = self.ui_screen{
                     self.current_screen = Some(
                         world.create_entity()
                             .with(prefab_handle.clone())
@@ -112,24 +101,21 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
             },
             Some(entity) => {
                 let mut hidden_component_storage = world.write_storage::<Hidden>();
-                match hidden_component_storage.insert(entity, Hidden::default()){
-                    Ok(v) => {},
-                    Err(e) => error!("Failed to add HiddenComponent to CentreState Ui. {:?}", e),
-                };
+                hidden_component_storage.remove(entity);
             }
         };
-        */
+        
     }
 
     fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
         CentreState{
             menu_duration: 0.0,
             current_screen: None,
-            ui_centre: screen_opt.clone(),
+            ui_screen: screen_opt.clone(),
             progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             ui_screens: HashMap::new(),
-            b_menu_screens_loaded: false,
+            b_screens_loaded: false,
             b_buttons_found: false,
             dispatcher: None,
         }
@@ -181,11 +167,11 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
             self.b_buttons_found = true;
         }
 
-        if !self.b_menu_screens_loaded{
+        if !self.b_screens_loaded{
             use self::Completion::*;
             match self.progress_counter.complete(){
                 Failed =>{
-                    self.b_menu_screens_loaded = true;
+                    self.b_screens_loaded = true;
                     warn!("Failed to load menu screen prefab(s).");
 
                     for err in self.progress_counter.errors(){
@@ -195,7 +181,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                         );
                         match err.asset_name.as_ref(){
                             "resources/ui/MenuScreens/Options.ron" => {self.ui_screens.remove(&MenuScreens::Options);},
-                            "resources/ui/MenuScreens/Load.ron" => {self.ui_screens.remove(&MenuScreens::Load);},
+                            "resources/ui/MenuScreens/Load.ron" => {self.ui_screens.remove(&MenuScreens::LoadGame);},
                             "resources/ui/MenuScreens/Credits.ron" => {self.ui_screens.remove(&MenuScreens::Credits);},
                             "resources/ui/MenuScreens/NewGame.ron" => {self.ui_screens.remove(&MenuScreens::NewGame);},
                             _ => {warn!("Non implemented asset_name detected.");},
@@ -207,13 +193,13 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                     Trans::None
                 }
                 Complete =>{
-                    self.b_menu_screens_loaded = true;
+                    self.b_screens_loaded = true;
                     info!("Loaded menu screen prefabs successfully.");
                     
                     self.insert_reachable_menu(world, MenuScreens::Options, "resources/ui/MenuScreens/Options.ron");
                     self.insert_reachable_menu(world, MenuScreens::Credits, "resources/ui/MenuScreens/Credits.ron");
                     self.insert_reachable_menu(world, MenuScreens::NewGame, "resources/ui/MenuScreens/NewGame.ron");
-                    self.insert_reachable_menu(world, MenuScreens::Load, "resources/ui/MenuScreens/Load.ron");
+                    self.insert_reachable_menu(world, MenuScreens::LoadGame, "resources/ui/MenuScreens/Load.ron");
                     Trans::None
                 }
                 Loading => {
@@ -289,15 +275,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         if let Some(button) = self.ui_buttons.get(&target){
             match button{
                 NewGame => self.btn_new_game(world),
-                Load => /*{
-                    let mut hidden_component_storage = world.write_storage::<Hidden>();
-                    match hidden_component_storage.insert(entity, Hidden::default()){
-                        Ok(v) => {},
-                        Err(e) => error!("Failed to add HiddenComponent to CentreState Ui. {:?}", e),
-                    };
-                    Trans::None
-                },*/
-                self.btn_load(world),
+                Load => self.btn_load(world),
                 Options => self.btn_options(world),
                 Credits => self.btn_credits(world),
                 Exit => self.btn_exit(world),
@@ -319,24 +297,51 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
     }
 
     fn btn_credits(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
-        info!("Show credits.");
-        // TODO: Credits screen
-        /*Trans::Push(
+        info!("Credits screen.");
+        Trans::Push(
             Box::new(
-                main_menu::CentreState::new(&mut world, self.menu_screen.clone())
+                {
+                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::Credits){
+                        CreditsState::new(world, Some({*handle}.clone()))
+                    }
+                    else{
+                        CreditsState::new(world, None)
+                    }
+                }
             )
-        )*/
-        Trans::None
+        )
     }
 
     fn btn_new_game(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
-        info!("New game setup screen.");
-        Trans::None
+        info!("NewGame screen.");
+        Trans::Push(
+            Box::new(
+                {
+                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::NewGame){
+                        NewGameState::new(world, Some({*handle}.clone()))
+                    }
+                    else{
+                        NewGameState::new(world, None)
+                    }
+                }
+            )
+        )
     }
 
     fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
-        info!("Load savegame screen.");
-        Trans::None
+        info!("LoadGame screen.");
+        Trans::Push(
+            Box::new(
+                {
+                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::LoadGame){
+                        LoadMenuState::new(world, Some({*handle}.clone()))
+                    }
+                    else{
+                        LoadMenuState::new(world, None)
+                    }
+                }
+            )
+        )
     }
 
     fn btn_options(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{

@@ -32,12 +32,12 @@ use {
 /// It should display a short amethyst logo, and then transist over to the Main Menu State.
 pub struct StartupState{
     progress_counter: ProgressCounter,
-    menu_screen: Option<Handle<UiPrefab>>, 
-    ls_devby: Option<Handle<UiPrefab>>,
+    next_states_screen: Option<Handle<UiPrefab>>, 
+    this_states_screens: Vec<Handle<UiPrefab>>,
     current_screen: Option<Entity>,
     display_duration: f32,
     duration: f32,
-    b_displaying_devs: bool,
+    b_screens_loaded: bool,
 }
 
 impl StartupState{
@@ -49,12 +49,12 @@ impl StartupState{
 
         StartupState {
             progress_counter,
-            menu_screen: None,
-            ls_devby: None,
+            next_states_screen: None,
+            this_states_screens: Vec::new(),
             current_screen: None,
             display_duration,
             duration: 0.0,
-            b_displaying_devs: false,
+            b_screens_loaded: false,
         }
     }
 }
@@ -88,60 +88,52 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
 
         self.duration += world.read_resource::<Time>().delta_seconds();
         
-        if self.duration > self.display_duration{
-            // If developers haven't been displayed yet, display them (if possible),
-            // otherwise trans to main menu.
-            if !self.b_displaying_devs{
-                use self::Completion::*;
-                match self.progress_counter.complete(){
-                    Failed =>{
-                        warn!("Failed to load asset(s).");
-                        self.b_displaying_devs = true;
-                        self.duration = 2.0;
+        if !self.b_screens_loaded{
+            use self::Completion::*;
+            match self.progress_counter.complete(){
+                Failed =>{
+                    warn!("Failed to load asset(s).");
+                    self.duration = 2.0;
 
-                        let mut trans = Trans::None;
+                    let mut trans = Trans::None;
 
-                        for err in self.progress_counter.errors(){
-                            warn!(
-                                "Asset type: {}\terror: {}",
-                                err.asset_type_name, err.error
-                            );
+                    for err in self.progress_counter.errors(){
+                        warn!(
+                            "Asset type: {}\terror: {}",
+                            err.asset_type_name, err.error
+                        );
 
-                            if err.asset_name == "resources/ui/StartupScreen/DevelopedByTelzhaak.ron" {
-                                warn!("Skipping *Developed By* screen.");
-                                trans = Trans::None
-                            }
-                            else{
-                                error!("Main Menu screen could not be loaded. Closing application.");
-                                trans = Trans::Quit
-                            }
+                        if err.asset_name == "resources/ui/StartupScreen/DevelopedByTelzhaak.ron" {
+                            error!("Main Menu screen could not be loaded. Closing application.");
+                            trans = Trans::Quit
                         }
-
-                        trans
                     }
-                    Complete =>{
-                        info!("Loaded DevelopedByTelzhaak.ron successfully.");
-                        // Removing "Powered By Amethyst" from screen.
-                        if let Some(entity) = self.current_screen{
-                            let _ = world.delete_entity(entity);
-                        };
-                        if let Some(ref ui_prefab) = self.ls_devby{
-                            self.current_screen = Some(
-                                world.create_entity()
-                                    .with(ui_prefab.clone())
-                                    .build()
-                            )
-                        };
 
-                        self.b_displaying_devs = true;
-                        self.duration = 0.0;
-
-                        Trans::None
-                    }
-                    Loading => {
-                        Trans::None
-                    }
+                    trans
                 }
+                Complete =>{
+                    self.b_screens_loaded = true;
+                    self.duration = 0.0;
+
+                    Trans::None
+                }
+                Loading => {
+                    Trans::None
+                }
+            }
+        }
+        else if self.duration > self.display_duration{
+            self.duration = 0.0;
+            if let Some(entity) = self.current_screen{
+                let _ = world.delete_entity(entity);
+            };
+            if let Some(ref ui_prefab) = self.this_states_screens.pop(){
+                self.current_screen = Some(
+                    world.create_entity()
+                        .with(ui_prefab.clone())
+                        .build()
+                );
+                Trans::None
             }
             else{
                 Trans::Switch(
@@ -150,13 +142,11 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                             if let Some(entity) = self.current_screen{
                                 let _ = world.delete_entity(entity);
                             };
-                            main_menu::CentreState::new(&mut world, self.menu_screen.clone())
+                            main_menu::CentreState::new(&mut world, self.next_states_screen.clone())
                         }
                     )
                 )
-
-                //Trans::None
-            }
+            }            
         }
         else{
             Trans::None
@@ -172,13 +162,14 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                 }
             )
         );
-        self.ls_devby = Some(
-            world.exec(|mut loader: UiLoader| {                
-                    loader.load("resources/ui/StartupScreen/DevelopedByTelzhaak.ron", &mut self.progress_counter)
-                }
-            )
+        
+        let handle = world.exec(|mut loader: UiLoader| {                
+                loader.load("resources/ui/StartupScreen/DevelopedByTelzhaak.ron", &mut self.progress_counter)
+            }
         );
-        self.menu_screen = Some(
+        self.this_states_screens.push(handle);
+
+        self.next_states_screen = Some(
             world.exec(|mut loader: UiLoader| {                
                     loader.load("resources/ui/MenuScreens/Centre.ron", &mut self.progress_counter)
                 }

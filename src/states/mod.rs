@@ -24,7 +24,6 @@ pub trait ToppaState: std::marker::Sized{
 
     fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self;
 
-    fn get_current_screen(&self) -> Option<Entity>;
     fn disable_current_screen(&mut self, world: &mut World);
     fn enable_current_screen(&mut self, world: &mut World);
 }

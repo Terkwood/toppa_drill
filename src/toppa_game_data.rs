@@ -68,7 +68,7 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
 
 impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
     /// Add a system to the `core` dispatcher.
-    pub fn with_core<S>(
+    pub fn with_core_system<S>(
         mut self,
         system: S, 
         name: &str, 
@@ -81,7 +81,7 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
         self
     }
     /// Add a system to the `ingame_core` dispatcher.
-    pub fn with_ingame_core<S>(
+    pub fn with_ingame_core_sytem<S>(
         mut self,
         system: S, 
         name: &str, 
@@ -94,7 +94,7 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
         self
     }
     /// Add a system to the `main_menu_core` dispatcher.
-    pub fn with_menu_core<S>(
+    pub fn with_menu_core_system<S>(
         mut self,
         system: S, 
         name: &str, 

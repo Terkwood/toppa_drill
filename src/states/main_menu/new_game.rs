@@ -28,13 +28,13 @@ use {
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-pub enum OptionsButtons{
+pub enum NewGameButtons{
     Back,
 }
 
 /// The default state after opening Toppa Drill.
 /// It should display a short amethyst logo, and then transist over to the Main Menu State.
-pub struct OptionsState<'d, 'e>{
+pub struct NewGameState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,
     progress_counter: ProgressCounter,
@@ -44,11 +44,11 @@ pub struct OptionsState<'d, 'e>{
     // The Handle of the Prefab for the displayed Ui Entity.
     ui_screen: Option<Handle<UiPrefab>>,
     // Map of the Ui Button entities and the corresponding button type.
-    ui_buttons: HashMap<Entity, OptionsButtons>,
+    ui_buttons: HashMap<Entity, NewGameButtons>,
     b_buttons_found: bool,
 }
 
-impl<'d, 'e> ToppaState for OptionsState<'d, 'e>{
+impl<'d, 'e> ToppaState for NewGameState<'d, 'e>{
     fn dispatch(&mut self, world: &World){
         if let Some(ref mut dispatcher) = self.dispatcher{
             dispatcher.dispatch(&world.res);
@@ -84,7 +84,7 @@ impl<'d, 'e> ToppaState for OptionsState<'d, 'e>{
     }
 
     fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
-        OptionsState{
+        NewGameState{
             menu_duration: 0.0,
             current_screen: None,
             ui_screen: screen_opt,
@@ -96,7 +96,7 @@ impl<'d, 'e> ToppaState for OptionsState<'d, 'e>{
     }
 }
 
-impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for OptionsState<'d, 'e>{
+impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for NewGameState<'d, 'e>{
     fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
     -> Trans<ToppaGameData<'a, 'b>, ()>{
         let StateData {mut world, data} = data;
@@ -133,7 +133,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for OptionsState<'d, 'e>{
 
         if !self.b_buttons_found{
             error!("Back button not found!");
-            self.insert_button(&mut world, OptionsButtons::Back, "back_button");
+            self.insert_button(&mut world, NewGameButtons::Back, "back_button");
             Trans::None
         }
         else{
@@ -171,8 +171,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for OptionsState<'d, 'e>{
     }
 }
 
-impl<'a, 'b, 'd, 'e> OptionsState<'d, 'e>{
-    fn insert_button(&mut self, world: &mut World, button: OptionsButtons, button_name: &str){
+impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e>{
+    fn insert_button(&mut self, world: &mut World, button: NewGameButtons, button_name: &str){
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name){
                 info!("Found {}.", button_name);
@@ -189,12 +189,12 @@ impl<'a, 'b, 'd, 'e> OptionsState<'d, 'e>{
     }
 
     fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
-        use self::OptionsButtons::*;
+        use self::NewGameButtons::*;
         if let Some(button) = self.ui_buttons.get(&target){
             match button{
                 Back => self.btn_back(world),
                 _ => {
-                    error!("Non-implemented OptionsButton detected!");
+                    error!("Non-implemented NewGameButton detected!");
                     Trans::None
                 },
             }
