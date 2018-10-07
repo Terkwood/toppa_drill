@@ -6,6 +6,8 @@
         ),
     },
     actions:{
-        "shoot": Key(Space),
+            "shoot": [
+                Key(Space),
+            ],
     },
 )
