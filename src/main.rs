@@ -28,10 +28,12 @@ fn main() -> Result<(), amethyst::Error> {
     amethyst::start_logger(Default::default());
 
     let display_config_path = format!(
-        "{}/resources/display_config.ron",
+        "{}/Prefabs/display_config.ron",
         env!("CARGO_MANIFEST_DIR")
     );
     let display_config = DisplayConfig::load(&display_config_path);
+
+    let input_config = format!("./Prefabs/input_bindings.ron");
 
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
@@ -50,7 +52,12 @@ fn main() -> Result<(), amethyst::Error> {
     );
 
     let toppa_game_data = ToppaGameDataBuilder::default()
-        .with_core_bundle(InputBundle::<String, String>::new())?
+        .with_core_bundle(
+            InputBundle::<String, String>::new()
+                .with_bindings_from_file(
+                    &input_config
+                )?,
+        )?
         .with_core_bundle(TransformBundle::new())?
         .with_core_bundle(UiBundle::<String, String>::new())?
         .with_core_bundle(

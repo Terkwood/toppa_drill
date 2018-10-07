@@ -16,7 +16,8 @@ path = "src/main.rs"
 
 [dependencies]
 # amethyst = { git = "https://github.com/amethyst/amethyst", rev = "5a2a729a0d87e46ad8f85e66a3927d7731cf3dc9", features = ["nightly"]}
-amethyst = { path = "E:/Workspaces/Rust/Amethyst/00_Fork", features = ["nightly"]}
+amethyst = { path = "../../00_Fork", features = ["nightly"]}
+# amethyst = { git = "https://github.com/Telzhaak/amethyst", rev = "0b1eecd9389df8f5714b526ba411eb5be9298c27", features = ["nightly"]}
 log = "0.4.5"
 
 [build-dependencies]
