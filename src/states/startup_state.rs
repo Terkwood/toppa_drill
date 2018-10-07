@@ -103,7 +103,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                             err.asset_type_name, err.error
                         );
 
-                        if err.asset_name == "resources/ui/StartupScreen/DevelopedByTelzhaak.ron" {
+                        if err.asset_name == "Prefabs/ui/StartupScreen/DevelopedByTelzhaak.ron" {
                             error!("Main Menu screen could not be loaded. Closing application.");
                             trans = Trans::Quit
                         }
@@ -158,20 +158,20 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
 
         self.current_screen = Some(
             world.exec(|mut creator: UiCreator| {                
-                    creator.create("resources/ui/StartupScreen/PoweredByAmethyst.ron", ())
+                    creator.create("Prefabs/ui/StartupScreen/PoweredByAmethyst.ron", ())
                 }
             )
         );
         
         let handle = world.exec(|mut loader: UiLoader| {                
-                loader.load("resources/ui/StartupScreen/DevelopedByTelzhaak.ron", &mut self.progress_counter)
+                loader.load("Prefabs/ui/StartupScreen/DevelopedByTelzhaak.ron", &mut self.progress_counter)
             }
         );
         self.this_states_screens.push(handle);
 
         self.next_states_screen = Some(
             world.exec(|mut loader: UiLoader| {                
-                    loader.load("resources/ui/MenuScreens/Centre.ron", &mut self.progress_counter)
+                    loader.load("Prefabs/ui/MenuScreens/Centre.ron", &mut self.progress_counter)
                 }
             )
         );

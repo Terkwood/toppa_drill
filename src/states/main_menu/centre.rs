@@ -20,15 +20,15 @@ use amethyst::{
         SystemBundle,
     },
 };
-use amethyst::renderer::Hidden;
+use amethyst::renderer::{
+    Hidden, HiddenPropagate,
+};
 use {
     ToppaGameData,
     systems::DummySystem,
     super::super::ToppaState,
     super::*,
 };
-
-static mut Loaded_visible: bool = true;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum CentreButtons{
@@ -46,14 +46,13 @@ pub struct CentreState<'d, 'e>{
     dispatcher: Option<Dispatcher<'d, 'e>>,
     progress_counter: ProgressCounter,
 
-    // The displayed Ui Entity, if any.
-    current_screen: Option<Entity>,
-    // The Handle of the Prefab for the displayed Ui Entity.
-    ui_screen: Option<Handle<UiPrefab>>,
     // Map of the Ui Button entities and the corresponding button type.
-    ui_buttons: HashMap<Entity, CentreButtons>,
+    buttons: HashMap<Entity, CentreButtons>,
     // Map of the PrefabHandles for all reachable states (convenient for the `ToppaState::new()` call on State change)
-    ui_screens: HashMap<super::MenuScreens, Handle<UiPrefab>>,
+    screen_prefabs: HashMap<super::MenuScreens, Handle<UiPrefab>>,
+    // Map of the Entities for all reachable states. Entities are only created after their prefab is loaded successfully.
+    screen_entities: HashMap<super::MenuScreens, Entity>,
+
     b_screens_loaded: bool,
     b_buttons_found: bool,
 }
@@ -78,47 +77,70 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
     }
 
     fn disable_current_screen(&mut self, world: &mut World){
-        if let Some(entity) = self.current_screen{
-            let mut hidden_component_storage = world.write_storage::<Hidden>();
-            match hidden_component_storage.insert(entity, Hidden::default()){
+        if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre){
+            let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
+            match hidden_component_storage.insert(*entity, HiddenPropagate::default()){
                 Ok(v) => {},
-                Err(e) => error!("Failed to add HiddenComponent to CentreState Ui. {:?}", e),
+                Err(e) => error!("Failed to add HiddenPropagateComponent to CentreState Ui. {:?}", e),
             };
         };
     }
 
     fn enable_current_screen(&mut self, world: &mut World){
-        self.b_buttons_found = false;        
-        match self.current_screen{
-            None => {
-                if let Some(ref prefab_handle) = self.ui_screen{
-                    self.current_screen = Some(
-                        world.create_entity()
-                            .with(prefab_handle.clone())
-                            .build()
+        self.b_buttons_found = false;
+        if self.screen_entities.contains_key(&MenuScreens::Centre){
+            if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre){
+                let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
+                hidden_component_storage.remove(*entity);
+            }
+            else{
+                error!("No Entity found for Main Menu even though the screen_entities-HashMap contains the key !?");
+            }
+        }
+        else{
+            if self.screen_prefabs.contains_key(&MenuScreens::Centre){
+                if let Some(prefab_handle) = self.screen_prefabs.get(&MenuScreens::Centre){
+                    self.screen_entities.insert(
+                        MenuScreens::Centre, 
+                        {
+                            world.create_entity()
+                                .with({prefab_handle}.clone())
+                                .build()
+                        }
                     );
                 }
-            },
-            Some(entity) => {
-                let mut hidden_component_storage = world.write_storage::<Hidden>();
-                hidden_component_storage.remove(entity);
+                else{
+                    error!("No PrefabHandle found for Main Menu even though the screen_prefabs-HashMap contains the key !?");
+                }
             }
-        };
-        
+            else{
+                error!("No Prefab Handle found for Main Menu screen!");
+            }
+        }
     }
 
     fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
-        CentreState{
+        let btn_count = 5;
+        let prefab_count = 5;
+
+        let mut rv = CentreState{
             menu_duration: 0.0,
-            current_screen: None,
-            ui_screen: screen_opt.clone(),
+            dispatcher: None,
             progress_counter: ProgressCounter::new(),
-            ui_buttons: HashMap::new(),
-            ui_screens: HashMap::new(),
+            buttons: HashMap::with_capacity(btn_count),
+            screen_prefabs: HashMap::with_capacity(prefab_count),
+            screen_entities: HashMap::with_capacity(prefab_count),
             b_screens_loaded: false,
             b_buttons_found: false,
-            dispatcher: None,
+        };
+
+        if let Some(screen_prefab) = screen_opt {
+            rv.screen_prefabs.insert(MenuScreens::Centre, screen_prefab.clone());
         }
+        else{
+            error!("No Prefab Handle provided for Main Menu screen!");
+        }
+        rv
     }
 }
 
@@ -158,7 +180,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found{
-            error!("Buttons not found!");
             self.insert_button(world, CentreButtons::NewGame, "newgame_button");
             self.insert_button(world, CentreButtons::Load, "load_button");
             self.insert_button(world, CentreButtons::Options, "options_button");
@@ -180,14 +201,14 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                             err.asset_type_name, err.error
                         );
                         match err.asset_name.as_ref(){
-                            "resources/ui/MenuScreens/Options.ron" => {self.ui_screens.remove(&MenuScreens::Options);},
-                            "resources/ui/MenuScreens/Load.ron" => {self.ui_screens.remove(&MenuScreens::LoadGame);},
-                            "resources/ui/MenuScreens/Credits.ron" => {self.ui_screens.remove(&MenuScreens::Credits);},
-                            "resources/ui/MenuScreens/NewGame.ron" => {self.ui_screens.remove(&MenuScreens::NewGame);},
+                            "Prefabs/ui/MenuScreens/Options.ron" => {self.screen_prefabs.remove(&MenuScreens::Options);},
+                            "Prefabs/ui/MenuScreens/Load.ron" => {self.screen_prefabs.remove(&MenuScreens::LoadGame);},
+                            "Prefabs/ui/MenuScreens/Credits.ron" => {self.screen_prefabs.remove(&MenuScreens::Credits);},
+                            "Prefabs/ui/MenuScreens/NewGame.ron" => {self.screen_prefabs.remove(&MenuScreens::NewGame);},
                             _ => {warn!("Non implemented asset_name detected.");},
                         };
-                        for (key, _) in self.ui_screens.iter(){
-                            warn!("ui_screens contains: {:?}", key);
+                        for (key, _) in self.screen_prefabs.iter(){
+                            warn!("screen_prefabs contains: {:?}", key);
                         }
                     }
                     Trans::None
@@ -196,10 +217,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
                     self.b_screens_loaded = true;
                     info!("Loaded menu screen prefabs successfully.");
                     
-                    self.insert_reachable_menu(world, MenuScreens::Options, "resources/ui/MenuScreens/Options.ron");
-                    self.insert_reachable_menu(world, MenuScreens::Credits, "resources/ui/MenuScreens/Credits.ron");
-                    self.insert_reachable_menu(world, MenuScreens::NewGame, "resources/ui/MenuScreens/NewGame.ron");
-                    self.insert_reachable_menu(world, MenuScreens::LoadGame, "resources/ui/MenuScreens/Load.ron");
+                    self.insert_reachable_menu(world, MenuScreens::Options, "Prefabs/ui/MenuScreens/Options.ron");
+                    self.insert_reachable_menu(world, MenuScreens::Credits, "Prefabs/ui/MenuScreens/Credits.ron");
+                    self.insert_reachable_menu(world, MenuScreens::NewGame, "Prefabs/ui/MenuScreens/NewGame.ron");
+                    self.insert_reachable_menu(world, MenuScreens::LoadGame, "Prefabs/ui/MenuScreens/Load.ron");
                     Trans::None
                 }
                 Loading => {
@@ -242,13 +263,13 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
     }
 }
 
-impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
+impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e>{
     fn insert_reachable_menu(&mut self, world: &mut World, screen: MenuScreens, path: &str){
         let prefab_handle = world.exec(|mut loader: UiLoader| {                
             loader.load(path, &mut self.progress_counter)
         });
 
-        self.ui_screens.insert(
+        self.screen_prefabs.insert(
             screen,
             prefab_handle
         );
@@ -258,7 +279,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name){
                 info!("Found {}.", button_name);
-                self.ui_buttons.insert(
+                self.buttons.insert(
                     entity,
                     button
                 );
@@ -272,7 +293,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
     fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
         use self::CentreButtons::*;
         let entity = target.clone();
-        if let Some(button) = self.ui_buttons.get(&target){
+        if let Some(button) = self.buttons.get(&target){
             match button{
                 NewGame => self.btn_new_game(world),
                 Load => self.btn_load(world),
@@ -301,7 +322,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         Trans::Push(
             Box::new(
                 {
-                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::Credits){
+                    if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Credits){
                         CreditsState::new(world, Some({*handle}.clone()))
                     }
                     else{
@@ -317,7 +338,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         Trans::Push(
             Box::new(
                 {
-                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::NewGame){
+                    if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::NewGame){
                         NewGameState::new(world, Some({*handle}.clone()))
                     }
                     else{
@@ -333,7 +354,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         Trans::Push(
             Box::new(
                 {
-                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::LoadGame){
+                    if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::LoadGame){
                         LoadMenuState::new(world, Some({*handle}.clone()))
                     }
                     else{
@@ -349,7 +370,7 @@ impl<'a, 'b, 'd, 'e> CentreState<'d, 'e>{
         Trans::Push(
             Box::new(
                 {
-                    if let Some(ref handle) = self.ui_screens.get(&MenuScreens::Options){
+                    if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Options){
                         OptionsState::new(world, Some({*handle}.clone()))
                     }
                     else{
