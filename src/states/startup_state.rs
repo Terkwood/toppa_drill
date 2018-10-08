@@ -62,7 +62,7 @@ impl StartupState{
 impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
     fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
     -> Trans<ToppaGameData<'a, 'b>, ()>{
-        // let StateData {world, data} = data;
+        let StateData {world: _, data: _} = data;
         match &event {
             StateEvent::Window(wnd_event) => {
                 if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape) {
@@ -72,9 +72,6 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
                     Trans::None
                 }
             },
-            StateEvent::Ui(ui_event) => {
-                Trans::None
-            },
             _ => {
                 Trans::None
             }
@@ -83,7 +80,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
 
     fn update(&mut self, data: StateData<ToppaGameData<'a, 'b>>)
     -> Trans<ToppaGameData<'a, 'b>, ()>{
-        let StateData {mut world, mut data} = data;
+        let StateData {mut world, data} = data;
         data.update_menu(&world);
 
         self.duration += world.read_resource::<Time>().delta_seconds();
@@ -154,7 +151,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
     }
 
     fn on_start(&mut self, data: StateData<ToppaGameData>) {        
-        let StateData {world, data} = data;
+        let StateData {world, data: _} = data;
 
         self.current_screen = Some(
             world.exec(|mut creator: UiCreator| {                
@@ -163,14 +160,14 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
             )
         );
         
-        let handle = world.exec(|mut loader: UiLoader| {                
+        let handle = world.exec(|loader: UiLoader| {                
                 loader.load("Prefabs/ui/StartupScreen/DevelopedByTelzhaak.ron", &mut self.progress_counter)
             }
         );
         self.this_states_screens.push(handle);
 
         self.next_states_screen = Some(
-            world.exec(|mut loader: UiLoader| {                
+            world.exec(|loader: UiLoader| {                
                     loader.load("Prefabs/ui/MenuScreens/Centre.ron", &mut self.progress_counter)
                 }
             )
@@ -179,17 +176,17 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState{
 
 // For the sake of completeness: 
     fn on_stop(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
-        let StateData {world, data} = data;
+        let StateData {world: _, data: _} = data;
         // Executed when this game state exits
     }
 
     fn on_pause(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
-        let StateData {world, data} = data;
+        let StateData {world: _, data: _} = data;
         // Executed when another game state is pushed onto the stack
     }
 
     fn on_resume(&mut self, data: StateData<ToppaGameData<'a, 'b>>) {
-        let StateData {world, data} = data;
+        let StateData {world: _, data: _} = data;
         // Executed when the application returns to this game state, 
         // after another gamestate was popped from the stack
     }

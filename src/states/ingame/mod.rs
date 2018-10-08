@@ -1,6 +1,6 @@
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 enum IngameScreens{
-    HUD,
+    Normal,
     Inventory,
     OreShop,
     PartsShop,

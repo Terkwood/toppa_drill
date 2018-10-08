@@ -12,16 +12,18 @@ use amethyst::{
         ProgressCounter, Completion, Handle,
     },
     ui::{
-        UiCreator, UiLoader, UiPrefab, UiFinder, UiEventType,
+        //UiCreator, 
+        UiLoader, UiPrefab, UiFinder, UiEventType,
     },
     core::{
         timing::Time,
-        ArcThreadPool,
-        SystemBundle,
+        //ArcThreadPool,
+        //SystemBundle,
     },
 };
 use amethyst::renderer::{
-    Hidden, HiddenPropagate,
+    //Hidden, 
+    HiddenPropagate,
 };
 use {
     ToppaGameData,
@@ -80,7 +82,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
         if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre){
             let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
             match hidden_component_storage.insert(*entity, HiddenPropagate::default()){
-                Ok(v) => {},
+                Ok(_v) => {},
                 Err(e) => error!("Failed to add HiddenPropagateComponent to CentreState Ui. {:?}", e),
             };
         };
@@ -119,7 +121,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
         }
     }
 
-    fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
+    fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
         let btn_count = 5;
         let prefab_count = 5;
 
@@ -147,7 +149,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e>{
 impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
     fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
     -> Trans<ToppaGameData<'a, 'b>, ()>{
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         match &event {
             StateEvent::Window(wnd_event) => {
                 if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape) {
@@ -235,21 +237,21 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
 
     // Executed when this game state runs for the first time.
     fn on_start(&mut self, data: StateData<ToppaGameData>) {        
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.enable_dispatcher();
         self.enable_current_screen(&mut world);
     }
 
     // Executed when this game state gets popped.
     fn on_stop(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
     }
 
     // Executed when another game state is pushed onto the stack.
     fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
     }
@@ -257,7 +259,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
     // Executed when the application returns to this game state, 
     // after another gamestate was popped from the stack.
     fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.enable_dispatcher();
         self.enable_current_screen(&mut world);
     }
@@ -265,7 +267,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e>{
 
 impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e>{
     fn insert_reachable_menu(&mut self, world: &mut World, screen: MenuScreens, path: &str){
-        let prefab_handle = world.exec(|mut loader: UiLoader| {                
+        let prefab_handle = world.exec(|loader: UiLoader| {                
             loader.load(path, &mut self.progress_counter)
         });
 
@@ -292,18 +294,13 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e>{
 
     fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
         use self::CentreButtons::*;
-        let entity = target.clone();
         if let Some(button) = self.buttons.get(&target){
             match button{
                 NewGame => self.btn_new_game(world),
                 Load => self.btn_load(world),
                 Options => self.btn_options(world),
                 Credits => self.btn_credits(world),
-                Exit => self.btn_exit(world),
-                _ => {
-                    error!("Non-implemented CentreButton detected!");
-                    Trans::None
-                },
+                Exit => self.btn_exit(),
             }
         }
         else{
@@ -311,7 +308,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e>{
         }
     }
 
-    fn btn_exit(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("Shutting down.");
         // TODO: User prompt : Are you sure you want to exit?
         Trans::Quit

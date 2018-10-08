@@ -63,9 +63,6 @@ pub fn load_sprites_from_spritesheet(
         return None;
     }
 
-    let image_size_x = loader_info.image_size.0 as f32;
-    let image_size_y = loader_info.image_size.1 as f32;
-
     let sprite_width = loader_info.sprite_render_size.0;
     let sprite_height = loader_info.sprite_render_size.1;
     let sprite_offset_x_in_image = 1.0 / sprites_in_x as f32;

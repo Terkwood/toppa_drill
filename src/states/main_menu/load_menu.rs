@@ -9,22 +9,23 @@ use amethyst::{
         VirtualKeyCode,
     },
     assets::{
-        ProgressCounter, Completion, Handle,
+        //ProgressCounter, Completion, 
+        Handle,
     },
     ui::{
-        UiCreator, UiLoader, UiPrefab, UiFinder, UiEventType,
+        //UiCreator, UiLoader, 
+        UiPrefab, UiFinder, UiEventType,
     },
     core::{
         timing::Time,
-        ArcThreadPool,
-        SystemBundle,
+        //ArcThreadPool,
+        //SystemBundle,
     },
 };
 use {
     ToppaGameData,
     systems::DummySystem,
     super::super::ToppaState,
-    super::MenuScreens,
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
@@ -37,7 +38,7 @@ pub enum LoadMenuButtons{
 pub struct LoadMenuState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,
-    progress_counter: ProgressCounter,
+    //progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
@@ -83,12 +84,12 @@ impl<'d, 'e> ToppaState for LoadMenuState<'d, 'e>{
         };
     }
 
-    fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
+    fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
         LoadMenuState{
             menu_duration: 0.0,
             current_screen: None,
             ui_screen: screen_opt,
-            progress_counter: ProgressCounter::new(),
+            //progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             dispatcher: None,
@@ -99,7 +100,7 @@ impl<'d, 'e> ToppaState for LoadMenuState<'d, 'e>{
 impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for LoadMenuState<'d, 'e>{
     fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
     -> Trans<ToppaGameData<'a, 'b>, ()>{
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         match &event {
             StateEvent::Window(wnd_event) => {
                 if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape) {
@@ -142,21 +143,21 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for LoadMenuState<'d, 'e>{
 
     // Executed when this game state runs for the first time.
     fn on_start(&mut self, data: StateData<ToppaGameData>) {        
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher();
     }
 
     // Executed when this game state gets popped.
     fn on_stop(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
     }
 
     // Executed when another game state is pushed onto the stack.
     fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
     }
@@ -164,7 +165,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for LoadMenuState<'d, 'e>{
     // Executed when the application returns to this game state, 
     // after another gamestate was popped from the stack.
     fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data} = data;
+        let StateData {mut world, data: _} = data;
         self.enable_dispatcher();
         self.enable_current_screen(&mut world);
     }
@@ -187,15 +188,11 @@ impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e>{
         });
     }
 
-    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
         use self::LoadMenuButtons::*;
         if let Some(button) = self.ui_buttons.get(&target){
             match button{
-                Back => self.btn_back(world),
-                _ => {
-                    error!("Non-implemented LoadMenuButton detected!");
-                    Trans::None
-                },
+                Back => self.btn_back(),
             }
         }
         else{
@@ -203,7 +200,7 @@ impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e>{
         }
     }
 
-    fn btn_back(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
         info!("Returning to CentreState.");
         Trans::Pop
     }
