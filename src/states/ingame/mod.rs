@@ -4,7 +4,7 @@ pub use self::{
 }*/
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-enum IngameScreens{
+enum IngameScreens {
     HUD,
     Inventory,
     OreShop,

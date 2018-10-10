@@ -1,12 +1,7 @@
 use amethyst::{
+    core::{ArcThreadPool, SystemBundle},
     ecs::prelude::*,
-    core::{
-        ArcThreadPool,
-        SystemBundle,
-    },
-    Error,
-    DataInit,
-    Result,
+    DataInit, Error, Result,
 };
 
 /// Contains the `core` Dispatcher the game needs to run at all,
@@ -22,19 +17,20 @@ pub struct ToppaGameData<'a, 'b> {
     /// Dispatches the base functionalities of the main menu.
     /// This includes for example the menu theme.
     pub main_menu_core: Dispatcher<'a, 'b>,
+    //session_data: GameSessionData,
 }
 
-impl<'a, 'b> ToppaGameData<'a, 'b>{
+impl<'a, 'b> ToppaGameData<'a, 'b> {
     /// Run this after the ingame states own Dispatchers.
     /// Updates the `core` and `ingame_core` dispatchers.
-    pub fn update_ingame(&mut self, world: &World){
+    pub fn update_ingame(&mut self, world: &World) {
         self.ingame_core.dispatch(&world.res);
         self.core.dispatch(&world.res);
     }
 
     /// Run this after the menu states own Dispatchers.
     /// Updates the `core` and `main_menu_core` dispatchers.
-    pub fn update_menu(&mut self, world: &World){
+    pub fn update_menu(&mut self, world: &World) {
         self.main_menu_core.dispatch(&world.res);
         self.core.dispatch(&world.res);
     }
@@ -42,22 +38,22 @@ impl<'a, 'b> ToppaGameData<'a, 'b>{
 
 /// Responsible for building the dispatchers in the [ToppaGameData](struct.ToppaGameData.html).
 /// Allows adding systems and bundles to each dispatcher individually.
-pub struct ToppaGameDataBuilder<'a, 'b>{
+pub struct ToppaGameDataBuilder<'a, 'b> {
     core: DispatcherBuilder<'a, 'b>,
     ingame_core: DispatcherBuilder<'a, 'b>,
     main_menu_core: DispatcherBuilder<'a, 'b>,
 }
 
-impl<'a, 'b> Default for ToppaGameDataBuilder<'a, 'b>{
-    fn default() -> Self{
+impl<'a, 'b> Default for ToppaGameDataBuilder<'a, 'b> {
+    fn default() -> Self {
         ToppaGameDataBuilder::new()
     }
 }
 
-impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
+impl<'a, 'b> ToppaGameDataBuilder<'a, 'b> {
     /// Creates a new game data builder with a [DispatcherBuilder](https://www.amethyst.rs/doc/master/doc/amethyst/ecs/prelude/struct.DispatcherBuilder.html) for each dispatcher.
     /// The Link might be outdated, as it is not locked to the commit used by this game, but refers to the development documentation of amethyst.
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         ToppaGameDataBuilder {
             core: DispatcherBuilder::new(),
             ingame_core: DispatcherBuilder::new(),
@@ -66,14 +62,9 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
     }
 }
 
-impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
+impl<'a, 'b> ToppaGameDataBuilder<'a, 'b> {
     /// Add a system to the `core` dispatcher.
-    pub fn with_core_system<S>(
-        mut self,
-        system: S, 
-        name: &str, 
-        dependencies: &[&str],    
-    ) -> Self
+    pub fn with_core_system<S>(mut self, system: S, name: &str, dependencies: &[&str]) -> Self
     where
         for<'c> S: System<'c> + Send + 'a,
     {
@@ -81,25 +72,15 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
         self
     }
     /// Add a system to the `ingame_core` dispatcher.
-    pub fn with_ingame_core_sytem<S>(
-        mut self,
-        system: S, 
-        name: &str, 
-        dependencies: &[&str],    
-    ) -> Self
+    pub fn with_ingame_core_sytem<S>(mut self, system: S, name: &str, dependencies: &[&str]) -> Self
     where
         for<'c> S: System<'c> + Send + 'a,
-        {
+    {
         self.ingame_core.add(system, name, dependencies);
         self
     }
     /// Add a system to the `main_menu_core` dispatcher.
-    pub fn with_menu_core_system<S>(
-        mut self,
-        system: S, 
-        name: &str, 
-        dependencies: &[&str],
-    ) -> Self
+    pub fn with_menu_core_system<S>(mut self, system: S, name: &str, dependencies: &[&str]) -> Self
     where
         for<'c> S: System<'c> + Send + 'a,
     {
@@ -108,7 +89,7 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
     }
 }
 
-impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
+impl<'a, 'b> ToppaGameDataBuilder<'a, 'b> {
     /// Add a system bundle to the `core` dispatcher.
     pub fn with_core_bundle<B>(mut self, bundle: B) -> Result<Self>
     where
@@ -142,7 +123,7 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b>{
 }
 
 impl<'a, 'b> DataInit<ToppaGameData<'a, 'b>> for ToppaGameDataBuilder<'a, 'b> {
-    fn build(self, world: &mut World) -> ToppaGameData<'a, 'b>{
+    fn build(self, world: &mut World) -> ToppaGameData<'a, 'b> {
         #[cfg(not(no_threading))]
         let pool = world.read_resource::<ArcThreadPool>().clone();
 
@@ -164,7 +145,7 @@ impl<'a, 'b> DataInit<ToppaGameData<'a, 'b>> for ToppaGameDataBuilder<'a, 'b> {
         let mut main_menu_core = self.main_menu_core.build();
         main_menu_core.setup(&mut world.res);
 
-        ToppaGameData{
+        ToppaGameData {
             core,
             ingame_core,
             main_menu_core,
