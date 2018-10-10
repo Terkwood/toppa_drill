@@ -33,8 +33,7 @@ pub enum LoadMenuButtons{
     Back,
 }
 
-/// The default state after opening Toppa Drill.
-/// It should display a short amethyst logo, and then transist over to the Main Menu State.
+/// The load state, form where savegames can be loaded.
 pub struct LoadMenuState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,

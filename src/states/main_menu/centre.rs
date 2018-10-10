@@ -41,8 +41,7 @@ pub enum CentreButtons{
     Exit,
 }
 
-/// The default state after opening Toppa Drill.
-/// It should display a short amethyst logo, and then transist over to the Main Menu State.
+/// The main menu state, from which the other menu states can be reached.
 pub struct CentreState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,

@@ -33,8 +33,7 @@ pub enum OptionsButtons{
     Back,
 }
 
-/// The default state after opening Toppa Drill.
-/// It should display a short amethyst logo, and then transist over to the Main Menu State.
+/// The options menu state, similar to ingame options, but offers more customisability.
 pub struct OptionsState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,

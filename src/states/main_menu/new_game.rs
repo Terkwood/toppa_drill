@@ -33,8 +33,7 @@ pub enum NewGameButtons{
     Back,
 }
 
-/// The default state after opening Toppa Drill.
-/// It should display a short amethyst logo, and then transist over to the Main Menu State.
+/// The game creation state, where a new game can be started.
 pub struct NewGameState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,

@@ -33,8 +33,7 @@ pub enum CreditsButtons{
     Back,
 }
 
-/// The default state after opening Toppa Drill.
-/// It should display a short amethyst logo, and then transist over to the Main Menu State.
+/// The credit menu stage, displaying the credits.
 pub struct CreditsState<'d, 'e>{
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,

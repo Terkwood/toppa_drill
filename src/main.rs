@@ -14,7 +14,6 @@ use amethyst::{
         DrawUi, UiBundle,
     },
     input::InputBundle,
-    utils::hide_system::HideHierarchySystem,
 };
 
 extern crate toppa_drill_lib;
@@ -66,11 +65,9 @@ fn main() -> Result<(), amethyst::Error> {
                 Some(display_config)
             )
             .with_sprite_sheet_processor()
-            .with_sprite_visibility_sorting(&["transform_system", "ui_transform"]),
-        )?
-        .with_core_system(
-            HideHierarchySystem::default(), "hide_hierarchy_system", &[]
-        );
+            .with_sprite_visibility_sorting(&["transform_system", "ui_transform"])
+            .with_hide_hierarchy_system(),
+        )?;
 
     let mut game = Application::new("./", StartupState::new(2.0), toppa_game_data)?;
 
