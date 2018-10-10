@@ -1,40 +1,27 @@
-use std::collections::HashMap;
 use amethyst::{
-    prelude::*,
+    assets::Handle,
+    core::timing::Time,
     ecs::prelude::*,
-    input::{
-        is_close_requested, is_key_down
-    },
-    renderer::{
-        VirtualKeyCode,
-    },
-    assets::{
-        //ProgressCounter, Completion, 
-        Handle,
-    },
+    input::{is_close_requested, is_key_down},
+    prelude::*,
+    renderer::VirtualKeyCode,
     ui::{
-        //UiCreator, UiLoader, 
-        UiPrefab, UiFinder, UiEventType,
-    },
-    core::{
-        timing::Time,
-        //ArcThreadPool,
-        //SystemBundle,
+        UiEventType,
+        UiFinder,
+        //UiCreator, UiLoader,
+        UiPrefab,
     },
 };
-use {
-    ToppaGameData,
-    systems::DummySystem,
-    super::super::ToppaState,
-};
+use std::collections::HashMap;
+use {super::super::ToppaState, systems::DummySystem, ToppaGameData};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-pub enum LoadMenuButtons{
+pub enum LoadMenuButtons {
     Back,
 }
 
 /// The load state, form where savegames can be loaded.
-pub struct LoadMenuState<'d, 'e>{
+pub struct LoadMenuState<'d, 'e> {
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,
     //progress_counter: ProgressCounter,
@@ -48,43 +35,39 @@ pub struct LoadMenuState<'d, 'e>{
     b_buttons_found: bool,
 }
 
-impl<'d, 'e> ToppaState for LoadMenuState<'d, 'e>{
-    fn dispatch(&mut self, world: &World){
-        if let Some(ref mut dispatcher) = self.dispatcher{
+impl<'d, 'e> ToppaState for LoadMenuState<'d, 'e> {
+    fn dispatch(&mut self, world: &World) {
+        if let Some(ref mut dispatcher) = self.dispatcher {
             dispatcher.dispatch(&world.res);
         };
     }
 
-    fn enable_dispatcher(&mut self){
+    fn enable_dispatcher(&mut self) {
         self.dispatcher = Some(
             DispatcherBuilder::new()
-                .with(DummySystem{counter: 0}, "dummy_system", &[])
-                .build()
+                .with(DummySystem { counter: 0 }, "dummy_system", &[])
+                .build(),
         );
     }
 
-    fn disable_dispatcher(&mut self){
+    fn disable_dispatcher(&mut self) {
         self.dispatcher = None;
     }
 
-    fn disable_current_screen(&mut self, world: &mut World){
-        if let Some(entity) = self.current_screen{
+    fn disable_current_screen(&mut self, world: &mut World) {
+        if let Some(entity) = self.current_screen {
             let _ = world.delete_entity(entity);
         };
     }
 
-    fn enable_current_screen(&mut self, world: &mut World){
-        if let Some(ref prefab_handle) = self.ui_screen{
-            self.current_screen = Some(
-                world.create_entity()
-                    .with(prefab_handle.clone())
-                    .build()
-            );
+    fn enable_current_screen(&mut self, world: &mut World) {
+        if let Some(ref prefab_handle) = self.ui_screen {
+            self.current_screen = Some(world.create_entity().with(prefab_handle.clone()).build());
         };
     }
 
-    fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self{
-        LoadMenuState{
+    fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
+        LoadMenuState {
             menu_duration: 0.0,
             current_screen: None,
             ui_screen: screen_opt,
@@ -96,110 +79,102 @@ impl<'d, 'e> ToppaState for LoadMenuState<'d, 'e>{
     }
 }
 
-impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for LoadMenuState<'d, 'e>{
-    fn handle_event(&mut self, data: StateData<ToppaGameData>, event: StateEvent<()>) 
-    -> Trans<ToppaGameData<'a, 'b>, ()>{
-        let StateData {mut world, data: _} = data;
+impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for LoadMenuState<'d, 'e> {
+    fn handle_event(
+        &mut self,
+        data: StateData<ToppaGameData>,
+        event: StateEvent<()>,
+    ) -> Trans<ToppaGameData<'a, 'b>, ()> {
+        let StateData { mut world, data: _ } = data;
         match &event {
             StateEvent::Window(wnd_event) => {
-                if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape) {
+                if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape)
+                {
                     Trans::Quit
-                }
-                else {
+                } else {
                     Trans::None
                 }
-            },
+            }
             StateEvent::Ui(ui_event) => {
                 use self::UiEventType::*;
-                match ui_event.event_type{
-                    Click => {
-                        self.btn_click(&mut world, ui_event.target)
-                    },
-                    _ => Trans::None
+                match ui_event.event_type {
+                    Click => self.btn_click(&mut world, ui_event.target),
+                    _ => Trans::None,
                 }
-            },
-            _ => {
-                Trans::None
             }
+            _ => Trans::None,
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>)
-    -> Trans<ToppaGameData<'a, 'b>, ()>{
-        let StateData {mut world, data} = data;
+    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, ()> {
+        let StateData { mut world, data } = data;
         self.dispatch(&world);
         data.update_menu(&world);
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
-        if !self.b_buttons_found{
-            self.insert_button(&mut world, LoadMenuButtons::Back, "back_button");
+        if !self.b_buttons_found {
+            self.insert_button(&mut world, LoadMenuButtons::Back, "menu_load_back_button");
             Trans::None
-        }
-        else{
+        } else {
             Trans::None
         }
     }
 
     // Executed when this game state runs for the first time.
-    fn on_start(&mut self, data: StateData<ToppaGameData>) {        
-        let StateData {mut world, data: _} = data;
+    fn on_start(&mut self, data: StateData<ToppaGameData>) {
+        let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher();
     }
 
     // Executed when this game state gets popped.
     fn on_stop(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data: _} = data;
+        let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
     }
 
     // Executed when another game state is pushed onto the stack.
     fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data: _} = data;
+        let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
     }
 
-    // Executed when the application returns to this game state, 
+    // Executed when the application returns to this game state,
     // after another gamestate was popped from the stack.
     fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData {mut world, data: _} = data;
+        let StateData { mut world, data: _ } = data;
         self.enable_dispatcher();
         self.enable_current_screen(&mut world);
     }
 }
 
-impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e>{
-    fn insert_button(&mut self, world: &mut World, button: LoadMenuButtons, button_name: &str){
+impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e> {
+    fn insert_button(&mut self, world: &mut World, button: LoadMenuButtons, button_name: &str) {
         world.exec(|finder: UiFinder| {
-            if let Some(entity) = finder.find(button_name){
+            if let Some(entity) = finder.find(button_name) {
                 info!("Found {}.", button_name);
-                self.ui_buttons.insert(
-                    entity,
-                    button
-                );
+                self.ui_buttons.insert(entity, button);
                 self.b_buttons_found = true;
-            }
-            else{
+            } else {
                 warn!("Couldn't find {}!", button_name);
             }
         });
     }
 
-    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()> {
         use self::LoadMenuButtons::*;
-        if let Some(button) = self.ui_buttons.get(&target){
-            match button{
+        if let Some(button) = self.ui_buttons.get(&target) {
+            match button {
                 Back => self.btn_back(),
             }
-        }
-        else{
+        } else {
             Trans::None
         }
     }
 
-    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, ()>{
+    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, ()> {
         info!("Returning to CentreState.");
         Trans::Pop
     }

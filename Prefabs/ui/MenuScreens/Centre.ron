@@ -1,7 +1,7 @@
 #![enable(implicit_some)]
 Container(
     transform: (
-        id: "main_menu_home_screen",
+        id: "menu_centre_screen",
         anchor: Middle,
         stretch: XY( x_margin: 0., y_margin: 0.),
         width: 1920.,
@@ -13,7 +13,7 @@ Container(
     children: [
         Text(
             transform: (
-                id: "main_menu_home_screen_title",
+                id: "menu_centre_screen_title",
                 anchor: TopMiddle,
                 x: 0.,
                 y: -128.,
@@ -31,7 +31,7 @@ Container(
         // NewGame Button
         Button(
             transform: (
-                id: "newgame_button",
+                id: "menu_centre_newgame_button",
                 y: 540.,
                 width: 128.,
                 height: 64.,
@@ -54,7 +54,7 @@ Container(
         // Load Button
         Button(
             transform: (
-                id: "load_button",
+                id: "menu_centre_load_button",
                 y: 465.,
                 width: 128.,
                 height: 64.,
@@ -77,7 +77,7 @@ Container(
         // Options Button
         Button(
             transform: (
-                id: "options_button",
+                id: "menu_centre_options_button",
                 y: 390.,
                 width: 128.,
                 height: 64.,
@@ -100,7 +100,7 @@ Container(
         // Credits Button
         Button(
             transform: (
-                id: "credits_button",
+                id: "menu_centre_credits_button",
                 x: -75.,
                 y: 40.,
                 width: 128.,
@@ -124,7 +124,7 @@ Container(
         // Exit Button
         Button(
             transform: (
-                id: "exit_button",
+                id: "menu_centre_exit_button",
                 y: 315.,
                 width: 128.,
                 height: 64.,

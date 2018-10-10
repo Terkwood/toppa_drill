@@ -1,7 +1,7 @@
 #![enable(implicit_some)]
 Container(
     transform: (
-        id: "main_menu_options_screen",
+        id: "menu_options_screen",
         anchor: Middle,
         stretch: XY( x_margin: 0., y_margin: 0.),
         width: 1920.,
@@ -13,7 +13,7 @@ Container(
     children: [
         Text(
             transform: (
-                id: "main_menu_options_screen_title",
+                id: "menu_options_screen_title",
                 anchor: TopMiddle,
                 x: 0.,
                 y: -128.,
@@ -31,7 +31,7 @@ Container(
         // Back Button
         Button(
             transform: (
-                id: "back_button",
+                id: "menu_options_back_button",
                 y: 120.,
                 width: 128.,
                 height: 64.,
