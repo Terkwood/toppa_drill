@@ -17,7 +17,6 @@ pub struct ToppaGameData<'a, 'b> {
     /// Dispatches the base functionalities of the main menu.
     /// This includes for example the menu theme.
     pub main_menu_core: Dispatcher<'a, 'b>,
-    //session_data: GameSessionData,
 }
 
 impl<'a, 'b> ToppaGameData<'a, 'b> {

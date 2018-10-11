@@ -2,6 +2,8 @@
 #![allow(dead_code, unused_imports, unused_variables, unused_mut)]
 // maybe keep?
 #![allow(unreachable_patterns)]
+// Enable before releasing!
+// #![deny(missing_docs, warnings)]
 
 extern crate amethyst;
 #[macro_use]
