@@ -113,7 +113,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for OptionsState<'d, 'e> {
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found {
-            error!("Back button not found!");
             self.insert_button(&mut world, OptionsButtons::Back, "menu_options_back_button");
             Trans::None
         } else {
