@@ -1,5 +1,5 @@
 use amethyst::{
-    assets::Handle,
+    assets::{Handle, ProgressCounter},
     core::timing::Time,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
@@ -24,7 +24,7 @@ pub enum NewGameButtons {
 pub struct NewGameState<'d, 'e> {
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,
-    //progress_counter: ProgressCounter,
+    progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
@@ -71,7 +71,7 @@ impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
             menu_duration: 0.0,
             current_screen: None,
             ui_screen: screen_opt,
-            //progress_counter: ProgressCounter::new(),
+            progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             dispatcher: None,

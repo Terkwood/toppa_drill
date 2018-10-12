@@ -8,7 +8,6 @@ use std::collections::HashMap;
 
 use amethyst::{
     ecs::{World, Entity, Builder,},
-    renderer::{SpriteSheetHandle,},
 };
 
 use super::chunk::{Chunk, TileIndex};
@@ -52,13 +51,10 @@ impl<'a> Planet{
 
     /// Tries to fetch a chunk from the HashMap.
     /// If the given index exceeds the planet-dim bounds, it gets [clamped](struct.Planet.html#method.clamp_chunk_index).
+    /// Returns `None` if no chunk at the given index exists.
+    /// Try calling `new_chunk()` in that case.
     pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk>{
         let clamped_index = self.clamp_chunk_index(index);
-        let exists = self.chunks.contains_key(&clamped_index);
-        if !exists{
-            self.new_chunk(clamped_index);
-        }
-
         self.chunks.get(&clamped_index)
     }
 
@@ -73,26 +69,22 @@ impl<'a> Planet{
     pub fn clamp_chunk_index(&self, index: ChunkIndex) -> ChunkIndex{
         let mut rv = index;
         if rv.0 > self.planet_dim.0 || rv.0 < self.planet_dim.0{
-            rv.0 = (rv.0 % self.planet_dim.0) + self.planet_dim.0;
+            rv.0 = (rv.0 % self.planet_dim.0);// + self.planet_dim.0;
             info!("chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}", index.0, rv.0, self.planet_dim.0);
         }
         if rv.1 > self.planet_dim.1 || rv.1 < self.planet_dim.1{
-            rv.1 = (rv.1 % self.planet_dim.1) + self.planet_dim.1;
+            rv.1 = (rv.1 % self.planet_dim.1);// + self.planet_dim.1;
             info!("chunk Y-index originally was: {:?}, got clamped to: {:?}, with planet_dim.1: {:?}", index.1, rv.1, self.planet_dim.1);
         }
         rv
     }
-}
 
-impl Planet{
-    fn new_chunk(
+    pub fn new_chunk(
         &mut self,
         chunk_id: ChunkIndex,
     ){
         // TODO:
         error!("Not implemented yet.");
-        self.chunks.insert(ChunkIndex(1, 1), Chunk::new((32, 64)));
+        self.chunks.insert(ChunkIndex(1, 1), Chunk::new(1, (32, 64)));
     }
 }
-
-

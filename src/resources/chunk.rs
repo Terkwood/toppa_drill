@@ -26,7 +26,7 @@ pub struct Chunk {
 }
 
 impl Chunk{
-    pub fn new(dim: (u32, u32)) -> Chunk{
+    pub fn new(depth: u32, dim: (u32, u32)) -> Chunk{
         Chunk{
             chunk_dim: dim,
             tiles: BTreeMap::new(),

@@ -9,6 +9,8 @@ use amethyst::{
     },
 };
 
+use resources::ToppaSpriteSheet;
+
 pub struct SpriteLoaderInfo {
     pub tex_id: u64,
     pub image_size: (u32, u32),
@@ -40,12 +42,10 @@ pub fn load_image_png(
 }
 
 /// Requires uniform grid spritesheet, where every sprite has the same size.
-/// Anchors the sprites in their middle.
-/// Stores all sprites in the world's MaterialTextureSet with the specified ID.
+/// Anchors the sprites in their centre.
+/// Stores all spritesheets in the world's MaterialTextureSet with the specified ID.
 ///
-/// Need to add: Image-Format parameter, spacings between sprites.
-///
-/// Returns the new SpriteSheetHandle, and the numbers of sprites (in x, in y)
+/// Failure of loading has to be tracked with a `ProgressCounter`.
 pub fn load_sprites_from_spritesheet(
     world: &mut World,
     sheet_path: &str,
@@ -110,7 +110,7 @@ pub fn load_sprites_from_spritesheet(
         let loader = world.read_resource::<Loader>();
         let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
 
-        loader.load_from_data(sprite_sheet, (), &sprite_sheet_storage)
+        loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
     };
     Some(sprite_sheet_handle)
 }

@@ -8,15 +8,13 @@ use amethyst::{
     renderer::{SpriteRender, Transparent},
 };
 
-use utilities::spritesheet_loading::{load_sprites_from_spritesheet, SpriteLoaderInfo};
+use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
-use entities::camera;
+use resources::ToppaSpriteSheet;
 
 pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
-    camera::init(world, (512.0, 512.0));
-
     let loader_info = SpriteLoaderInfo {
-        tex_id: 0,
+        tex_id: ToppaSpriteSheet::Player as u64,
         image_size: (128, 128),
         sprite_count: (1, 1),
         sprite_render_size: (64.0, 64.0),
@@ -24,10 +22,10 @@ pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
 
     if let Some(ss_handle) = load_sprites_from_spritesheet(
         world,
-        "Textures/Drill.png",
+        "Assets/Textures/Drill.png",
         loader_info,
         progress_counter_ref,
-    ) {
+    ){
         let drill_sprite = SpriteRender {
             sprite_sheet: ss_handle,
             sprite_number: 0,
