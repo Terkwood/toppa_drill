@@ -2,7 +2,7 @@ use amethyst::{
     assets::ProgressCounter,
     core::{
         cgmath::Vector3,
-        transform::components::{GlobalTransform, Transform},
+        transform::components::{Transform},
     },
     prelude::*,
     renderer::{SpriteRender, Transparent},
@@ -13,6 +13,7 @@ use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 use resources::ToppaSpriteSheet;
 
 pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
+    // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
     let loader_info = SpriteLoaderInfo {
         tex_id: ToppaSpriteSheet::Player as u64,
         image_size: (128, 128),
@@ -40,7 +41,6 @@ pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
             .with(transform)
             .with(Transparent)
             .with(drill_sprite)
-            .with(GlobalTransform::default())
             .build();
     }
 }
