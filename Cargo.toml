@@ -19,6 +19,8 @@ path = "src/main.rs"
 amethyst = { path = "../../00_Fork", features = ["nightly"]}
 # amethyst = { git = "https://github.com/Telzhaak/amethyst", rev = "0b1eecd9389df8f5714b526ba411eb5be9298c27", features = ["nightly"]}
 log = "0.4.5"
+serde = "1.0"
+serde_derive = "1.0"
 
 [build-dependencies]
 ron = "0.1.3"

@@ -1,28 +1,42 @@
 //! This module contains everything necessary for the planet.
+//! - Planet
+//! - ChunkIndex
 //! - Chunk
 //! - TileIndex
-//! - ChunkIndex
-//! - PlanetIndex (in case multiple planets might be available later)
 
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 use amethyst::{
     ecs::{World, Entity, Builder,},
 };
 
-use super::chunk::{Chunk, TileIndex};
-use components::for_ground_entities::TileTypes;
+use entities::tile::TileTypes;
+use resources::RenderConfig;
 
+// Currently not used. Only one planet available for the beginning.
+/*
+/// The Index of a planet in the [Galaxy](struct.Galaxy.html).
+#[allow(dead_code)]
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
+pub struct PlanetIndex(u32, u32);
+
+
+
+/// A galaxy can fit a large number of planets.
+pub struct Galaxy {
+    pub planets: BTreeMap<PlanetIndex, Planet>,
+}
+*/
 
 /// The Index of a chunk in a [Planet](struct.Planet.html).
 /// Used to calculate the render-position of a chunk,
 /// and to figure out which chunk the player currently resides in.
-#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct ChunkIndex(u32, u32);
 
 /// The planet a player resides on.
 /// Consists of individual chunks of tile entities.
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Planet {
     /// The dimension of a planet expressed in the count of chunks in x and y direction.
     /// Differs based on the setting `Planet size` when creating a new game.
@@ -39,7 +53,8 @@ impl Default for Planet{
     }
 }
 
-impl<'a> Planet{
+// public interface
+impl Planet{
     pub fn new(
         planet_dim: (u32, u32), 
     )-> Planet{
@@ -79,12 +94,84 @@ impl<'a> Planet{
         rv
     }
 
+    /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
+    /// which can either be fetched from the world, or from its storage.
     pub fn new_chunk(
         &mut self,
         chunk_id: ChunkIndex,
+        render_config: RenderConfig,
     ){
-        // TODO:
+        // TODO: everything
         error!("Not implemented yet.");
-        self.chunks.insert(ChunkIndex(1, 1), Chunk::new(1, (32, 64)));
+        self.chunks.insert(chunk_id, Chunk::new(1, render_config));
+    }
+}
+
+/// The Index of a tile in a [Chunk](struct.Chunk.html).
+/// Used to calculate the render-position of a tile,
+/// and to figure out which tile the player currently stands on.
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
+pub struct TileIndex(u32, u32);
+
+/// Small patches of tile entities of a planet.
+/// To avoid consuming gigabytes of RAM.
+/// Does not implement `Default`, because it's contents are based on the depth it is placed at.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Chunk {
+    // Grants access to the TileIndex via the entities (which may e.g. be returned by collision).
+    #[serde(skip_serializing, skip_deserializing)]
+    tile_index: BTreeMap<Entity, TileIndex>,
+    // A map of individual tile entities of the chunk.
+    #[serde(skip_serializing, skip_deserializing)]
+    tile_entities: BTreeMap<TileIndex, Entity>,
+    // A map of the TileType at a given index.
+    tile_type: BTreeMap<TileIndex, TileTypes>,
+}
+
+// public interface
+impl Chunk{
+    pub fn new(depth: u32, render_config: RenderConfig) -> Chunk{
+        // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
+        Chunk{
+            tile_entities: BTreeMap::new(),
+            tile_index: BTreeMap::new(),
+            tile_type: BTreeMap::new(),
+        }
+    }
+
+    /// Tries to figure out the `TileType` from the BTreeMap `tiles` at the given Index.
+    /// If the given index exceeds the chunk-dim bounds, returns `None`.
+    pub fn get_tile_type(&mut self, index: TileIndex) -> Option<TileTypes>{
+        // TODO: Make this dependent on RenderConfig resource: `if index.0 > self.chunk_dim.0 || index.1 > self.chunk_dim.1 {return None};`
+        // TODO: check `self.tiles` for index and figure out the tiletype, use `self.get_tile_entity`
+        error!("Not implemented yet.");
+        None
+    }
+
+    /// Tries to fetch a tile entity from the BTreeMap `tiles` at the given Index.
+    /// If the given index exceeds the chunk-dim bounds, returns `None`.
+    pub fn get_tile_entity(&mut self, index: TileIndex) -> Option<Entity>{
+        // TODO: Make this dependent on RenderConfig resource: `if index.0 > self.chunk_dim.0 || index.1 > self.chunk_dim.1 {return None};`
+        // TODO: check `self.tiles` for index and return the entity.
+        error!("Not implemented yet.");
+        None
+    }
+
+    /// Tries to fetch a tile from the BTreeMap `tiles_inversed` with the given entity.
+    /// If the given entity is not part of this chunk, returns `None`.
+    pub fn get_tile_index(&mut self, tile: Entity) -> Option<TileIndex>{
+        // TODO: Get TileIndex for the given entity, or return `None`
+        error!("Not implemented yet.");
+        None
+    }
+}
+
+// private methods
+impl Chunk{
+    // Creates a new tile at the given Index
+    fn add_tile(&mut self, index: TileIndex, tiletype: TileTypes){
+        // TODO: call into Tiles::new()
+        // TODO: populate `self.tiles` & `self.tiles_inversed`
+        error!("Not implemented yet.");
     }
 }
