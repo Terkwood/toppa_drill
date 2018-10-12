@@ -1,13 +1,11 @@
 mod render_config;
-mod loaded_images;
+mod spritesheets;
 
-pub mod planet;
-pub mod chunk;
-pub mod game_session;
+pub mod ingame;
 
 pub use self::{
     render_config::RenderConfig,
-    loaded_images::{
+    spritesheets::{
         ToppaSpriteSheet,
     },
 };
