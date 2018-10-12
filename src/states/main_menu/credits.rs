@@ -13,7 +13,7 @@ use amethyst::{
     },
 };
 use std::collections::HashMap;
-use {super::super::ToppaState, systems::DummySystem, ToppaGameData};
+use {states::ToppaState, systems::DummySystem, ToppaGameData};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum CreditsButtons {

@@ -15,7 +15,14 @@ use amethyst::{
     },
 };
 use std::collections::HashMap;
-use {super::super::ToppaState, super::*, systems::DummySystem, ToppaGameData};
+use {states::ToppaState, systems::DummySystem, ToppaGameData};
+use super::{
+    MenuScreens,
+    OptionsState,
+    CreditsState,
+    LoadMenuState,
+    NewGameState,
+};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum CentreButtons {
