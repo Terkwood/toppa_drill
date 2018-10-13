@@ -5,7 +5,7 @@ use amethyst::{
     ecs::prelude::World,
     renderer::{
         MaterialTextureSet, PngFormat, Sprite, SpriteSheet, SpriteSheetHandle, Texture,
-        TextureCoordinates,
+        TextureCoordinates, TextureMetadata,
     },
 };
 
@@ -31,8 +31,8 @@ pub fn load_image_png(
 
     let texture_handle = loader.load(
         path,
-        PngFormat, //PngFormat
-        Default::default(),
+        PngFormat,
+        TextureMetadata::srgb(),
         progress_counter_ref,
         &texture_storage,
     );

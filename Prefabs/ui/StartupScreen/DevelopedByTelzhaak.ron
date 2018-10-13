@@ -8,7 +8,7 @@ Container(
         height: 1080.,
     ),
     background: (
-        image: File("Assets/Ui/StartupScreen/drill_thumb.png", Png, ()),
+            image: File("Assets/Ui/StartupScreen/drill_thumb.png", Png, (channel: Srgb))
     ),
     children:[
         Text(

@@ -12,6 +12,10 @@ pub trait ToppaState/*: std::marker::Sized*/ {
     fn enable_dispatcher(&mut self);
     fn disable_dispatcher(&mut self);
 
+    fn shadow_dispatch(&mut self, world: &World) {}
+    fn enable_shadow_dispatcher(&mut self) {}
+    fn disable_shadow_dispatcher(&mut self) {}
+
     fn new(world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self;
 
     fn disable_current_screen(&mut self, world: &mut World);

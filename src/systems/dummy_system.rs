@@ -14,16 +14,13 @@ impl<'a> System<'a> for DummySystem {
 
     fn run(&mut self, (time, input): Self::SystemData) {
         if self.counter > 100 {
-            info!("{}", time.absolute_real_time_seconds());
+            info!("Main update {}", time.absolute_real_time_seconds());
             self.counter = 0;
         }
         self.counter = self.counter + 1;
 
         if input.key_is_down(VirtualKeyCode::Space) {
-            info!("Space is down.");
-        }
-        if input.key_is_down(VirtualKeyCode::O) {
-            info!("Letter O is down.");
+            info!("Space is down. Main update");
         }
         if let Some(down) = input.action_is_down("shoot") {
             if down {

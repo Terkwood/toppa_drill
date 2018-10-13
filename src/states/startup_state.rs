@@ -85,7 +85,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState {
                     for err in self.progress_counter.errors() {
                         warn!("Asset type: {}\terror: {}", err.asset_type_name, err.error);
 
-                        if err.asset_name == "Prefabs/ui/StartupScreen/DevelopedByTelzhaak.ron" {
+                        if err.asset_name == "Prefabs/ui/MenuScreens/Centre.ron" {
                             error!("Main Menu screen could not be loaded. Closing application.");
                             trans = Trans::Quit
                         }

@@ -15,7 +15,13 @@ use amethyst::{
     },
 };
 use std::collections::HashMap;
-use {states::ToppaState, systems::DummySystem, ToppaGameData};
+use {
+    states::ToppaState, 
+    systems::{
+        DummySystem,
+        ShadowDummySystem,
+    }, 
+    ToppaGameData};
 use super::{
     MenuScreens,
     OptionsState,
@@ -36,7 +42,8 @@ pub enum CentreButtons {
 /// The main menu state, from which the other menu states can be reached.
 pub struct CentreState<'d, 'e> {
     menu_duration: f32,
-    dispatcher: Option<Dispatcher<'d, 'e>>,
+    main_dispatcher: Option<Dispatcher<'d, 'e>>,
+    shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
     progress_counter: ProgressCounter,
 
     // Map of the Ui Button entities and the corresponding button type.
@@ -52,13 +59,13 @@ pub struct CentreState<'d, 'e> {
 
 impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
     fn dispatch(&mut self, world: &World) {
-        if let Some(ref mut dispatcher) = self.dispatcher {
+        if let Some(ref mut dispatcher) = self.main_dispatcher {
             dispatcher.dispatch(&world.res);
         };
     }
 
     fn enable_dispatcher(&mut self) {
-        self.dispatcher = Some(
+        self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
                 .build(),
@@ -66,7 +73,25 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
     }
 
     fn disable_dispatcher(&mut self) {
-        self.dispatcher = None;
+        self.main_dispatcher = None;
+    }
+
+    fn shadow_dispatch(&mut self, world: &World) {
+        if let Some(ref mut dispatcher) = self.shadow_dispatcher {
+            dispatcher.dispatch(&world.res);
+        };
+    }
+
+    fn enable_shadow_dispatcher(&mut self) {
+        self.shadow_dispatcher = Some(
+            DispatcherBuilder::new()
+                .with(ShadowDummySystem { counter: 0 }, "shadow_dummy_system", &[])
+                .build(),
+        );
+    }
+
+    fn disable_shadow_dispatcher(&mut self) {
+        self.shadow_dispatcher = None;
     }
 
     fn disable_current_screen(&mut self, world: &mut World) {
@@ -115,7 +140,8 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
 
         let mut rv = CentreState {
             menu_duration: 0.0,
-            dispatcher: None,
+            main_dispatcher: None,
+            shadow_dispatcher: None,
             progress_counter: ProgressCounter::new(),
             buttons: HashMap::with_capacity(btn_count),
             screen_prefabs: HashMap::with_capacity(prefab_count),
@@ -241,17 +267,24 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e> {
         }
     }
 
+    fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
+        let StateData { world, data: _ } = data;
+        self.shadow_dispatch(&world);
+    }
+
     // Executed when this game state runs for the first time.
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.enable_dispatcher();
+        self.enable_shadow_dispatcher();
         self.enable_current_screen(&mut world);
     }
 
-    // Executed when this game state gets popped.
+    // Executed when this game state gets popped or switched from.
     fn on_stop(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
+        self.disable_shadow_dispatcher();
         self.disable_current_screen(&mut world);
     }
 

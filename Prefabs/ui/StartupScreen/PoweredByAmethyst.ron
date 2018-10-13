@@ -8,7 +8,7 @@ Container(
         height: 1080.,
     ),
     background: (
-        image: File("Assets/Ui/StartupScreen/amethyst_thumb_FHD.png", Png, ()),
+        image: File("Assets/Ui/StartupScreen/amethyst_thumb_FHD.png", Png, (channel: Srgb)),
     ),
     children: [
         Text(

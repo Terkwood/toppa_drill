@@ -15,8 +15,8 @@ name = "toppa_drill"
 path = "src/main.rs"
 
 [dependencies]
-amethyst = { git = "https://github.com/Telzhaak/amethyst", branch = "HiddenComponent", features = []}
-amethyst = { git = "https://github.com/Telzhaak/amethyst", branch = "HiddenComponent", features = ["nightly"]}
+amethyst = { git = "https://github.com/Telzhaak/amethyst", features = []}
+# amethyst = { git = "https://github.com/Telzhaak/amethyst", features = ["nightly"]}
 
 log = "0.4.5"
 serde = "1.0"
