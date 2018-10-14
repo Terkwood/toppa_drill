@@ -4,11 +4,9 @@
 //! - Chunk
 //! - TileIndex
 
-use std::collections::{HashMap, BTreeMap};
+use std::collections::{BTreeMap, HashMap};
 
-use amethyst::{
-    ecs::{World, Entity, Builder,},
-};
+use amethyst::ecs::{Builder, Entity, World};
 
 use entities::tile::TileTypes;
 use resources::RenderConfig;
@@ -46,19 +44,17 @@ pub struct Planet {
     chunks: HashMap<ChunkIndex, Chunk>,
 }
 
-impl Default for Planet{
-    fn default()-> Self{
+impl Default for Planet {
+    fn default() -> Self {
         let planet_dim = (128, 128);
         Planet::new(planet_dim)
     }
 }
 
 // public interface
-impl Planet{
-    pub fn new(
-        planet_dim: (u32, u32), 
-    )-> Planet{
-        Planet{
+impl Planet {
+    pub fn new(planet_dim: (u32, u32)) -> Planet {
+        Planet {
             planet_dim,
             chunks: HashMap::with_capacity(9),
         }
@@ -68,39 +64,41 @@ impl Planet{
     /// If the given index exceeds the planet-dim bounds, it gets [clamped](struct.Planet.html#method.clamp_chunk_index).
     /// Returns `None` if no chunk at the given index exists.
     /// Try calling `new_chunk()` in that case.
-    pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk>{
+    pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk> {
         let clamped_index = self.clamp_chunk_index(index);
         self.chunks.get(&clamped_index)
     }
 
     /// Tile indexes out of tile-dim bounds return `None`.
-    pub fn get_tiletype(chunk: ChunkIndex, tile: TileIndex) -> Option<TileTypes>{
+    pub fn get_tiletype(chunk: ChunkIndex, tile: TileIndex) -> Option<TileTypes> {
         // TODO:
         error!("Not implemented yet.");
         None
     }
 
     /// The given chunk index gets clamped to the planet-dim by wrapping it in x-direction and cutting it off in y-direction.
-    pub fn clamp_chunk_index(&self, index: ChunkIndex) -> ChunkIndex{
+    pub fn clamp_chunk_index(&self, index: ChunkIndex) -> ChunkIndex {
         let mut rv = index;
-        if rv.0 > self.planet_dim.0 || rv.0 < self.planet_dim.0{
-            rv.0 = (rv.0 % self.planet_dim.0);// + self.planet_dim.0;
-            info!("chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}", index.0, rv.0, self.planet_dim.0);
+        if rv.0 > self.planet_dim.0 || rv.0 < self.planet_dim.0 {
+            rv.0 = (rv.0 % self.planet_dim.0); // + self.planet_dim.0;
+            info!(
+                "chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
+                index.0, rv.0, self.planet_dim.0
+            );
         }
-        if rv.1 > self.planet_dim.1 || rv.1 < self.planet_dim.1{
-            rv.1 = (rv.1 % self.planet_dim.1);// + self.planet_dim.1;
-            info!("chunk Y-index originally was: {:?}, got clamped to: {:?}, with planet_dim.1: {:?}", index.1, rv.1, self.planet_dim.1);
+        if rv.1 > self.planet_dim.1 || rv.1 < self.planet_dim.1 {
+            rv.1 = (rv.1 % self.planet_dim.1); // + self.planet_dim.1;
+            info!(
+                "chunk Y-index originally was: {:?}, got clamped to: {:?}, with planet_dim.1: {:?}",
+                index.1, rv.1, self.planet_dim.1
+            );
         }
         rv
     }
 
     /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
     /// which can either be fetched from the world, or from its storage.
-    pub fn new_chunk(
-        &mut self,
-        chunk_id: ChunkIndex,
-        render_config: RenderConfig,
-    ){
+    pub fn new_chunk(&mut self, chunk_id: ChunkIndex, render_config: RenderConfig) {
         // TODO: everything
         error!("Not implemented yet.");
         self.chunks.insert(chunk_id, Chunk::new(1, render_config));
@@ -129,10 +127,10 @@ pub struct Chunk {
 }
 
 // public interface
-impl Chunk{
-    pub fn new(depth: u32, render_config: RenderConfig) -> Chunk{
+impl Chunk {
+    pub fn new(depth: u32, render_config: RenderConfig) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
-        Chunk{
+        Chunk {
             tile_entities: BTreeMap::new(),
             tile_index: BTreeMap::new(),
             tile_type: BTreeMap::new(),
@@ -141,7 +139,7 @@ impl Chunk{
 
     /// Tries to figure out the `TileType` from the BTreeMap `tiles` at the given Index.
     /// If the given index exceeds the chunk-dim bounds, returns `None`.
-    pub fn get_tile_type(&mut self, index: TileIndex) -> Option<TileTypes>{
+    pub fn get_tile_type(&mut self, index: TileIndex) -> Option<TileTypes> {
         // TODO: Make this dependent on RenderConfig resource: `if index.0 > self.chunk_dim.0 || index.1 > self.chunk_dim.1 {return None};`
         // TODO: check `self.tiles` for index and figure out the tiletype, use `self.get_tile_entity`
         error!("Not implemented yet.");
@@ -150,7 +148,7 @@ impl Chunk{
 
     /// Tries to fetch a tile entity from the BTreeMap `tiles` at the given Index.
     /// If the given index exceeds the chunk-dim bounds, returns `None`.
-    pub fn get_tile_entity(&mut self, index: TileIndex) -> Option<Entity>{
+    pub fn get_tile_entity(&mut self, index: TileIndex) -> Option<Entity> {
         // TODO: Make this dependent on RenderConfig resource: `if index.0 > self.chunk_dim.0 || index.1 > self.chunk_dim.1 {return None};`
         // TODO: check `self.tiles` for index and return the entity.
         error!("Not implemented yet.");
@@ -159,7 +157,7 @@ impl Chunk{
 
     /// Tries to fetch a tile from the BTreeMap `tiles_inversed` with the given entity.
     /// If the given entity is not part of this chunk, returns `None`.
-    pub fn get_tile_index(&mut self, tile: Entity) -> Option<TileIndex>{
+    pub fn get_tile_index(&mut self, tile: Entity) -> Option<TileIndex> {
         // TODO: Get TileIndex for the given entity, or return `None`
         error!("Not implemented yet.");
         None
@@ -167,9 +165,9 @@ impl Chunk{
 }
 
 // private methods
-impl Chunk{
+impl Chunk {
     // Creates a new tile at the given Index
-    fn add_tile(&mut self, index: TileIndex, tiletype: TileTypes){
+    fn add_tile(&mut self, index: TileIndex, tiletype: TileTypes) {
         // TODO: call into Tiles::new()
         // TODO: populate `self.tiles` & `self.tiles_inversed`
         error!("Not implemented yet.");

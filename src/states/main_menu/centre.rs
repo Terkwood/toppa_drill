@@ -1,3 +1,4 @@
+use super::{CreditsState, LoadMenuState, MenuScreens, NewGameState, OptionsState};
 use amethyst::renderer::HiddenPropagate;
 use amethyst::{
     assets::{Completion, Handle, ProgressCounter},
@@ -6,28 +7,13 @@ use amethyst::{
     input::{is_close_requested, is_key_down},
     prelude::*,
     renderer::VirtualKeyCode,
-    ui::{
-        UiEventType,
-        UiFinder,
-        //UiCreator,
-        UiLoader,
-        UiPrefab,
-    },
+    ui::{UiEventType, UiFinder, UiLoader, UiPrefab},
 };
 use std::collections::HashMap;
 use {
-    states::ToppaState, 
-    systems::{
-        DummySystem,
-        ShadowDummySystem,
-    }, 
-    ToppaGameData};
-use super::{
-    MenuScreens,
-    OptionsState,
-    CreditsState,
-    LoadMenuState,
-    NewGameState,
+    states::ToppaState,
+    systems::{DummySystem, ShadowDummySystem},
+    ToppaGameData,
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]

@@ -1,9 +1,6 @@
 use amethyst::{
     assets::ProgressCounter,
-    core::{
-        cgmath::Vector3,
-        transform::components::{Transform},
-    },
+    core::{cgmath::Vector3, transform::components::Transform},
     prelude::*,
     renderer::{SpriteRender, Transparent},
 };
@@ -26,7 +23,7 @@ pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
         "Assets/Textures/Drill.png",
         loader_info,
         progress_counter_ref,
-    ){
+    ) {
         let drill_sprite = SpriteRender {
             sprite_sheet: ss_handle,
             sprite_number: 0,

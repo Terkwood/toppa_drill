@@ -1,18 +1,15 @@
 use amethyst::{
     assets::ProgressCounter,
-    core::{
-        cgmath::Vector3,
-        transform::components::{Transform},
-    },
+    core::{cgmath::Vector3, transform::components::Transform},
     prelude::*,
     renderer::{SpriteRender, Transparent},
 };
 
-use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 use resources::{
+    ingame::planet::{ChunkIndex, TileIndex},
     ToppaSpriteSheet,
-    ingame::planet::{TileIndex,ChunkIndex,},
 };
+use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 /// An enumaration of all ground tile types.
 #[allow(dead_code)]
@@ -93,12 +90,15 @@ pub fn prepare_spritesheet(world: &mut World, progress_counter_ref: &mut Progres
         "Assets/Textures/Ores.png",
         loader_info,
         progress_counter_ref,
-    ){
-        
-    }
+    ) {}
 }
 
-pub fn create_ore_with_world(world: &mut World, chunk: ChunkIndex, index: TileIndex, tiletype: TileTypes){
+pub fn create_ore_with_world(
+    world: &mut World,
+    chunk: ChunkIndex,
+    index: TileIndex,
+    tiletype: TileTypes,
+) {
     // TODO: Get spriteSheetHandle from texture id.
     // TODO: Get sprite from TileType
     // TODO: Calculate transform based on TileIndex & ChunkIndex

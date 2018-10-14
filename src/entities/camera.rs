@@ -1,5 +1,5 @@
 use amethyst::{
-    core::transform::components::{Transform},
+    core::transform::components::Transform,
     prelude::*,
     renderer::{Camera, Projection},
 };
@@ -15,7 +15,6 @@ pub fn init(world: &mut World, view_dim: (f32, f32)) {
             view_dim.0 / 2.0,
             view_dim.1 / 2.0,
             -view_dim.1 / 2.0,
-        )))
-        .with(transform)
+        ))).with(transform)
         .build();
 }

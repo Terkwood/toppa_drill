@@ -7,7 +7,7 @@ pub use self::startup_state::StartupState;
 use amethyst::{assets::Handle, ecs::prelude::*, ui::UiPrefab};
 
 /// Base functions for a state in this game, as they mostly have their own dispatchers.
-pub trait ToppaState/*: std::marker::Sized*/ {
+pub trait ToppaState /*: std::marker::Sized*/ {
     fn dispatch(&mut self, world: &World);
     fn enable_dispatcher(&mut self);
     fn disable_dispatcher(&mut self);
