@@ -125,6 +125,25 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for NewGameState<'d, 'e> {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher();
+
+        // <DEBUG>
+        use resources::{
+            ingame::{planet::Planet, GameSessionData},
+            RenderConfig,
+        };
+
+        let ren_con = RenderConfig {
+            tile_base_render_dim: (64.0, 64.0),
+            chunk_render_dim: (2, 4),
+        };
+
+        world.add_resource::<GameSessionData>(GameSessionData::new("Hello"));
+        world.add_resource::<Planet>(Planet::default());
+        world.add_resource::<RenderConfig>(ren_con);
+
+        use systems::serialization::SerSavegameSystem;
+        SerSavegameSystem.run_now(&world.res);
+        // </DEBUG>
     }
 
     // Executed when this game state gets popped.

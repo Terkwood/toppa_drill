@@ -7,7 +7,7 @@ pub struct GameSessionData {
     /// lest another savegame gets overwritten.
     pub game_name: &'static str,
 
-    /// The planet is basically a container for chunks, which hold the different tiles. 
+    /// The planet is basically a container for chunks, which hold the different tiles.
     /// This enables loading and unloading areas in larger bits than single entites, helping with performance,
     /// while also sparing memory.
     pub planet: Planet,

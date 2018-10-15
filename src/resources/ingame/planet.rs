@@ -4,7 +4,10 @@
 //! - Chunk
 //! - TileIndex
 
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    collections::{btree_map, hash_map, BTreeMap, HashMap},
+    fmt,
+};
 
 use amethyst::ecs::{Builder, Entity, World};
 
@@ -30,8 +33,21 @@ pub struct Galaxy {
 /// Used to calculate the render-position of a chunk,
 /// and to figure out which chunk the player currently resides in.
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-pub struct ChunkIndex(u32, u32);
+pub struct ChunkIndex(pub u32, pub u32);
 
+impl fmt::Display for ChunkIndex {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.write_str("ChunkIndex(")?;
+        fmt.write_str(&self.0.to_string())?;
+        fmt.write_str(", ")?;
+        fmt.write_str(&self.1.to_string())?;
+        fmt.write_str(")")?;
+
+        Ok(())
+    }
+}
+
+/// This is a resource.
 /// The planet a player resides on.
 /// Consists of individual chunks of tile entities.
 #[derive(Debug, Serialize, Deserialize)]
@@ -41,6 +57,7 @@ pub struct Planet {
     pub planet_dim: (u32, u32),
     // A map of individual chunks of the planet, only a small number is loaded at a time.
     // Chunks that are too far from the player get serialized and stored to the disk.
+    // Private to prevent users from meddling with it.
     #[serde(skip_serializing, skip_deserializing)]
     chunks: HashMap<ChunkIndex, Chunk>,
 }
@@ -55,10 +72,28 @@ impl Default for Planet {
 // public interface
 impl Planet {
     pub fn new(planet_dim: (u32, u32)) -> Planet {
-        Planet {
+        let mut rv = Planet {
             planet_dim,
             chunks: HashMap::with_capacity(9),
+        };
+
+        // <DEBUG>
+        let ren_con = RenderConfig {
+            tile_base_render_dim: (64.0, 64.0),
+            chunk_render_dim: (2, 4),
+        };
+
+        for i in 0..3 {
+            for j in 0..3 {
+                debug!("+----------");
+                debug!("| chunk number {}", { i + j * rv.planet_dim.0 });
+                rv.new_chunk(ChunkIndex(i, j), &ren_con);
+            }
         }
+        debug!(" ");
+        // </DEBUG>
+
+        rv
     }
 
     /// Tries to fetch a chunk from the HashMap.
@@ -99,10 +134,20 @@ impl Planet {
 
     /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
     /// which can either be fetched from the world, or from its storage.
-    pub fn new_chunk(&mut self, chunk_id: ChunkIndex, render_config: RenderConfig) {
+    pub fn new_chunk(&mut self, chunk_id: ChunkIndex, render_config: &RenderConfig) {
         // TODO: everything
-        error!("Not implemented yet.");
         self.chunks.insert(chunk_id, Chunk::new(1, render_config));
+    }
+
+    /// Drains all chunks currently stored in planet, useful when `save & exit` happens.
+    pub fn drain_chunks(&mut self) -> hash_map::Drain<ChunkIndex, Chunk> {
+        self.chunks.drain()
+    }
+
+    /// Returns an iterator over all chunks currently stored in planet
+    /// mapping `ChunkIndex <-> Chunk`.
+    pub fn iter_chunks(&self) -> hash_map::Iter<ChunkIndex, Chunk> {
+        self.chunks.iter()
     }
 }
 
@@ -110,11 +155,23 @@ impl Planet {
 /// Used to calculate the render-position of a tile,
 /// and to figure out which tile the player currently stands on.
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-pub struct TileIndex(u32, u32);
+pub struct TileIndex(pub u32, pub u32);
 
+impl fmt::Display for TileIndex {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.write_str("TileIndex(")?;
+        fmt.write_str(&self.0.to_string())?;
+        fmt.write_str(", ")?;
+        fmt.write_str(&self.1.to_string())?;
+        fmt.write_str(")")?;
+
+        Ok(())
+    }
+}
+
+/// This is not a resource, it is  wrapped in the [planet](struct.Planet.html).
 /// Small patches of tile entities of a planet.
-/// To avoid consuming gigabytes of RAM.
-/// Does not implement `Default`, because it's contents are based on the depth it is placed at.
+/// Does not implement `Default`, because its contents are based on the depth it is placed at.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Chunk {
     // Grants access to the TileIndex via the entities (which may e.g. be returned by collision).
@@ -129,13 +186,23 @@ pub struct Chunk {
 
 // public interface
 impl Chunk {
-    pub fn new(depth: u32, render_config: RenderConfig) -> Chunk {
+    pub fn new(depth: u32, render_config: &RenderConfig) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
-        Chunk {
+        let mut rv = Chunk {
             tile_entities: BTreeMap::new(),
             tile_index: BTreeMap::new(),
             tile_type: BTreeMap::new(),
+        };
+
+        // TODO: Actual tile generation algorithm
+        for i in 0..render_config.chunk_render_dim.0 {
+            for j in 0..render_config.chunk_render_dim.1 {
+                debug!("|\ttile number {}", { i + j });
+                rv.tile_type.insert(TileIndex(i, j), TileTypes::Dirt);
+            }
         }
+
+        rv
     }
 
     /// Tries to figure out the `TileType` from the BTreeMap `tiles` at the given Index.
@@ -162,6 +229,12 @@ impl Chunk {
         // TODO: Get TileIndex for the given entity, or return `None`
         error!("Not implemented yet.");
         None
+    }
+
+    /// Returns an iterator over the `tile_types` field,
+    /// which maps `TileIndex <-> TileTypes`.
+    pub fn iter_tiles(&self) -> btree_map::Iter<TileIndex, TileTypes> {
+        self.tile_type.iter()
     }
 }
 

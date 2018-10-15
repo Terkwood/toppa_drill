@@ -1,3 +1,5 @@
+use std::default::Default;
+
 /// A resource holding the render settings that can be adjusted by the player.
 #[derive(Debug, Clone, Copy)]
 pub struct RenderConfig {
@@ -7,4 +9,13 @@ pub struct RenderConfig {
     /// The dimension of a chunk expressed in the count of tiles in x and y direction.
     /// The bigger a chunk is, the more tiles have to be rendered, which takes up both memory and computing time.
     pub chunk_render_dim: (u32, u32),
+}
+
+impl Default for RenderConfig {
+    fn default() -> Self {
+        RenderConfig {
+            tile_base_render_dim: (64.0, 64.0),
+            chunk_render_dim: (16, 32),
+        }
+    }
 }

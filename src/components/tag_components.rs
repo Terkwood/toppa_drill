@@ -42,34 +42,6 @@ impl Component for TagPartsShopMerch {
     type Storage = NullStorage<Self>;
 }
 
-/// This component is meant for player entities.
-#[derive(Default, Debug)]
-pub struct TagPlayer {}
-
-impl TagPlayer {
-    pub fn new() -> TagPlayer {
-        TagPlayer {}
-    }
-}
-
-impl Component for TagPlayer {
-    type Storage = NullStorage<Self>;
-}
-
-/// This component is meant for npc entities.
-#[derive(Default, Debug)]
-pub struct TagNPC {}
-
-impl TagNPC {
-    pub fn new() -> TagNPC {
-        TagNPC {}
-    }
-}
-
-impl Component for TagNPC {
-    type Storage = NullStorage<Self>;
-}
-
 /// This component is meant for ground entites the player cannot see yet.
 #[derive(Default, Debug)]
 pub struct TagFogOfWar {}
