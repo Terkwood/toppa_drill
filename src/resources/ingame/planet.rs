@@ -41,6 +41,7 @@ pub struct Planet {
     pub planet_dim: (u32, u32),
     // A map of individual chunks of the planet, only a small number is loaded at a time.
     // Chunks that are too far from the player get serialized and stored to the disk.
+    #[serde(skip_serializing, skip_deserializing)]
     chunks: HashMap<ChunkIndex, Chunk>,
 }
 
