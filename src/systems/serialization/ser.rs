@@ -28,15 +28,6 @@ use resources::{
     RenderConfig,
 };
 
-/// Serializes chunks and stores them in `.ron` format.
-pub struct SerChunkSystem;
-
-impl<'a> System<'a> for SerChunkSystem {
-    type SystemData = (Read<'a, Planet>,);
-
-    fn run(&mut self, (planet,): Self::SystemData) {}
-}
-
 /// Creates a savegame by calling different serialization systems, based on the current [GameSessionData](struct.GameSessionData.html).
 /// Uses `.ron` format.
 pub struct SerSavegameSystem;
@@ -44,12 +35,11 @@ pub struct SerSavegameSystem;
 impl<'a> System<'a> for SerSavegameSystem {
     type SystemData = (
         Read<'a, Time>,
-        Read<'a, GameSessionData>,
-        Read<'a, Planet>,
-        Read<'a, RenderConfig>,
+        ReadExpect<'a, GameSessionData>,
+        ReadExpect<'a, RenderConfig>,
     );
 
-    fn run(&mut self, (time, session_data, planet, render_config): Self::SystemData) {
+    fn run(&mut self, (time, session_data, render_config): Self::SystemData) {
         let mut commence_serializing = false;
 
         let save_data = &session_data.deref();
@@ -76,6 +66,7 @@ impl<'a> System<'a> for SerSavegameSystem {
         chunk_dir_path = chunk_dir_path.join(savegame_dir_path.clone());
         chunk_dir_path = chunk_dir_path.join(Path::new("chunks"));
 
+        // NOTE: Maybe replace all these file operations with walk_dir crate?
         let mut dir_exists = dir_path.is_dir();
         if !dir_exists {
             if let Ok(_) = fs::create_dir(dir_path) {
@@ -88,7 +79,39 @@ impl<'a> System<'a> for SerSavegameSystem {
         dir_exists = savegame_dir_path.exists();
         if dir_exists {
             warn!("Overwriting old savegame: {:?}.", savegame_name);
-            dir_exists = chunk_dir_path.exists();
+            for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap(){
+                if let Ok(entry) = entry_result{
+                    let entry_path = entry.path();
+                    if entry_path.is_dir(){
+                        for sub_entry_res in fs::read_dir(entry_path.clone()).unwrap(){
+                            if let Ok(sub_entry) = sub_entry_res{
+                                if sub_entry.path().is_file(){
+                                    if let Err(e) = fs::remove_file(sub_entry.path()){
+                                        error!("Error removing file '{:?}': {:?}", sub_entry.path(), e);
+                                    }
+                                }
+                                else{
+                                    error!("Found unexpected directory inside the savegame's chunk directory!");
+                                }
+                            }
+                        }
+                    }
+                    else if entry_path.is_file(){
+                        if let Err(e) = fs::remove_file(entry_path.clone()){
+                            error!("Error removing file '{:?}': {:?}", entry_path, e);
+                        }
+                    }
+                    else{
+                        error!("Error removing dir '{:?}' entry '{:?}!", savegame_dir_path.clone(), entry_path);
+                    }
+                }
+                else{
+                    error!("Error reading dir '{:?}' entry!", savegame_dir_path.clone());
+                }
+            }
+            commence_serializing = true;
+
+            /*dir_exists = chunk_dir_path.exists();
             if dir_exists {
                 commence_serializing = true;
             } else {
@@ -104,8 +127,18 @@ impl<'a> System<'a> for SerSavegameSystem {
                         chunk_dir_path.clone()
                     );
                 }
-            }
+            }*/
         } else {
+            if let Ok(_) = fs::create_dir_all(chunk_dir_path.clone()) {
+                commence_serializing = true;
+            } else {
+                error!(
+                    "Failed to create savegame '{:?}'s dir at {:?}",
+                    savegame_name,
+                    savegame_dir_path.clone()
+                );
+            }
+            /*
             if let Ok(_) = fs::create_dir(savegame_dir_path.clone()) {
                 dir_exists = chunk_dir_path.exists();
                 if dir_exists {
@@ -116,9 +149,6 @@ impl<'a> System<'a> for SerSavegameSystem {
                             "Savegame's chunk dir has been created at {:?}.",
                             chunk_dir_path.clone()
                         );
-
-                        use std::thread;
-                        thread::sleep(Duration::from_millis(1000));
 
                         commence_serializing = true;
                     } else {
@@ -135,10 +165,8 @@ impl<'a> System<'a> for SerSavegameSystem {
                     savegame_dir_path.clone()
                 );
             }
+            */
         }
-
-        use std::{thread, time::Duration};
-        thread::sleep(Duration::from_millis(500));
 
         if commence_serializing {
             debug!("Starting to serialize savegame.");
@@ -161,7 +189,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                 );
             }
 
-            for (chunk_index, chunk) in planet.iter_chunks() {
+            for (chunk_index, chunk) in savegame_planet.iter_chunks() {
                 let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
                 /* NOTE: Use this to save disk space!
                 let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), false);
@@ -183,7 +211,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                 }
                 let mut chunk_file_path = chunk_dir_path.clone();
                 chunk_file_path = chunk_file_path.join(Path::new(
-                    &{ (chunk_index.1 * planet.planet_dim.0 + chunk_index.0) as u64 }.to_string(),
+                    &{ (chunk_index.1 * savegame_planet.planet_dim.0 + chunk_index.0) as u64 }.to_string(),
                 ));
                 chunk_file_path.set_extension("ron");
 

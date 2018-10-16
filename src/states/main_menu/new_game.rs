@@ -134,11 +134,12 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for NewGameState<'d, 'e> {
 
         let ren_con = RenderConfig {
             tile_base_render_dim: (64.0, 64.0),
-            chunk_render_dim: (2, 4),
+            chunk_render_distance: 1,
         };
 
-        world.add_resource::<GameSessionData>(GameSessionData::new("Hello"));
-        world.add_resource::<Planet>(Planet::default());
+        let planet_dim = (64, 64);
+        let chunk_dim = (16, 16);
+        world.add_resource::<GameSessionData>(GameSessionData::new("Hello", planet_dim, chunk_dim, &ren_con));
         world.add_resource::<RenderConfig>(ren_con);
 
         use systems::serialization::SerSavegameSystem;

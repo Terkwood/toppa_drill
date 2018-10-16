@@ -1,4 +1,5 @@
 use super::planet::Planet;
+use resources::RenderConfig;
 /// Data specific to the current game,
 /// gets loaded or created when the User starts a new game.
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,16 +15,10 @@ pub struct GameSessionData {
 }
 
 impl GameSessionData {
-    pub fn new(name: &'static str) -> GameSessionData {
+    pub fn new(name: &'static str, planet_dim: (u32, u32), chunk_dim: (u32, u32), render_config: &RenderConfig) -> GameSessionData {
         GameSessionData {
             game_name: name,
-            planet: Planet::default(),
+            planet: Planet::new(planet_dim, chunk_dim, render_config),
         }
-    }
-}
-
-impl Default for GameSessionData {
-    fn default() -> Self {
-        GameSessionData::new("anonymous")
     }
 }

@@ -32,6 +32,8 @@ pub struct Galaxy {
 /// The Index of a chunk in a [Planet](struct.Planet.html).
 /// Used to calculate the render-position of a chunk,
 /// and to figure out which chunk the player currently resides in.
+///
+/// Uses (rows, columns).
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct ChunkIndex(pub u32, pub u32);
 
@@ -55,6 +57,10 @@ pub struct Planet {
     /// The dimension of a planet expressed in the count of chunks in x and y direction.
     /// Differs based on the setting `Planet size` when creating a new game.
     pub planet_dim: (u32, u32),
+    // TODO: Make adjustable while playing. Requires reassigning tiles to new chunks.
+    /// The dimension of a chunk expressed in tilecount in x and y direction.
+    /// Cannot be changed once the game was created (at least for now).
+    pub chunk_dim: (u32, u32),
     // A map of individual chunks of the planet, only a small number is loaded at a time.
     // Chunks that are too far from the player get serialized and stored to the disk.
     // Private to prevent users from meddling with it.
@@ -62,32 +68,26 @@ pub struct Planet {
     chunks: HashMap<ChunkIndex, Chunk>,
 }
 
-impl Default for Planet {
-    fn default() -> Self {
-        let planet_dim = (128, 128);
-        Planet::new(planet_dim)
-    }
-}
-
 // public interface
 impl Planet {
-    pub fn new(planet_dim: (u32, u32)) -> Planet {
+    pub fn new(planet_dim: (u32, u32), chunk_dim: (u32, u32), render_config: &RenderConfig) -> Planet {
+        // Chunk of the player + render distance in two directions (left+right | top+bottom)
+        let chunk_count_per_direction = 1 + 2 * render_config.chunk_render_distance;
+        let chunk_count = chunk_count_per_direction * chunk_count_per_direction;
         let mut rv = Planet {
             planet_dim,
-            chunks: HashMap::with_capacity(9),
+            chunk_dim,
+            chunks: HashMap::with_capacity(chunk_count as usize),
         };
 
         // <DEBUG>
-        let ren_con = RenderConfig {
-            tile_base_render_dim: (64.0, 64.0),
-            chunk_render_dim: (2, 4),
-        };
+        // clamp chunks to 0 <= x <= u32::MAX && 0 <= y <= u32::MAX
 
-        for i in 0..3 {
-            for j in 0..3 {
+        for y in 0..chunk_count_per_direction {
+            for x in 0..chunk_count_per_direction {
                 debug!("+----------");
-                debug!("| chunk number {}", { i + j * rv.planet_dim.0 });
-                rv.new_chunk(ChunkIndex(i, j), &ren_con);
+                debug!("| chunk number {}", { y * rv.planet_dim.0 + x });
+                rv.new_chunk(ChunkIndex(y, x));
             }
         }
         debug!(" ");
@@ -101,8 +101,12 @@ impl Planet {
     /// Returns `None` if no chunk at the given index exists.
     /// Try calling `new_chunk()` in that case.
     pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk> {
-        let clamped_index = self.clamp_chunk_index(index);
-        self.chunks.get(&clamped_index)
+        if let Some(clamped_index) = self.clamp_chunk_index(index){
+            self.chunks.get(&clamped_index)
+        }
+        else{
+            None
+        }
     }
 
     /// Tile indexes out of tile-dim bounds return `None`.
@@ -113,30 +117,31 @@ impl Planet {
     }
 
     /// The given chunk index gets clamped to the planet-dim by wrapping it in x-direction and cutting it off in y-direction.
-    pub fn clamp_chunk_index(&self, index: ChunkIndex) -> ChunkIndex {
+    pub fn clamp_chunk_index(&self, index: ChunkIndex) -> Option<ChunkIndex> {
         let mut rv = index;
-        if rv.0 > self.planet_dim.0 || rv.0 < self.planet_dim.0 {
+        if rv.0 > self.planet_dim.0{
             rv.0 = (rv.0 % self.planet_dim.0); // + self.planet_dim.0;
             info!(
                 "chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
                 index.0, rv.0, self.planet_dim.0
             );
         }
-        if rv.1 > self.planet_dim.1 || rv.1 < self.planet_dim.1 {
+        if rv.1 > self.planet_dim.1{
             rv.1 = (rv.1 % self.planet_dim.1); // + self.planet_dim.1;
             info!(
-                "chunk Y-index originally was: {:?}, got clamped to: {:?}, with planet_dim.1: {:?}",
-                index.1, rv.1, self.planet_dim.1
+                "chunk Y-index originally  {:?} is out of bounds.",
+                rv.1
             );
+            return None;
         }
-        rv
+        Some(rv)
     }
 
     /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
     /// which can either be fetched from the world, or from its storage.
-    pub fn new_chunk(&mut self, chunk_id: ChunkIndex, render_config: &RenderConfig) {
-        // TODO: everything
-        self.chunks.insert(chunk_id, Chunk::new(1, render_config));
+    pub fn new_chunk(&mut self, chunk_id: ChunkIndex) {
+        // TODO: everything, maybe different tiles not only based on depth, but also x-pos?
+        self.chunks.insert(chunk_id, Chunk::new(chunk_id.1, self.chunk_dim));
     }
 
     /// Drains all chunks currently stored in planet, useful when `save & exit` happens.
@@ -154,6 +159,8 @@ impl Planet {
 /// The Index of a tile in a [Chunk](struct.Chunk.html).
 /// Used to calculate the render-position of a tile,
 /// and to figure out which tile the player currently stands on.
+///
+/// Uses (rows, columns).
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct TileIndex(pub u32, pub u32);
 
@@ -186,7 +193,7 @@ pub struct Chunk {
 
 // public interface
 impl Chunk {
-    pub fn new(depth: u32, render_config: &RenderConfig) -> Chunk {
+    pub fn new(depth: u32, chunk_dim: (u32, u32)) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
         let mut rv = Chunk {
             tile_entities: BTreeMap::new(),
@@ -194,9 +201,11 @@ impl Chunk {
             tile_type: BTreeMap::new(),
         };
 
+        debug!("| at depth: {}", depth);
+
         // TODO: Actual tile generation algorithm
-        for i in 0..render_config.chunk_render_dim.0 {
-            for j in 0..render_config.chunk_render_dim.1 {
+        for i in 0..chunk_dim.0 {
+            for j in 0..chunk_dim.1 {
                 debug!("|\ttile number {}", { i + j });
                 rv.tile_type.insert(TileIndex(i, j), TileTypes::Dirt);
             }
