@@ -44,12 +44,12 @@ impl StartupState {
     }
 }
 
-impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState {
+impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
     fn handle_event(
         &mut self,
         data: StateData<ToppaGameData>,
-        event: StateEvent<()>,
-    ) -> Trans<ToppaGameData<'a, 'b>, ()> {
+        event: StateEvent,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { world: _, data: _ } = data;
         match &event {
             StateEvent::Window(wnd_event) => {
@@ -67,7 +67,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, ()> for StartupState {
     fn update(
         &mut self,
         data: StateData<ToppaGameData<'a, 'b>>,
-    ) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data } = data;
         data.update_menu(&world);
 

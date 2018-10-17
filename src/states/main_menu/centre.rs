@@ -146,12 +146,12 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
     }
 }
 
-impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e> {
+impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d, 'e> {
     fn handle_event(
         &mut self,
         data: StateData<ToppaGameData>,
-        event: StateEvent<()>,
-    ) -> Trans<ToppaGameData<'a, 'b>, ()> {
+        event: StateEvent,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data: _ } = data;
         match &event {
             StateEvent::Window(wnd_event) => {
@@ -173,7 +173,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for CentreState<'d, 'e> {
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { world, data } = data;
         self.dispatch(&world);
         data.update_menu(&world);
@@ -309,7 +309,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         });
     }
 
-    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::CentreButtons::*;
         if let Some(button) = self.buttons.get(&target) {
             match button {
@@ -324,13 +324,13 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         }
     }
 
-    fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Shutting down.");
         // TODO: User prompt : Are you sure you want to exit?
         Trans::Quit
     }
 
-    fn btn_credits(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_credits(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Credits screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Credits) {
@@ -341,7 +341,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         }))
     }
 
-    fn btn_new_game(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_new_game(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("NewGame screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::NewGame) {
@@ -352,7 +352,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         }))
     }
 
-    fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("LoadGame screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::LoadGame) {
@@ -363,7 +363,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         }))
     }
 
-    fn btn_options(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_options(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Options screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Options) {

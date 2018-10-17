@@ -79,12 +79,12 @@ impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
     }
 }
 
-impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for NewGameState<'d, 'e> {
+impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'d, 'e> {
     fn handle_event(
         &mut self,
         data: StateData<ToppaGameData>,
-        event: StateEvent<()>,
-    ) -> Trans<ToppaGameData<'a, 'b>, ()> {
+        event: StateEvent,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent {
         let StateData { mut world, data: _ } = data;
         match &event {
             StateEvent::Window(wnd_event) => {
@@ -106,7 +106,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, ()> for NewGameState<'d, 'e> {
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data } = data;
         self.dispatch(&world);
         data.update_ingame(&world);
@@ -175,7 +175,7 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         });
     }
 
-    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::NewGameButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {
@@ -186,7 +186,7 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         }
     }
 
-    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, ()> {
+    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Returning to CentreState.");
         Trans::Pop
     }
