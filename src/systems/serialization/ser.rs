@@ -47,7 +47,7 @@ impl<'a> System<'a> for SerSavegameSystem {
         let savegame_planet = &save_data.planet;
 
         // Directory of all savegames
-        let dir_path = Path::new("E:/Workspaces/ToppaSavegame");
+        let dir_path = Path::new("./savegames");
 
         // Directory of this savegame
         let mut savegame_dir_path = PathBuf::new();
@@ -58,7 +58,7 @@ impl<'a> System<'a> for SerSavegameSystem {
         // Filepath for the serialized planet
         let mut planet_file_path = PathBuf::new();
         planet_file_path = planet_file_path.join(savegame_dir_path.clone());
-        planet_file_path = planet_file_path.join(Path::new("planet"));
+        planet_file_path = planet_file_path.join(Path::new("session_data"));
         planet_file_path.set_extension("ron");
 
         // Directory-path for the serialized chunks, need to append the individual chunks Id
@@ -171,12 +171,11 @@ impl<'a> System<'a> for SerSavegameSystem {
         if commence_serializing {
             debug!("Starting to serialize savegame.");
 
+            debug!("serializing game data.");
             let mut ser_planet = ron::ser::Serializer::new(Some(Default::default()), true);
             {
                 // TODO: Error handling. Why doesn't `?` work, even though the specs example uses it?
                 use serde::ser::SerializeSeq;
-                debug!("serializing game data.");
-
                 let mut serseq = ser_planet.serialize_seq(None).unwrap();
                 serseq.serialize_element(&session_data.deref()).unwrap();
                 serseq.end().unwrap();
@@ -189,6 +188,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                 );
             }
 
+            debug!("serializing planet.");
             for (chunk_index, chunk) in savegame_planet.iter_chunks() {
                 let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
                 /* NOTE: Use this to save disk space!
@@ -226,13 +226,4 @@ impl<'a> System<'a> for SerSavegameSystem {
             debug!("Finished serializing savegame.");
         }
     }
-}
-
-/// Serializes the player entity/entities in `.ron` format.
-pub struct SerPlayerSystem;
-
-impl<'a> System<'a> for SerPlayerSystem {
-    type SystemData = (Entities<'a>, ReadStorage<'a, TagPlayer>);
-
-    fn run(&mut self, (entities, player): Self::SystemData) {}
 }

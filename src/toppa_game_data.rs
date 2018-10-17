@@ -19,18 +19,22 @@ pub struct ToppaGameData<'a, 'b> {
     pub main_menu_core: Dispatcher<'a, 'b>,
 }
 
-impl<'a, 'b> ToppaGameData<'a, 'b> {
-    /// Run this after the ingame states own Dispatchers.
-    /// Updates the `core` and `ingame_core` dispatchers.
+impl<'a, 'b> ToppaGameData<'a, 'b> { 
+    /// Updates the `ingame_core` dispatchers, which might i.e. include 
+    /// - `TotalPlaytimeSystem`,
+    /// - `PlayerChatSystem`,
+    /// - ...
     pub fn update_ingame(&mut self, world: &World) {
         self.ingame_core.dispatch(&world.res);
         self.core.dispatch(&world.res);
     }
 
-    /// Run this after the menu states own Dispatchers.
-    /// Updates the `core` and `main_menu_core` dispatchers.
+    /// Updates the `main_menu_core` dispatchers, which might i.e. include
+    /// - `BackgroundFogAnimationSystem` (like in Skyrim's menu)
+    /// - `LazyAssetLoadSystem` (to preload assets needed by any game session anyways, like the tile spritesheets)
+    /// - ...
     pub fn update_menu(&mut self, world: &World) {
-        self.main_menu_core.dispatch(&world.res);
+        self.main_menu_core.dispatch(&world.res);    
         self.core.dispatch(&world.res);
     }
 }
