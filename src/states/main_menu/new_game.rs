@@ -1,23 +1,39 @@
 use amethyst::{
-    assets::{Handle, ProgressCounter},
+    assets::{Handle, ProgressCounter, Completion},
     core::timing::Time,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::VirtualKeyCode,
+    renderer::{
+        VirtualKeyCode,
+        HiddenPropagate,
+    },
     ui::{
         UiEventType,
         UiFinder,
-        //UiCreator, UiLoader,
+        UiCreator, 
+        UiLoader,
         UiPrefab,
     },
 };
 use std::collections::HashMap;
-use {states::ToppaState, systems::DummySystem, ToppaGameData};
+use {states::{
+    ToppaState, ingame,
+    },
+    systems::DummySystem, 
+    ToppaGameData,
+};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-pub enum NewGameButtons {
+enum NewGameButtons {
     Back,
+    CreateNewGame,
+}
+
+struct GameInfo{
+    name: &'static str,
+    planet_dim: (u32, u32),
+    chunk_dim: (u32, u32),
 }
 
 /// The game creation state, where a new game can be started.
@@ -29,10 +45,14 @@ pub struct NewGameState<'d, 'e> {
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
     // The Handle of the Prefab for the displayed Ui Entity.
-    ui_screen: Option<Handle<UiPrefab>>,
+    current_screen_prefab: Option<Handle<UiPrefab>>,
     // Map of the Ui Button entities and the corresponding button type.
     ui_buttons: HashMap<Entity, NewGameButtons>,
     b_buttons_found: bool,
+
+    // Info specific to the game about to be created.
+    // e.g. the player count, names, etc...
+    game_info: Option<GameInfo>,
 }
 
 impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
@@ -61,7 +81,9 @@ impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
     }
 
     fn enable_current_screen(&mut self, world: &mut World) {
-        if let Some(ref prefab_handle) = self.ui_screen {
+        self.b_buttons_found = false;
+        self.ui_buttons.clear();
+        if let Some(ref prefab_handle) = self.current_screen_prefab {
             self.current_screen = Some(world.create_entity().with(prefab_handle.clone()).build());
         };
     }
@@ -70,11 +92,12 @@ impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
         NewGameState {
             menu_duration: 0.0,
             current_screen: None,
-            ui_screen: screen_opt,
+            current_screen_prefab: screen_opt,
             progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             dispatcher: None,
+            game_info: None,
         }
     }
 }
@@ -114,10 +137,11 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
 
         if !self.b_buttons_found {
             self.insert_button(&mut world, NewGameButtons::Back, "menu_newgame_back_button");
-            Trans::None
-        } else {
-            Trans::None
+            self.insert_button(&mut world, NewGameButtons::CreateNewGame, "menu_newgame_creategame_button");
+            self.b_buttons_found = true;
         }
+
+        Trans::None
     }
 
     // Executed when this game state runs for the first time.
@@ -125,26 +149,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher();
-
-        // <DEBUG>
-        use resources::{
-            ingame::{planet::Planet, GameSessionData},
-            RenderConfig,
-        };
-
-        let ren_con = RenderConfig {
-            tile_base_render_dim: (64.0, 64.0),
-            chunk_render_distance: 1,
-        };
-
-        let planet_dim = (64, 64);
-        let chunk_dim = (16, 16);
-        world.add_resource::<GameSessionData>(GameSessionData::new("Hello", planet_dim, chunk_dim, &ren_con));
-        world.add_resource::<RenderConfig>(ren_con);
-
-        use systems::serialization::SerSavegameSystem;
-        SerSavegameSystem.run_now(&world.res);
-        // </DEBUG>
     }
 
     // Executed when this game state gets popped.
@@ -176,18 +180,18 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
             if let Some(entity) = finder.find(button_name) {
                 info!("Found {}.", button_name);
                 self.ui_buttons.insert(entity, button);
-                self.b_buttons_found = true;
             } else {
                 warn!("Couldn't find {}!", button_name);
             }
         });
     }
 
-    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::NewGameButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {
                 Back => self.btn_back(),
+                CreateNewGame => self.btn_creategame(world),
             }
         } else {
             Trans::None
@@ -197,5 +201,52 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Returning to CentreState.");
         Trans::Pop
+    }
+
+    fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+        info!("Creating new game.");
+
+        use resources::{
+            ingame::{planet::Planet, GameSessionData},
+            RenderConfig,
+        };
+
+        // TODO: Move to Centre state and add to `World` there.
+        let ren_con = RenderConfig {
+            tile_base_render_dim: (64.0, 64.0),
+            chunk_render_distance: 1,
+        };
+
+        if let Some(ref game_info) = self.game_info{
+            let session_data = GameSessionData::new(
+                game_info.name, 
+                game_info.planet_dim, 
+                game_info.chunk_dim, 
+                &ren_con // TODO: &world.read_resource::<RenderConfig>();
+            );
+
+            world.add_resource::<GameSessionData>(session_data);
+        }
+        else{
+            let session_data = GameSessionData::new(
+                "Terra Incognita", 
+                (2, 2), 
+                (5, 3), 
+                &ren_con // TODO: &world.read_resource::<RenderConfig>();
+            );
+
+            world.add_resource::<GameSessionData>(session_data);
+        }
+
+        // TODO: remove this
+        world.add_resource::<RenderConfig>(ren_con);
+
+        let ingame_ui_prefab_handle = Some(
+               world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ()))
+        );     
+
+        Trans::Switch(Box::new({
+            ingame::IngameBaseState::new(world, ingame_ui_prefab_handle.clone())
+        }))
     }
 }

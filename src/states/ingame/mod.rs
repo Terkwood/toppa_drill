@@ -1,10 +1,10 @@
-/*mod base_state;
+mod base_state;
 pub use self::{
     base_state::IngameBaseState,
-}*/
+};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-enum IngameScreens {
+pub enum IngameScreens {
     HUD,
     Inventory,
     OreShop,

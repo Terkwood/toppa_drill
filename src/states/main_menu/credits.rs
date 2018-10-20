@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use {states::ToppaState, systems::DummySystem, ToppaGameData};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-pub enum CreditsButtons {
+enum CreditsButtons {
     Back,
 }
 

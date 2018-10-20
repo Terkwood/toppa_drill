@@ -238,10 +238,10 @@ impl Chunk {
         };
 
         // TODO: Actual tile generation algorithm
-        for i in 0..chunk_dim.0 {
-            for j in 0..chunk_dim.1 {
-                debug!("|\ttile number {}", { i + j });
-                rv.tile_type.insert(TileIndex(i, j), TileTypes::Dirt);
+        for y in 0..chunk_dim.0 {
+            for x in 0..chunk_dim.1 {
+                debug!("|\ttile number {}", { y * chunk_dim.1 + x });
+                rv.tile_type.insert(TileIndex(y, x), TileTypes::Dirt);
             }
         }
 

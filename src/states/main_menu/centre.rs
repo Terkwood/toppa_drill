@@ -17,7 +17,7 @@ use {
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-pub enum CentreButtons {
+enum CentreButtons {
     NewGame,
     Load,
     Options,
@@ -95,6 +95,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
 
     fn enable_current_screen(&mut self, world: &mut World) {
         self.b_buttons_found = false;
+        self.buttons.clear();
         if self.screen_entities.contains_key(&MenuScreens::Centre) {
             if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre) {
                 let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
@@ -224,26 +225,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
                     self.b_screens_loaded = true;
                     info!("Loaded menu screen prefabs successfully.");
 
-                    self.insert_reachable_menu(
-                        world,
-                        MenuScreens::Options,
-                        "Prefabs/ui/MenuScreens/Options.ron",
-                    );
-                    self.insert_reachable_menu(
-                        world,
-                        MenuScreens::Credits,
-                        "Prefabs/ui/MenuScreens/Credits.ron",
-                    );
-                    self.insert_reachable_menu(
-                        world,
-                        MenuScreens::NewGame,
-                        "Prefabs/ui/MenuScreens/NewGame.ron",
-                    );
-                    self.insert_reachable_menu(
-                        world,
-                        MenuScreens::LoadGame,
-                        "Prefabs/ui/MenuScreens/Load.ron",
-                    );
                     Trans::None
                 }
                 Loading => Trans::None,
@@ -264,6 +245,27 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
         self.enable_dispatcher();
         self.enable_shadow_dispatcher();
         self.enable_current_screen(&mut world);
+
+        self.insert_reachable_menu(
+            world,
+            MenuScreens::Options,
+            "Prefabs/ui/MenuScreens/Options.ron",
+        );
+        self.insert_reachable_menu(
+            world,
+            MenuScreens::Credits,
+            "Prefabs/ui/MenuScreens/Credits.ron",
+        );
+        self.insert_reachable_menu(
+            world,
+            MenuScreens::NewGame,
+            "Prefabs/ui/MenuScreens/NewGame.ron",
+        );
+        self.insert_reachable_menu(
+            world,
+            MenuScreens::LoadGame,
+            "Prefabs/ui/MenuScreens/Load.ron",
+        );
     }
 
     // Executed when this game state gets popped or switched from.
