@@ -1,0 +1,132 @@
+#![enable(implicit_some)]
+Container(
+    transform: (
+        id: "ingame_base_ui",
+        anchor: TopMiddle,
+        stretch: XY( x_margin: 0., y_margin: 0.),
+        width: 1920.,
+        height: 1080.,
+    ),
+    children: [
+        // Options Button
+        Button(
+            transform: (
+                id: "ingame_base_options_button",
+                x: 784.,
+                y: -42.,
+                width: 32.,
+                height: 32.,
+                tab_order: 1,
+                anchor: Middle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "O",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.75, 0.75, 0.9, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, (channel: Srgb)),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, (channel: Srgb)),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, (channel: Srgb)),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Inventory Button
+        Button(
+            transform: (
+                id: "ingame_base_inventory_button",
+                x: 800.,
+                y: -84.,
+                width: 32.,
+                height: 32.,
+                tab_order: 2,
+                anchor: Middle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "I",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.4, 0.4, 0.55, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, (channel: Srgb)),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, (channel: Srgb)),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, (channel: Srgb)),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Mute Button
+        Button(
+            transform: (
+                id: "ingame_base_mute_button",
+                x: 816.,
+                y: -126.,
+                width: 32.,
+                height: 32.,
+                tab_order: 3,
+                anchor: Middle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "M",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.4, 0.4, 0.55, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, (channel: Srgb)),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, (channel: Srgb)),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, (channel: Srgb)),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Exit Button
+        Button(
+            transform: (
+                id: "ingame_base_exit_button",
+                x: 940.,
+                y: -63.,
+                width: 32.,
+                height: 32.,
+                tab_order: 4,
+                anchor: Middle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "E",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.4, 0.4, 0.55, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, (channel: Srgb)),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, (channel: Srgb)),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, (channel: Srgb)),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+        // Save Button
+        Button(
+            transform: (
+                id: "ingame_base_save_button",
+                x: 940.,
+                y: -126.,
+                width: 32.,
+                height: 32.,
+                tab_order: 5,
+                anchor: Middle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "S",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.8, 0.6, 0.6, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, (channel: Srgb)),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, (channel: Srgb)),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, (channel: Srgb)),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
+    ]
+)
