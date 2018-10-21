@@ -1,7 +1,5 @@
 mod base_state;
-pub use self::{
-    base_state::IngameBaseState,
-};
+pub use self::base_state::IngameBaseState;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum IngameScreens {

@@ -106,7 +106,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for LoadMenuState<
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn update(
+        &mut self,
+        data: StateData<ToppaGameData>,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data } = data;
         self.dispatch(&world);
         data.update_menu(&world);
@@ -163,7 +166,11 @@ impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e> {
         });
     }
 
-    fn btn_click(&self, _world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_click(
+        &self,
+        _world: &mut World,
+        target: Entity,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::LoadMenuButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {

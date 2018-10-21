@@ -19,8 +19,8 @@ pub struct ToppaGameData<'a, 'b> {
     pub main_menu_core: Dispatcher<'a, 'b>,
 }
 
-impl<'a, 'b> ToppaGameData<'a, 'b> { 
-    /// Updates the `ingame_core` dispatchers, which might i.e. include 
+impl<'a, 'b> ToppaGameData<'a, 'b> {
+    /// Updates the `ingame_core` dispatchers, which might i.e. include
     /// - `TotalPlaytimeSystem`,
     /// - `PlayerChatSystem`,
     /// - ...
@@ -34,7 +34,7 @@ impl<'a, 'b> ToppaGameData<'a, 'b> {
     /// - `LazyAssetLoadSystem` (to preload assets needed by any game session anyways, like the tile spritesheets)
     /// - ...
     pub fn update_menu(&mut self, world: &World) {
-        self.main_menu_core.dispatch(&world.res);    
+        self.main_menu_core.dispatch(&world.res);
         self.core.dispatch(&world.res);
     }
 }

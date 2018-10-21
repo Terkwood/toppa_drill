@@ -76,7 +76,10 @@ pub enum TileTypes {
 /// Should run in a State and only once.
 /// Loads the spritesheet from the hardcoded path "Assets/Textures/Ores.png"
 /// and calculates the sprite-vec.
-pub fn prepare_spritesheet(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
+pub fn prepare_spritesheet(
+    world: &mut World,
+    progress_counter_ref_opt: Option<&mut ProgressCounter>,
+) {
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
     let loader_info = SpriteLoaderInfo {
         tex_id: ToppaSpriteSheet::Tiles as u64,
@@ -89,7 +92,7 @@ pub fn prepare_spritesheet(world: &mut World, progress_counter_ref: &mut Progres
         world,
         "Assets/Textures/Ores.png",
         loader_info,
-        progress_counter_ref,
+        progress_counter_ref_opt,
     ) {}
 }
 

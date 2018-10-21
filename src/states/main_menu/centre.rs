@@ -107,10 +107,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
             if self.screen_prefabs.contains_key(&MenuScreens::Centre) {
                 if let Some(prefab_handle) = self.screen_prefabs.get(&MenuScreens::Centre) {
                     self.screen_entities.insert(MenuScreens::Centre, {
-                        world
-                            .create_entity()
-                            .with({ prefab_handle }.clone())
-                            .build()
+                        world.create_entity().with(prefab_handle.clone()).build()
                     });
                 } else {
                     error!("No PrefabHandle found for Main Menu even though the screen_prefabs-HashMap contains the key !?");
@@ -174,7 +171,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn update(
+        &mut self,
+        data: StateData<ToppaGameData>,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { world, data } = data;
         self.dispatch(&world);
         data.update_menu(&world);
@@ -311,7 +311,11 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         });
     }
 
-    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_click(
+        &self,
+        world: &mut World,
+        target: Entity,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::CentreButtons::*;
         if let Some(button) = self.buttons.get(&target) {
             match button {

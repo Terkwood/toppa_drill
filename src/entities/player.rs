@@ -5,11 +5,13 @@ use amethyst::{
     renderer::{SpriteRender, Transparent},
 };
 
-use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
+use {
+    components::for_characters::{TagGenerator, TagPlayer},
+    resources::ToppaSpriteSheet,
+    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
+};
 
-use resources::ToppaSpriteSheet;
-
-pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
+pub fn init(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter>) {
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
     let loader_info = SpriteLoaderInfo {
         tex_id: ToppaSpriteSheet::Player as u64,
@@ -22,7 +24,7 @@ pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
         world,
         "Assets/Textures/Drill.png",
         loader_info,
-        progress_counter_ref,
+        progress_counter_ref_opt,
     ) {
         let drill_sprite = SpriteRender {
             sprite_sheet: ss_handle,
@@ -33,11 +35,18 @@ pub fn init(world: &mut World, progress_counter_ref: &mut ProgressCounter) {
         let mut transform = Transform::default();
         transform.translation = Vector3::new(0.0, 0.0, 0.0);
 
+        let mut player_tag = TagPlayer { id: 0 };
+        {
+            let mut player_tag_resource = world.write_resource::<TagGenerator>();
+            player_tag = player_tag_resource.new_player_tag();
+        }
+
         world
             .create_entity()
             .with(transform)
             .with(Transparent)
             .with(drill_sprite)
+            .with(player_tag)
             .build();
     }
 }

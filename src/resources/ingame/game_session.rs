@@ -15,7 +15,12 @@ pub struct GameSessionData {
 }
 
 impl GameSessionData {
-    pub fn new(name: &'static str, planet_dim: (u32, u32), chunk_dim: (u32, u32), render_config: &RenderConfig) -> GameSessionData {
+    pub fn new(
+        name: &'static str,
+        planet_dim: (u32, u32),
+        chunk_dim: (u32, u32),
+        render_config: &RenderConfig,
+    ) -> GameSessionData {
         GameSessionData {
             game_name: name,
             planet: Planet::new(planet_dim, chunk_dim, render_config),

@@ -1,26 +1,26 @@
+use std::collections::HashMap;
+
 use amethyst::{
-    assets::{Handle, ProgressCounter, Completion},
+    assets::{Completion, Handle, ProgressCounter},
     core::timing::Time,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::{
-        VirtualKeyCode,
-        HiddenPropagate,
-    },
-    ui::{
-        UiEventType,
-        UiFinder,
-        UiCreator, 
-        UiLoader,
-        UiPrefab,
-    },
+    renderer::{HiddenPropagate, VirtualKeyCode},
+    ui::{UiCreator, UiEventType, UiFinder, UiLoader, UiPrefab},
 };
-use std::collections::HashMap;
-use {states::{
-    ToppaState, ingame,
+
+use {
+    components::for_characters::{
+        TagGenerator,
+        TagPlayer,
     },
-    systems::DummySystem, 
+    resources::{
+        ingame::{planet::Planet, GameSessionData},
+        RenderConfig,
+    },
+    states::{ingame, ToppaState},
+    systems::DummySystem,
     ToppaGameData,
 };
 
@@ -30,7 +30,7 @@ enum NewGameButtons {
     CreateNewGame,
 }
 
-struct GameInfo{
+struct GameInfo {
     name: &'static str,
     planet_dim: (u32, u32),
     chunk_dim: (u32, u32),
@@ -129,7 +129,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn update(
+        &mut self,
+        data: StateData<ToppaGameData>,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data } = data;
         self.dispatch(&world);
         data.update_menu(&world);
@@ -137,7 +140,11 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
 
         if !self.b_buttons_found {
             self.insert_button(&mut world, NewGameButtons::Back, "menu_newgame_back_button");
-            self.insert_button(&mut world, NewGameButtons::CreateNewGame, "menu_newgame_creategame_button");
+            self.insert_button(
+                &mut world,
+                NewGameButtons::CreateNewGame,
+                "menu_newgame_creategame_button",
+            );
             self.b_buttons_found = true;
         }
 
@@ -186,7 +193,11 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         });
     }
 
-    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_click(
+        &self,
+        world: &mut World,
+        target: Entity,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::NewGameButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {
@@ -206,44 +217,39 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
     fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Creating new game.");
 
-        use resources::{
-            ingame::{planet::Planet, GameSessionData},
-            RenderConfig,
-        };
-
         // TODO: Move to Centre state and add to `World` there.
         let ren_con = RenderConfig {
             tile_base_render_dim: (64.0, 64.0),
             chunk_render_distance: 1,
         };
 
-        if let Some(ref game_info) = self.game_info{
-            let session_data = GameSessionData::new(
-                game_info.name, 
-                game_info.planet_dim, 
-                game_info.chunk_dim, 
-                &ren_con // TODO: &world.read_resource::<RenderConfig>();
-            );
+        // NOTE: Think about how to do this better
+        world.add_resource::<TagGenerator>(TagGenerator::default());
 
+        if let Some(ref game_info) = self.game_info {
+            let session_data = GameSessionData::new(
+                game_info.name,
+                game_info.planet_dim,
+                game_info.chunk_dim,
+                &ren_con, // TODO: &world.read_resource::<RenderConfig>();
+            );
             world.add_resource::<GameSessionData>(session_data);
-        }
-        else{
+        } else {
             let session_data = GameSessionData::new(
-                "Terra Incognita", 
-                (2, 2), 
-                (5, 3), 
-                &ren_con // TODO: &world.read_resource::<RenderConfig>();
+                "Terra Incognita",
+                (2, 2),
+                (5, 3),
+                &ren_con, // TODO: &world.read_resource::<RenderConfig>();
             );
-
             world.add_resource::<GameSessionData>(session_data);
         }
 
         // TODO: remove this
         world.add_resource::<RenderConfig>(ren_con);
+        world.register::<TagPlayer>();
 
-        let ingame_ui_prefab_handle = Some(
-               world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ()))
-        );     
+        let ingame_ui_prefab_handle =
+            Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));
 
         Trans::Switch(Box::new({
             ingame::IngameBaseState::new(world, ingame_ui_prefab_handle.clone())

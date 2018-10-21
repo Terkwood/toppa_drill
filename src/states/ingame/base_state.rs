@@ -4,7 +4,7 @@ use amethyst::{
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::VirtualKeyCode,
+    renderer::{HiddenPropagate, VirtualKeyCode},
     ui::{
         UiEventType,
         UiFinder,
@@ -13,7 +13,7 @@ use amethyst::{
     },
 };
 use std::collections::HashMap;
-use {states::ToppaState, systems::DummySystem, ToppaGameData};
+use {entities, states::ToppaState, systems::DummySystem, ToppaGameData};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 enum BaseStateButtons {
@@ -33,7 +33,7 @@ pub struct IngameBaseState<'d, 'e> {
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
     // The Handle of the Prefab for the displayed Ui Entity.
-    ui_screen: Option<Handle<UiPrefab>>,
+    current_screen_prefab: Option<Handle<UiPrefab>>,
     // Map of the Ui Button entities and the corresponding button type.
     ui_buttons: HashMap<Entity, BaseStateButtons>,
     b_buttons_found: bool,
@@ -57,7 +57,7 @@ impl<'d, 'e> ToppaState for IngameBaseState<'d, 'e> {
     fn disable_dispatcher(&mut self) {
         self.dispatcher = None;
     }
-
+    /*
     fn disable_current_screen(&mut self, world: &mut World) {
         if let Some(entity) = self.current_screen {
             let _ = world.delete_entity(entity);
@@ -65,17 +65,45 @@ impl<'d, 'e> ToppaState for IngameBaseState<'d, 'e> {
     }
 
     fn enable_current_screen(&mut self, world: &mut World) {
-        if let Some(ref prefab_handle) = self.ui_screen {
+        if let Some(ref prefab_handle) = self.current_screen_prefab {
             self.current_screen = Some(world.create_entity().with(prefab_handle.clone()).build());
             warn!("Building ingame ui.");
         };
     }
+*/
+    fn disable_current_screen(&mut self, world: &mut World) {
+        if let Some(entity) = self.current_screen {
+            let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
+            match hidden_component_storage.insert(entity, HiddenPropagate::default()) {
+                Ok(_v) => {}
+                Err(e) => error!(
+                    "Failed to add HiddenPropagateComponent to CentreState Ui. {:?}",
+                    e
+                ),
+            };
+        };
+    }
 
+    fn enable_current_screen(&mut self, world: &mut World) {
+        if let Some(entity) = self.current_screen {
+            let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
+            hidden_component_storage.remove(entity);
+        } else {
+            self.b_buttons_found = false;
+            self.ui_buttons.clear();
+            if let Some(ref prefab_handle) = self.current_screen_prefab {
+                self.current_screen =
+                    Some(world.create_entity().with(prefab_handle.clone()).build());
+            } else {
+                error!("No PrefabHandle found for ingame base ui.");
+            }
+        }
+    }
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
         IngameBaseState {
             menu_duration: 0.0,
             current_screen: None,
-            ui_screen: screen_opt,
+            current_screen_prefab: screen_opt,
             progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
@@ -111,18 +139,36 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         }
     }
 
-    fn update(&mut self, data: StateData<ToppaGameData>) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn update(
+        &mut self,
+        data: StateData<ToppaGameData>,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data } = data;
         self.dispatch(&world);
         data.update_ingame(&world);
 
-        if !self.b_buttons_found{
-            self.b_buttons_found =
-                self.insert_button(&mut world, BaseStateButtons::Inventory, "ingame_base_inventory_button") &&
-                self.insert_button(&mut world, BaseStateButtons::Exit, "ingame_base_exit_button") &&
-                self.insert_button(&mut world, BaseStateButtons::Save, "ingame_base_save_button") &&
-                self.insert_button(&mut world, BaseStateButtons::Mute, "ingame_base_mute_button") &&
-                self.insert_button(&mut world, BaseStateButtons::Options, "ingame_base_options_button");
+        if !self.b_buttons_found {
+            self.b_buttons_found = self.insert_button(
+                &mut world,
+                BaseStateButtons::Inventory,
+                "ingame_base_inventory_button",
+            ) && self.insert_button(
+                &mut world,
+                BaseStateButtons::Exit,
+                "ingame_base_exit_button",
+            ) && self.insert_button(
+                &mut world,
+                BaseStateButtons::Save,
+                "ingame_base_save_button",
+            ) && self.insert_button(
+                &mut world,
+                BaseStateButtons::Mute,
+                "ingame_base_mute_button",
+            ) && self.insert_button(
+                &mut world,
+                BaseStateButtons::Options,
+                "ingame_base_options_button",
+            );
         }
 
         Trans::None
@@ -133,6 +179,11 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher();
+
+        entities::player::init(world, None);
+        let view_dim = (960.0, 540.0); //quarter of 1920x1080
+        entities::camera::init(world, view_dim);
+        entities::tile::prepare_spritesheet(world, Some(&mut self.progress_counter));
     }
 
     // Executed when this game state gets popped.
@@ -157,7 +208,12 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
 }
 
 impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
-    fn insert_button(&mut self, world: &mut World, button: BaseStateButtons, button_name: &str) -> bool{
+    fn insert_button(
+        &mut self,
+        world: &mut World,
+        button: BaseStateButtons,
+        button_name: &str,
+    ) -> bool {
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name) {
                 info!("Found {}.", button_name);
@@ -170,7 +226,11 @@ impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
         })
     }
 
-    fn btn_click(&self, world: &mut World, target: Entity) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_click(
+        &self,
+        world: &mut World,
+        target: Entity,
+    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::BaseStateButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {

@@ -70,7 +70,11 @@ pub struct Planet {
 
 // public interface
 impl Planet {
-    pub fn new(planet_dim: (u32, u32), chunk_dim: (u32, u32), render_config: &RenderConfig) -> Planet {
+    pub fn new(
+        planet_dim: (u32, u32),
+        chunk_dim: (u32, u32),
+        render_config: &RenderConfig,
+    ) -> Planet {
         // Chunk of the player + render distance in two directions (left+right | top+bottom)
         let chunk_count_per_direction = 1 + 2 * render_config.chunk_render_distance;
         let chunk_count = chunk_count_per_direction * chunk_count_per_direction;
@@ -84,20 +88,20 @@ impl Planet {
         // clamp chunks to 0 <= x <= u32::MAX && 0 <= y <= u32::MAX
 
         // Testing wrapping
-        for y in ({rv.planet_dim.1 - render_config.chunk_render_distance})..=({rv.planet_dim.1 + render_config.chunk_render_distance})  {
-            for x in ({rv.planet_dim.0 - render_config.chunk_render_distance})..=({rv.planet_dim.0 + render_config.chunk_render_distance}) {
+        for y in ({ rv.planet_dim.1 - render_config.chunk_render_distance })..=({
+            rv.planet_dim.1 + render_config.chunk_render_distance
+        }) {
+            for x in ({ rv.planet_dim.0 - render_config.chunk_render_distance })..=({
+                rv.planet_dim.0 + render_config.chunk_render_distance
+            }) {
                 if let Some(chunk_id) = {
                     let mut rv = ChunkIndex(y, x);
-                    if rv.0 >= planet_dim.0{
+                    if rv.0 >= planet_dim.0 {
                         rv.0 = (rv.0 % planet_dim.0); // + self.planet_dim.1;
-                        info!(
-                            "chunk y-index originally {:?} is out of bounds.",
-                            y
-                        );
+                        info!("chunk y-index originally {:?} is out of bounds.", y);
                         None
-                    }
-                    else{
-                        if rv.1 >= planet_dim.1{
+                    } else {
+                        if rv.1 >= planet_dim.1 {
                             rv.1 = (rv.1 % planet_dim.1); // + self.planet_dim.0;
                             info!(
                                 "chunk x-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
@@ -106,16 +110,19 @@ impl Planet {
                         }
                         Some(rv)
                     }
-                }{
+                } {
                     debug!("+----------");
-                    debug!("| chunk number {}, {:?}", { chunk_id.0 * rv.planet_dim.1 + chunk_id.1 }, chunk_id);
+                    debug!(
+                        "| chunk number {}, {:?}",
+                        { chunk_id.0 * rv.planet_dim.1 + chunk_id.1 },
+                        chunk_id
+                    );
                     rv.new_chunk(chunk_id);
-                }
-                else{
-                    warn!("{:?} is out of bounds.", ChunkIndex(y,x));
+                } else {
+                    warn!("{:?} is out of bounds.", ChunkIndex(y, x));
                 }
             }
-        }/*
+        } /*
         for y in 0..chunk_count_per_direction {
             for x in 0..chunk_count_per_direction {
                 debug!("+----------");
@@ -134,10 +141,9 @@ impl Planet {
     /// Returns `None` if no chunk at the given index exists.
     /// Try calling `new_chunk()` in that case.
     pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk> {
-        if let Some(clamped_index) = self.clamp_chunk_index(index){
+        if let Some(clamped_index) = self.clamp_chunk_index(index) {
             self.chunks.get(&clamped_index)
-        }
-        else{
+        } else {
             None
         }
     }
@@ -153,16 +159,12 @@ impl Planet {
     /// Returns none if the index is out of bounds in y-direction.
     pub fn clamp_chunk_index(&self, index: ChunkIndex) -> Option<ChunkIndex> {
         let mut rv = index;
-        if rv.0 >= self.planet_dim.0{
+        if rv.0 >= self.planet_dim.0 {
             rv.0 = (rv.0 % self.planet_dim.0); // + self.planet_dim.1;
-            info!(
-                "chunk Y-index originally  {:?} is out of bounds.",
-                index.0
-            );
+            info!("chunk Y-index originally  {:?} is out of bounds.", index.0);
             None
-        }
-        else{
-            if rv.1 >= self.planet_dim.1{
+        } else {
+            if rv.1 >= self.planet_dim.1 {
                 rv.1 = (rv.1 % self.planet_dim.1); // + self.planet_dim.0;
                 info!(
                     "chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
@@ -177,7 +179,8 @@ impl Planet {
     /// which can either be fetched from the world, or from its storage.
     pub fn new_chunk(&mut self, chunk_id: ChunkIndex) {
         // TODO: everything, maybe different tiles not only based on depth, but also x-pos?
-        self.chunks.insert(chunk_id, Chunk::new(chunk_id.0, self.chunk_dim));
+        self.chunks
+            .insert(chunk_id, Chunk::new(chunk_id.0, self.chunk_dim));
     }
 
     /// Drains all chunks currently stored in planet, useful when `save & exit` happens.

@@ -23,22 +23,32 @@ pub fn load_image_png(
     world: &mut World,
     path: &str,
     id: u64,
-    progress_counter_ref: &mut ProgressCounter,
+    progress_counter_ref_opt: Option<&mut ProgressCounter>,
 ) {
     let loader = world.read_resource::<Loader>();
 
     let texture_storage = world.read_resource::<AssetStorage<Texture>>();
 
-    let texture_handle = loader.load(
-        path,
-        PngFormat,
-        TextureMetadata::srgb(),
-        progress_counter_ref,
-        &texture_storage,
-    );
-
     let mut material_texture_set = world.write_resource::<MaterialTextureSet>();
-    material_texture_set.insert(id, texture_handle);
+    if let Some(progress_counter_ref) = progress_counter_ref_opt {
+        let texture_handle = loader.load(
+            path,
+            PngFormat,
+            TextureMetadata::srgb(),
+            progress_counter_ref,
+            &texture_storage,
+        );
+        material_texture_set.insert(id, texture_handle);
+    } else {
+        let texture_handle = loader.load(
+            path,
+            PngFormat,
+            TextureMetadata::srgb(),
+            (),
+            &texture_storage,
+        );
+        material_texture_set.insert(id, texture_handle);
+    }
 }
 
 /// Requires uniform grid spritesheet, where every sprite has the same size.
@@ -50,7 +60,7 @@ pub fn load_sprites_from_spritesheet(
     world: &mut World,
     sheet_path: &str,
     loader_info: SpriteLoaderInfo,
-    progress_counter_ref: &mut ProgressCounter,
+    progress_counter_ref_opt: Option<&mut ProgressCounter>,
 ) -> Option<SpriteSheetHandle> {
     // TODO: FIX padding ! top-most and right-most borders are broken,
     // subtract them from image-size first, before calculating sprite width/height
@@ -103,14 +113,18 @@ pub fn load_sprites_from_spritesheet(
         world,
         sheet_path,
         sprite_sheet.texture_id,
-        progress_counter_ref,
+        None, //not necessary since the following loader.load uses a ProgressCounter
     );
 
     let sprite_sheet_handle = {
         let loader = world.read_resource::<Loader>();
         let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
 
-        loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
+        if let Some(progress_counter_ref) = progress_counter_ref_opt {
+            loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
+        } else {
+            loader.load_from_data(sprite_sheet, (), &sprite_sheet_storage)
+        }
     };
     Some(sprite_sheet_handle)
 }

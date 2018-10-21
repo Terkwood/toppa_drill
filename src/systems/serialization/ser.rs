@@ -53,7 +53,7 @@ impl<'a> System<'a> for SerSavegameSystem {
         let mut savegame_dir_path = PathBuf::new();
         savegame_dir_path = savegame_dir_path.join(dir_path);
         savegame_dir_path = savegame_dir_path.join(Path::new(savegame_name));
-        warn!("savegame_dir_path: {:?}", savegame_dir_path.clone());
+        info!("savegame_dir_path: {:?}", savegame_dir_path.clone());
 
         // Filepath for the serialized planet
         let mut planet_file_path = PathBuf::new();
@@ -78,40 +78,44 @@ impl<'a> System<'a> for SerSavegameSystem {
 
         dir_exists = savegame_dir_path.exists();
         if dir_exists {
-            warn!("Overwriting old savegame: {:?}.", savegame_name);
-            for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap(){
-                if let Ok(entry) = entry_result{
+            info!("Overwriting old savegame: {:?}.", savegame_name);
+            for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap() {
+                if let Ok(entry) = entry_result {
                     let entry_path = entry.path();
-                    if entry_path.is_dir(){
-                        for sub_entry_res in fs::read_dir(entry_path.clone()).unwrap(){
-                            if let Ok(sub_entry) = sub_entry_res{
-                                if sub_entry.path().is_file(){
-                                    if let Err(e) = fs::remove_file(sub_entry.path()){
-                                        error!("Error removing file '{:?}': {:?}", sub_entry.path(), e);
+                    if entry_path.is_dir() {
+                        for sub_entry_res in fs::read_dir(entry_path.clone()).unwrap() {
+                            if let Ok(sub_entry) = sub_entry_res {
+                                if sub_entry.path().is_file() {
+                                    if let Err(e) = fs::remove_file(sub_entry.path()) {
+                                        error!(
+                                            "Error removing file '{:?}': {:?}",
+                                            sub_entry.path(),
+                                            e
+                                        );
                                     }
-                                }
-                                else{
+                                } else {
                                     error!("Found unexpected directory inside the savegame's chunk directory!");
                                 }
                             }
                         }
-                    }
-                    else if entry_path.is_file(){
-                        if let Err(e) = fs::remove_file(entry_path.clone()){
+                    } else if entry_path.is_file() {
+                        if let Err(e) = fs::remove_file(entry_path.clone()) {
                             error!("Error removing file '{:?}': {:?}", entry_path, e);
                         }
+                    } else {
+                        error!(
+                            "Error removing dir '{:?}' entry '{:?}!",
+                            savegame_dir_path.clone(),
+                            entry_path
+                        );
                     }
-                    else{
-                        error!("Error removing dir '{:?}' entry '{:?}!", savegame_dir_path.clone(), entry_path);
-                    }
-                }
-                else{
+                } else {
                     error!("Error reading dir '{:?}' entry!", savegame_dir_path.clone());
                 }
             }
             commence_serializing = true;
 
-            /*dir_exists = chunk_dir_path.exists();
+        /*dir_exists = chunk_dir_path.exists();
             if dir_exists {
                 commence_serializing = true;
             } else {
@@ -211,7 +215,8 @@ impl<'a> System<'a> for SerSavegameSystem {
                 }
                 let mut chunk_file_path = chunk_dir_path.clone();
                 chunk_file_path = chunk_file_path.join(Path::new(
-                    &{ (chunk_index.1 * savegame_planet.planet_dim.0 + chunk_index.0) as u64 }.to_string(),
+                    &{ (chunk_index.1 * savegame_planet.planet_dim.0 + chunk_index.0) as u64 }
+                        .to_string(),
                 ));
                 chunk_file_path.set_extension("ron");
 
