@@ -1,6 +1,6 @@
 use amethyst::{
     assets::{Handle, ProgressCounter},
-    core::timing::Time,
+    core::{timing::Time, transform::components::Transform},
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
@@ -13,7 +13,13 @@ use amethyst::{
     },
 };
 use std::collections::HashMap;
-use {entities, states::ToppaState, systems::DummySystem, ToppaGameData};
+use {
+    entities,
+    resources::ingame::GameSprites,
+    states::ToppaState,
+    systems::{ingame::PlayerPositionSystem, DummySystem},
+    ToppaGameData,
+};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 enum BaseStateButtons {
@@ -27,7 +33,8 @@ enum BaseStateButtons {
 /// The game creation state, where a new game can be started.
 pub struct IngameBaseState<'d, 'e> {
     menu_duration: f32,
-    dispatcher: Option<Dispatcher<'d, 'e>>,
+    main_dispatcher: Option<Dispatcher<'d, 'e>>,
+    shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
     progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
@@ -41,21 +48,28 @@ pub struct IngameBaseState<'d, 'e> {
 
 impl<'d, 'e> ToppaState for IngameBaseState<'d, 'e> {
     fn dispatch(&mut self, world: &World) {
-        if let Some(ref mut dispatcher) = self.dispatcher {
+        if let Some(ref mut dispatcher) = self.main_dispatcher {
+            dispatcher.dispatch(&world.res);
+        };
+    }
+
+    fn shadow_dispatch(&mut self, world: &World) {
+        if let Some(ref mut dispatcher) = self.shadow_dispatcher {
             dispatcher.dispatch(&world.res);
         };
     }
 
     fn enable_dispatcher(&mut self) {
-        self.dispatcher = Some(
+        self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
+                .with(PlayerPositionSystem, "player_position_system", &[])
                 .build(),
         );
     }
 
     fn disable_dispatcher(&mut self) {
-        self.dispatcher = None;
+        self.main_dispatcher = None;
     }
     /*
     fn disable_current_screen(&mut self, world: &mut World) {
@@ -107,7 +121,8 @@ impl<'d, 'e> ToppaState for IngameBaseState<'d, 'e> {
             progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
-            dispatcher: None,
+            main_dispatcher: None,
+            shadow_dispatcher: None,
         }
     }
 }
@@ -174,15 +189,37 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         Trans::None
     }
 
+    fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
+        let StateData { mut world, data } = data;
+        self.dispatch(&world);
+    }
+
     // Executed when this game state runs for the first time.
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher();
 
+        // TODO: Get rid.
+        use components::for_characters::{player::Position, TagPlayer};
+        world.register::<TagPlayer>();
+        world.register::<Position>();
+
         entities::player::init(world, None);
-        let view_dim = (960.0, 540.0); //quarter of 1920x1080
-        entities::camera::init(world, view_dim);
+
+        let sprite = {
+            world
+                .read_resource::<GameSprites>()
+                .get(entities::EntitySpriteRender::Player)
+                .unwrap()
+        }.clone();
+        let mut transform = Transform::default();
+        entities::player::new(world, &transform, &sprite);
+        transform.translation[0] += 200.0;
+        entities::player::new(world, &transform, &sprite);
+        transform.translation[0] += 200.0;
+        entities::player::new(world, &transform, &sprite);
+
         entities::tile::prepare_spritesheet(world, Some(&mut self.progress_counter));
     }
 

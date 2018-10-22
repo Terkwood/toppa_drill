@@ -11,12 +11,9 @@ use amethyst::{
 };
 
 use {
-    components::for_characters::{
-        TagGenerator,
-        TagPlayer,
-    },
+    components::for_characters::{TagGenerator, TagPlayer},
     resources::{
-        ingame::{planet::Planet, GameSessionData},
+        ingame::{planet::Planet, GameSessionData, GameSprites},
         RenderConfig,
     },
     states::{ingame, ToppaState},
@@ -32,8 +29,8 @@ enum NewGameButtons {
 
 struct GameInfo {
     name: &'static str,
-    planet_dim: (u32, u32),
-    chunk_dim: (u32, u32),
+    planet_dim: (u64, u64),
+    chunk_dim: (u64, u64),
 }
 
 /// The game creation state, where a new game can be started.
@@ -216,37 +213,23 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
 
     fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         info!("Creating new game.");
-
-        // TODO: Move to Centre state and add to `World` there.
-        let ren_con = RenderConfig {
-            tile_base_render_dim: (64.0, 64.0),
-            chunk_render_distance: 1,
-        };
-
         // NOTE: Think about how to do this better
         world.add_resource::<TagGenerator>(TagGenerator::default());
+        world.add_resource::<GameSprites>(GameSprites::default());
 
+        let ren_con = &world.read_resource::<RenderConfig>().clone();
         if let Some(ref game_info) = self.game_info {
             let session_data = GameSessionData::new(
                 game_info.name,
                 game_info.planet_dim,
                 game_info.chunk_dim,
-                &ren_con, // TODO: &world.read_resource::<RenderConfig>();
+                ren_con,
             );
             world.add_resource::<GameSessionData>(session_data);
         } else {
-            let session_data = GameSessionData::new(
-                "Terra Incognita",
-                (2, 2),
-                (5, 3),
-                &ren_con, // TODO: &world.read_resource::<RenderConfig>();
-            );
+            let session_data = GameSessionData::new("Terra Incognita", (16, 16), (1, 1), ren_con);
             world.add_resource::<GameSessionData>(session_data);
         }
-
-        // TODO: remove this
-        world.add_resource::<RenderConfig>(ren_con);
-        world.register::<TagPlayer>();
 
         let ingame_ui_prefab_handle =
             Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));

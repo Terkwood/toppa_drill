@@ -1,5 +1,3 @@
-mod follow_camera;
+mod player_position;
 
-pub use self::{
-    follow_camera::FollowCameraSystem,
-}
+pub use self::player_position::PlayerPositionSystem;

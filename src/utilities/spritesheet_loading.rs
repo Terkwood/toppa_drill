@@ -13,8 +13,8 @@ use resources::ToppaSpriteSheet;
 
 pub struct SpriteLoaderInfo {
     pub tex_id: u64,
-    pub image_size: (u32, u32),
-    pub sprite_count: (u32, u32),
+    pub image_size: (u64, u64),
+    pub sprite_count: (u64, u64),
     pub sprite_render_size: (f32, f32),
 }
 

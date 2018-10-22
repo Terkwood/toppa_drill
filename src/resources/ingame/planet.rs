@@ -9,7 +9,10 @@ use std::{
     fmt,
 };
 
-use amethyst::ecs::{Builder, Entity, World};
+use amethyst::{
+    core::transform::components::Transform,
+    ecs::{Builder, Entity, World},
+};
 
 use entities::tile::TileTypes;
 use resources::RenderConfig;
@@ -19,7 +22,7 @@ use resources::RenderConfig;
 /// The Index of a planet in the [Galaxy](struct.Galaxy.html).
 #[allow(dead_code)]
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
-pub struct PlanetIndex(u32, u32);
+pub struct PlanetIndex(u64, u64);
 
 
 
@@ -35,7 +38,33 @@ pub struct Galaxy {
 ///
 /// Uses (rows, columns).
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-pub struct ChunkIndex(pub u32, pub u32);
+pub struct ChunkIndex(pub u64, pub u64);
+
+impl ChunkIndex {
+    pub fn from_transform(
+        transform: &Transform,
+        render_config: &RenderConfig,
+        planet: &Planet,
+    ) -> Option<Self> {
+        let x_transl = transform.translation[0];
+        let y_transl = transform.translation[1];
+
+        let tile_width_f32 = render_config.tile_base_render_dim.1;
+        let tile_height_f32 = render_config.tile_base_render_dim.0;
+        let chunk_width_f32 = planet.chunk_dim.1 as f32 * tile_width_f32;
+        let chunk_height_f32 = planet.chunk_dim.0 as f32 * tile_height_f32;
+
+        let chunk_x_f32 = (x_transl / chunk_width_f32).trunc();
+        let chunk_y_f32 = (y_transl / chunk_height_f32).trunc();
+        if chunk_x_f32.is_sign_negative() || chunk_y_f32.is_sign_negative() {
+            return None;
+        }
+
+        let chunk_x = chunk_x_f32.trunc();
+        let chunk_y = chunk_y_f32.trunc();
+        Some(ChunkIndex(chunk_y as u64, chunk_x as u64))
+    }
+}
 
 impl fmt::Display for ChunkIndex {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -56,11 +85,11 @@ impl fmt::Display for ChunkIndex {
 pub struct Planet {
     /// The dimension of a planet expressed in the count of chunks in x and y direction.
     /// Differs based on the setting `Planet size` when creating a new game.
-    pub planet_dim: (u32, u32),
+    pub planet_dim: (u64, u64),
     // TODO: Make adjustable while playing. Requires reassigning tiles to new chunks.
     /// The dimension of a chunk expressed in tilecount in x and y direction.
     /// Cannot be changed once the game was created (at least for now).
-    pub chunk_dim: (u32, u32),
+    pub chunk_dim: (u64, u64),
     // A map of individual chunks of the planet, only a small number is loaded at a time.
     // Chunks that are too far from the player get serialized and stored to the disk.
     // Private to prevent users from meddling with it.
@@ -71,8 +100,8 @@ pub struct Planet {
 // public interface
 impl Planet {
     pub fn new(
-        planet_dim: (u32, u32),
-        chunk_dim: (u32, u32),
+        planet_dim: (u64, u64),
+        chunk_dim: (u64, u64),
         render_config: &RenderConfig,
     ) -> Planet {
         // Chunk of the player + render distance in two directions (left+right | top+bottom)
@@ -85,7 +114,7 @@ impl Planet {
         };
 
         // <DEBUG>
-        // clamp chunks to 0 <= x <= u32::MAX && 0 <= y <= u32::MAX
+        // clamp chunks to 0 <= x <= u64::MAX && 0 <= y <= u64::MAX
 
         // Testing wrapping
         for y in ({ rv.planet_dim.1 - render_config.chunk_render_distance })..=({
@@ -201,7 +230,45 @@ impl Planet {
 ///
 /// Uses (rows, columns).
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-pub struct TileIndex(pub u32, pub u32);
+pub struct TileIndex(pub u64, pub u64);
+
+impl TileIndex {
+    /// Convenience function returning only the TileIndex. Best used when Chunk Index is known
+    pub fn from_transform(
+        transform: &Transform,
+        chunk_index: ChunkIndex,
+        render_config: &RenderConfig,
+        planet: &Planet,
+    ) -> Option<Self> {
+        let x_transl = transform.translation[0];
+        let y_transl = transform.translation[1];
+
+        let tile_width_f32 = render_config.tile_base_render_dim.1;
+        let tile_height_f32 = render_config.tile_base_render_dim.0;
+        let chunk_width_f32 = planet.chunk_dim.1 as f32 * tile_width_f32;
+        let chunk_height_f32 = planet.chunk_dim.0 as f32 * tile_height_f32;
+
+        let x_chunk_transl = x_transl - (chunk_index.1 as f32 * chunk_width_f32);
+        let y_chunk_transl = y_transl - (chunk_index.0 as f32 * chunk_height_f32);
+        // Supposedly more accurate, but is it necessary?
+        /*let x_chunk_transl = chunk_x.mul_add(-chunk_width_f32, x_transl);
+        let y_chunk_transl = chunk_y.mul_add(-chunk_height_f32, y_transl);*/
+
+        let tile_x_f32 = (x_chunk_transl / tile_width_f32).trunc();
+        let tile_y_f32 = (y_chunk_transl / tile_height_f32).trunc();
+        if tile_x_f32.is_sign_negative()
+            || tile_y_f32.is_sign_negative()
+            || tile_x_f32 > (x_chunk_transl + chunk_width_f32)
+            || tile_y_f32 > (y_chunk_transl + chunk_height_f32)
+        {
+            return None;
+        }
+
+        let tile_x = tile_x_f32.trunc();
+        let tile_y = tile_y_f32.trunc();
+        Some(TileIndex(tile_y as u64, tile_x as u64))
+    }
+}
 
 impl fmt::Display for TileIndex {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -210,7 +277,6 @@ impl fmt::Display for TileIndex {
         fmt.write_str(", ")?;
         fmt.write_str(&self.1.to_string())?;
         fmt.write_str(")")?;
-
         Ok(())
     }
 }
@@ -232,7 +298,7 @@ pub struct Chunk {
 
 // public interface
 impl Chunk {
-    pub fn new(depth: u32, chunk_dim: (u32, u32)) -> Chunk {
+    pub fn new(depth: u64, chunk_dim: (u64, u64)) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
         let mut rv = Chunk {
             tile_entities: BTreeMap::new(),

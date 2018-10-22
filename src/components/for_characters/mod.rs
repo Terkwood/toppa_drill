@@ -1,5 +1,7 @@
 use amethyst::ecs::prelude::{Component, VecStorage};
 
+pub mod player;
+
 /// This component is meant for player entities.
 #[derive(Debug, Clone, Copy)]
 pub struct TagPlayer {
