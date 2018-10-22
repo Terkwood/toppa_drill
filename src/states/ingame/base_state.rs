@@ -63,7 +63,7 @@ impl<'d, 'e> ToppaState for IngameBaseState<'d, 'e> {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                .with(PlayerPositionSystem, "player_position_system", &[])
+                .with(PlayerPositionSystem::default(), "player_position_system", &[])
                 .build(),
         );
     }

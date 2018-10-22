@@ -46,6 +46,7 @@ impl ChunkIndex {
         render_config: &RenderConfig,
         planet: &Planet,
     ) -> Option<Self> {
+        // TODO: Clamp to planet.planet_dim !
         let x_transl = transform.translation[0];
         let y_transl = transform.translation[1];
 

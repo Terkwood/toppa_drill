@@ -28,12 +28,23 @@ enum NewGameButtons {
 }
 
 struct GameInfo {
-    name: &'static str,
-    planet_dim: (u64, u64),
-    chunk_dim: (u64, u64),
+    pub name: &'static str,
+    pub planet_dim: (u64, u64),
+    pub chunk_dim: (u64, u64),
+}
+
+impl Default for GameInfo{
+    fn default() -> Self{
+        GameInfo{
+            name: "Terra Incognita",
+            planet_dim: (16, 16),
+            chunk_dim: (16, 32),
+        }
+    }
 }
 
 /// The game creation state, where a new game can be started.
+/// TODO: Buttons and TextBoxes etc, to enter GameName, planet and chunk dimensions, ... .
 pub struct NewGameState<'d, 'e> {
     menu_duration: f32,
     dispatcher: Option<Dispatcher<'d, 'e>>,
@@ -49,7 +60,7 @@ pub struct NewGameState<'d, 'e> {
 
     // Info specific to the game about to be created.
     // e.g. the player count, names, etc...
-    game_info: Option<GameInfo>,
+    game_info: GameInfo,
 }
 
 impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
@@ -94,7 +105,7 @@ impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             dispatcher: None,
-            game_info: None,
+            game_info: GameInfo::default(),
         }
     }
 }
@@ -218,18 +229,13 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         world.add_resource::<GameSprites>(GameSprites::default());
 
         let ren_con = &world.read_resource::<RenderConfig>().clone();
-        if let Some(ref game_info) = self.game_info {
-            let session_data = GameSessionData::new(
-                game_info.name,
-                game_info.planet_dim,
-                game_info.chunk_dim,
-                ren_con,
-            );
-            world.add_resource::<GameSessionData>(session_data);
-        } else {
-            let session_data = GameSessionData::new("Terra Incognita", (16, 16), (1, 1), ren_con);
-            world.add_resource::<GameSessionData>(session_data);
-        }
+        let session_data = GameSessionData::new(
+            self.game_info.name,
+            self.game_info.planet_dim,
+            self.game_info.chunk_dim,
+            ren_con,
+        );
+        world.add_resource::<GameSessionData>(session_data);
 
         let ingame_ui_prefab_handle =
             Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));

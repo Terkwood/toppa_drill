@@ -24,6 +24,7 @@ mod entities;
 mod resources;
 mod states;
 mod systems;
+mod events;
 mod toppa_game_data;
 
 mod utilities;
