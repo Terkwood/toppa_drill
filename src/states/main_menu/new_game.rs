@@ -47,7 +47,8 @@ impl Default for GameInfo{
 /// TODO: Buttons and TextBoxes etc, to enter GameName, planet and chunk dimensions, ... .
 pub struct NewGameState<'d, 'e> {
     menu_duration: f32,
-    dispatcher: Option<Dispatcher<'d, 'e>>,
+    main_dispatcher: Option<Dispatcher<'d, 'e>>,
+    shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
     progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
@@ -63,37 +64,13 @@ pub struct NewGameState<'d, 'e> {
     game_info: GameInfo,
 }
 
-impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
-    fn dispatch(&mut self, world: &World) {
-        if let Some(ref mut dispatcher) = self.dispatcher {
-            dispatcher.dispatch(&world.res);
-        };
-    }
-
+impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
     fn enable_dispatcher(&mut self) {
-        self.dispatcher = Some(
+        self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
                 .build(),
         );
-    }
-
-    fn disable_dispatcher(&mut self) {
-        self.dispatcher = None;
-    }
-
-    fn disable_current_screen(&mut self, world: &mut World) {
-        if let Some(entity) = self.current_screen {
-            let _ = world.delete_entity(entity);
-        };
-    }
-
-    fn enable_current_screen(&mut self, world: &mut World) {
-        self.b_buttons_found = false;
-        self.ui_buttons.clear();
-        if let Some(ref prefab_handle) = self.current_screen_prefab {
-            self.current_screen = Some(world.create_entity().with(prefab_handle.clone()).build());
-        };
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
@@ -104,9 +81,35 @@ impl<'d, 'e> ToppaState for NewGameState<'d, 'e> {
             progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
-            dispatcher: None,
+            main_dispatcher: None,
+            shadow_dispatcher: None,
             game_info: GameInfo::default(),
         }
+    }
+
+    fn get_screen_entity(&self) -> Option<Entity> {
+        self.current_screen
+    }
+
+    fn set_screen_entity(&mut self, screen_entity: Option<Entity>) {
+        self.current_screen = screen_entity;
+    }
+
+    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {
+        self.current_screen_prefab.clone()
+    }
+
+    fn get_main_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
+        &mut self.main_dispatcher
+    }
+
+    fn get_shadow_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
+        &mut self.shadow_dispatcher
+    }
+
+    fn reset_buttons(&mut self) {
+        self.b_buttons_found = false;
+        self.ui_buttons.clear();
     }
 }
 

@@ -32,7 +32,7 @@ pub struct CentreState<'d, 'e> {
     progress_counter: ProgressCounter,
 
     // Map of the Ui Button entities and the corresponding button type.
-    buttons: HashMap<Entity, CentreButtons>,
+    ui_buttons: HashMap<Entity, CentreButtons>,
     // Map of the PrefabHandles for all reachable states (convenient for the `ToppaState::new()` call on State change)
     screen_prefabs: HashMap<super::MenuScreens, Handle<UiPrefab>>,
     // Map of the Entities for all reachable states. Entities are only created after their prefab is loaded successfully.
@@ -42,13 +42,7 @@ pub struct CentreState<'d, 'e> {
     b_buttons_found: bool,
 }
 
-impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
-    fn dispatch(&mut self, world: &World) {
-        if let Some(ref mut dispatcher) = self.main_dispatcher {
-            dispatcher.dispatch(&world.res);
-        };
-    }
-
+impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     fn enable_dispatcher(&mut self) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
@@ -57,26 +51,12 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
         );
     }
 
-    fn disable_dispatcher(&mut self) {
-        self.main_dispatcher = None;
-    }
-
-    fn shadow_dispatch(&mut self, world: &World) {
-        if let Some(ref mut dispatcher) = self.shadow_dispatcher {
-            dispatcher.dispatch(&world.res);
-        };
-    }
-
     fn enable_shadow_dispatcher(&mut self) {
         self.shadow_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(ShadowDummySystem { counter: 0 }, "shadow_dummy_system", &[])
                 .build(),
         );
-    }
-
-    fn disable_shadow_dispatcher(&mut self) {
-        self.shadow_dispatcher = None;
     }
 
     fn disable_current_screen(&mut self, world: &mut World) {
@@ -93,8 +73,6 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
     }
 
     fn enable_current_screen(&mut self, world: &mut World) {
-        self.b_buttons_found = false;
-        self.buttons.clear();
         if self.screen_entities.contains_key(&MenuScreens::Centre) {
             if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre) {
                 let mut hidden_component_storage = world.write_storage::<HiddenPropagate>();
@@ -104,12 +82,18 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
             }
         } else {
             if self.screen_prefabs.contains_key(&MenuScreens::Centre) {
+                let mut handle = None;
                 if let Some(prefab_handle) = self.screen_prefabs.get(&MenuScreens::Centre) {
+                    handle = Some(prefab_handle.clone());
+                } else {
+                    error!("No PrefabHandle found for Main Menu even though the screen_prefabs-HashMap contains the key !?");
+                }
+
+                if let Some(prefab_handle) = handle {
+                    self.reset_buttons();
                     self.screen_entities.insert(MenuScreens::Centre, {
                         world.create_entity().with(prefab_handle.clone()).build()
                     });
-                } else {
-                    error!("No PrefabHandle found for Main Menu even though the screen_prefabs-HashMap contains the key !?");
                 }
             } else {
                 error!("No Prefab Handle found for Main Menu screen!");
@@ -126,7 +110,7 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
             main_dispatcher: None,
             shadow_dispatcher: None,
             progress_counter: ProgressCounter::new(),
-            buttons: HashMap::with_capacity(btn_count),
+            ui_buttons: HashMap::with_capacity(btn_count),
             screen_prefabs: HashMap::with_capacity(prefab_count),
             screen_entities: HashMap::with_capacity(prefab_count),
             b_screens_loaded: false,
@@ -140,6 +124,43 @@ impl<'d, 'e> ToppaState for CentreState<'d, 'e> {
             error!("No Prefab Handle provided for Main Menu screen!");
         }
         rv
+    }
+
+    fn get_screen_entity(&self) -> Option<Entity> {
+        if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre){
+            Some(*entity)
+        }
+        else{
+            None
+        }
+    }
+
+    fn set_screen_entity(&mut self, screen_entity: Option<Entity>) {
+        if let Some(entity) = screen_entity {
+            self.screen_entities.insert(MenuScreens::Centre, entity);
+        };
+    }
+
+    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {
+        if let Some(prefab) = self.screen_prefabs.get(&MenuScreens::Centre){
+            Some(prefab.clone())
+        }
+        else{
+            None
+        }
+    }
+
+    fn get_main_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
+        &mut self.main_dispatcher
+    }
+
+    fn get_shadow_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
+        &mut self.shadow_dispatcher
+    }
+
+    fn reset_buttons(&mut self) {
+        self.b_buttons_found = false;
+        self.ui_buttons.clear();
     }
 }
 
@@ -303,7 +324,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name) {
                 info!("Found {}.", button_name);
-                self.buttons.insert(entity, button);
+                self.ui_buttons.insert(entity, button);
             } else {
                 warn!("Couldn't find {}!", button_name);
             }
@@ -316,7 +337,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
         target: Entity,
     ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::CentreButtons::*;
-        if let Some(button) = self.buttons.get(&target) {
+        if let Some(button) = self.ui_buttons.get(&target) {
             match button {
                 NewGame => self.btn_new_game(world),
                 Load => self.btn_load(world),
