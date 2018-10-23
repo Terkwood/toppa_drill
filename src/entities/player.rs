@@ -1,12 +1,12 @@
 use amethyst::{
     assets::ProgressCounter,
-    core::{cgmath::Vector3, transform::components::Transform},
+    core::transform::components::Transform,
     prelude::*,
     renderer::{SpriteRender, Transparent},
 };
 
 use {
-    components::for_characters::{player::Position, TagGenerator, TagPlayer},
+    components::for_characters::{player::Position, TagGenerator},
     entities::{camera, EntitySpriteRender},
     resources::{
         ingame::{GameSessionData, GameSprites},
@@ -44,23 +44,19 @@ pub fn init(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCou
 /// Creates a new player and returns his ID.
 /// If `0`(Zero) is returned, the player has not been created.
 pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> usize {
-    let mut player_tag = TagPlayer { id: 0 };
-    {
-        let mut player_tag_resource = world.write_resource::<TagGenerator>();
-        player_tag = player_tag_resource.new_player_tag();
-    }
-    if player_tag.id == 0 {
-        return 0;
-    }
+    let player_tag = {
+        let mut tag_resource = world.write_resource::<TagGenerator>();
+        tag_resource.new_player_tag()
+    };
 
-    let mut position_opt = None;
-    let mut view_dim = (960, 540);
-    {
+    let (position_opt, view_dim) = {
         let render_config = &world.read_resource::<RenderConfig>();
         let planet = &world.read_resource::<GameSessionData>().planet;
-        position_opt = Position::from_transform(&transform, render_config, planet);
-        view_dim = render_config.view_dim;
-    }
+        (
+            Position::from_transform(&transform, render_config, planet),
+            render_config.view_dim,
+        )
+    };
 
     if let Some(position) = position_opt {
         let player = world

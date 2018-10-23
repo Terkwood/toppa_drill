@@ -1,15 +1,16 @@
-use amethyst::{
-    assets::ProgressCounter,
-    core::{cgmath::Vector3, transform::components::Transform},
-    prelude::*,
-    renderer::{SpriteRender, Transparent},
-};
+use amethyst::{assets::ProgressCounter, prelude::*, renderer::SpriteRender};
 
-use resources::{
-    ingame::planet::{ChunkIndex, TileIndex},
-    ToppaSpriteSheet,
+use {
+    entities::EntitySpriteRender,
+    resources::{
+        ingame::{
+            planet::{ChunkIndex, TileIndex},
+            GameSprites,
+        },
+        ToppaSpriteSheet,
+    },
+    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
 };
-use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 /// An enumaration of all ground tile types.
 #[allow(dead_code)]
@@ -91,16 +92,60 @@ pub fn prepare_spritesheet(
     if let Some(ss_handle) = load_sprites_from_spritesheet(
         world,
         "Assets/Textures/Ores.png",
-        loader_info,
+        loader_info.clone(),
         progress_counter_ref_opt,
-    ) {}
+    ) {
+        let mut game_sprites = world.write_resource::<GameSprites>();
+
+        for y in 0..loader_info.sprite_count.0 {
+            for x in 0..loader_info.sprite_count.1 {
+                let sprite_number = (y * loader_info.sprite_count.1 + x) as usize;
+                let ore_sprite = SpriteRender {
+                    sprite_sheet: ss_handle.clone(),
+                    sprite_number,
+                    flip_horizontal: false,
+                    flip_vertical: false,
+                };
+
+                //TODO: Make generic, currently bound to the png-layout
+                match sprite_number {
+                    0 => {
+                        game_sprites.add(EntitySpriteRender::Ore(TileTypes::Magnetite), ore_sprite)
+                    }
+                    1 => {
+                        game_sprites.add(EntitySpriteRender::Ore(TileTypes::Pyrolusite), ore_sprite)
+                    }
+                    2 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Fossile), ore_sprite),
+                    3 => game_sprites
+                        .add(EntitySpriteRender::Ore(TileTypes::Molybdenite), ore_sprite),
+                    4 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Lava), ore_sprite),
+                    5 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Rock), ore_sprite),
+                    6 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Gas), ore_sprite),
+                    7 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Galena), ore_sprite),
+                    8 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Bornite), ore_sprite),
+                    9 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Chromite), ore_sprite),
+                    10 => game_sprites
+                        .add(EntitySpriteRender::Ore(TileTypes::Cassiterite), ore_sprite),
+                    11 => {
+                        game_sprites.add(EntitySpriteRender::Ore(TileTypes::Cinnabar), ore_sprite)
+                    }
+                    12 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Dirt), ore_sprite),
+                    13 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Gold), ore_sprite),
+                    14 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Empty), ore_sprite),
+                    15 => game_sprites.add(EntitySpriteRender::Ore(TileTypes::Bauxite), ore_sprite),
+                    _ => continue,
+                };
+            }
+        }
+    }
 }
 
+#[allow(dead_code)]
 pub fn create_ore_with_world(
-    world: &mut World,
-    chunk: ChunkIndex,
-    index: TileIndex,
-    tiletype: TileTypes,
+    _world: &mut World,
+    _chunk: ChunkIndex,
+    _index: TileIndex,
+    _tiletype: TileTypes,
 ) {
     // TODO: Get spriteSheetHandle from texture id.
     // TODO: Get sprite from TileType
