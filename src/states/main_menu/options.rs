@@ -5,18 +5,13 @@ use amethyst::{
     input::{is_close_requested, is_key_down},
     prelude::*,
     renderer::VirtualKeyCode,
-    ui::{
-        UiEventType,
-        UiFinder,
-        //UiCreator, UiLoader,
-        UiPrefab,
-    },
+    ui::{UiEventType, UiPrefab},
 };
 use std::collections::HashMap;
 use {states::ToppaState, systems::DummySystem, ToppaGameData};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-enum OptionsButtons {
+pub enum OptionsButtons {
     Back,
 }
 
@@ -36,7 +31,8 @@ pub struct OptionsState<'d, 'e> {
     b_buttons_found: bool,
 }
 
-impl<'d, 'e> ToppaState<'d, 'e> for OptionsState<'d, 'e> {
+impl<'a, 'b, 'd, 'e> ToppaState<'d, 'e> for OptionsState<'d, 'e> {
+    type StateButton = OptionsButtons;
     fn enable_dispatcher(&mut self) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
@@ -82,6 +78,10 @@ impl<'d, 'e> ToppaState<'d, 'e> for OptionsState<'d, 'e> {
         self.b_buttons_found = false;
         self.ui_buttons.clear();
     }
+
+    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
+        &mut self.ui_buttons
+    }
 }
 
 impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for OptionsState<'d, 'e> {
@@ -121,7 +121,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for OptionsState<'
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found {
-            self.insert_button(&mut world, OptionsButtons::Back, "menu_options_back_button");
+            self.b_buttons_found =
+                self.insert_button(&mut world, OptionsButtons::Back, "menu_options_back_button");
             Trans::None
         } else {
             Trans::None
@@ -159,18 +160,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for OptionsState<'
 }
 
 impl<'a, 'b, 'd, 'e> OptionsState<'d, 'e> {
-    fn insert_button(&mut self, world: &mut World, button: OptionsButtons, button_name: &str) {
-        world.exec(|finder: UiFinder| {
-            if let Some(entity) = finder.find(button_name) {
-                info!("Found {}.", button_name);
-                self.ui_buttons.insert(entity, button);
-                self.b_buttons_found = true;
-            } else {
-                warn!("Couldn't find {}!", button_name);
-            }
-        });
-    }
-
     fn btn_click(
         &self,
         _world: &mut World,

@@ -1,14 +1,14 @@
-use std::collections::HashMap;
+use super::{CreditsState, LoadMenuState, MenuScreens, NewGameState, OptionsState};
 use amethyst::{
     assets::{Completion, Handle, ProgressCounter},
     core::timing::Time,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::{VirtualKeyCode, HiddenPropagate,},
-    ui::{UiEventType, UiFinder, UiLoader, UiPrefab},
+    renderer::{HiddenPropagate, VirtualKeyCode},
+    ui::{UiEventType, UiLoader, UiPrefab},
 };
-use super::{CreditsState, LoadMenuState, MenuScreens, NewGameState, OptionsState};
+use std::collections::HashMap;
 use {
     states::ToppaState,
     systems::{DummySystem, ShadowDummySystem},
@@ -16,7 +16,7 @@ use {
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-enum CentreButtons {
+pub enum CentreButtons {
     NewGame,
     Load,
     Options,
@@ -43,6 +43,7 @@ pub struct CentreState<'d, 'e> {
 }
 
 impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
+    type StateButton = CentreButtons;
     fn enable_dispatcher(&mut self) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
@@ -127,10 +128,9 @@ impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     }
 
     fn get_screen_entity(&self) -> Option<Entity> {
-        if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre){
+        if let Some(entity) = self.screen_entities.get(&MenuScreens::Centre) {
             Some(*entity)
-        }
-        else{
+        } else {
             None
         }
     }
@@ -142,10 +142,9 @@ impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     }
 
     fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {
-        if let Some(prefab) = self.screen_prefabs.get(&MenuScreens::Centre){
+        if let Some(prefab) = self.screen_prefabs.get(&MenuScreens::Centre) {
             Some(prefab.clone())
-        }
-        else{
+        } else {
             None
         }
     }
@@ -161,6 +160,10 @@ impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     fn reset_buttons(&mut self) {
         self.b_buttons_found = false;
         self.ui_buttons.clear();
+    }
+
+    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
+        &mut self.ui_buttons
     }
 }
 
@@ -201,12 +204,20 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found {
-            self.insert_button(world, CentreButtons::NewGame, "menu_centre_newgame_button");
-            self.insert_button(world, CentreButtons::Load, "menu_centre_load_button");
-            self.insert_button(world, CentreButtons::Options, "menu_centre_options_button");
-            self.insert_button(world, CentreButtons::Credits, "menu_centre_credits_button");
-            self.insert_button(world, CentreButtons::Exit, "menu_centre_exit_button");
-            self.b_buttons_found = true;
+            self.b_buttons_found =
+                self.insert_button(world, CentreButtons::NewGame, "menu_centre_newgame_button")
+                    && self.insert_button(world, CentreButtons::Load, "menu_centre_load_button")
+                    && self.insert_button(
+                        world,
+                        CentreButtons::Options,
+                        "menu_centre_options_button",
+                    )
+                    && self.insert_button(
+                        world,
+                        CentreButtons::Credits,
+                        "menu_centre_credits_button",
+                    )
+                    && self.insert_button(world, CentreButtons::Exit, "menu_centre_exit_button");
         }
 
         if !self.b_screens_loaded {
@@ -318,17 +329,6 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
             world.exec(|loader: UiLoader| loader.load(path, &mut self.progress_counter));
 
         self.screen_prefabs.insert(screen, prefab_handle);
-    }
-
-    fn insert_button(&mut self, world: &mut World, button: CentreButtons, button_name: &str) {
-        world.exec(|finder: UiFinder| {
-            if let Some(entity) = finder.find(button_name) {
-                info!("Found {}.", button_name);
-                self.ui_buttons.insert(entity, button);
-            } else {
-                warn!("Couldn't find {}!", button_name);
-            }
-        });
     }
 
     fn btn_click(

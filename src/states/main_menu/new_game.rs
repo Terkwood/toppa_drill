@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 
 use amethyst::{
-    assets::{Completion, Handle, ProgressCounter},
+    assets::Handle,
     core::timing::Time,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::{HiddenPropagate, VirtualKeyCode},
-    ui::{UiCreator, UiEventType, UiFinder, UiLoader, UiPrefab},
+    renderer::VirtualKeyCode,
+    ui::{UiEventType, UiLoader, UiPrefab},
 };
 
 use {
-    components::for_characters::{TagGenerator, TagPlayer},
+    components::for_characters::TagGenerator,
     resources::{
-        ingame::{planet::Planet, GameSessionData, GameSprites},
+        ingame::{GameSessionData, GameSprites},
         RenderConfig,
     },
     states::{ingame, ToppaState},
@@ -22,7 +22,7 @@ use {
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-enum NewGameButtons {
+pub enum NewGameButtons {
     Back,
     CreateNewGame,
 }
@@ -33,9 +33,9 @@ struct GameInfo {
     pub chunk_dim: (u64, u64),
 }
 
-impl Default for GameInfo{
-    fn default() -> Self{
-        GameInfo{
+impl Default for GameInfo {
+    fn default() -> Self {
+        GameInfo {
             name: "Terra Incognita",
             planet_dim: (16, 16),
             chunk_dim: (16, 32),
@@ -49,7 +49,7 @@ pub struct NewGameState<'d, 'e> {
     menu_duration: f32,
     main_dispatcher: Option<Dispatcher<'d, 'e>>,
     shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
-    progress_counter: ProgressCounter,
+    //progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
@@ -65,6 +65,7 @@ pub struct NewGameState<'d, 'e> {
 }
 
 impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
+    type StateButton = NewGameButtons;
     fn enable_dispatcher(&mut self) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
@@ -78,7 +79,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
             menu_duration: 0.0,
             current_screen: None,
             current_screen_prefab: screen_opt,
-            progress_counter: ProgressCounter::new(),
+            //progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
@@ -110,6 +111,10 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
     fn reset_buttons(&mut self) {
         self.b_buttons_found = false;
         self.ui_buttons.clear();
+    }
+
+    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
+        &mut self.ui_buttons
     }
 }
 
@@ -150,13 +155,13 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found {
-            self.insert_button(&mut world, NewGameButtons::Back, "menu_newgame_back_button");
-            self.insert_button(
-                &mut world,
-                NewGameButtons::CreateNewGame,
-                "menu_newgame_creategame_button",
-            );
-            self.b_buttons_found = true;
+            self.b_buttons_found =
+                self.insert_button(&mut world, NewGameButtons::Back, "menu_newgame_back_button")
+                    && self.insert_button(
+                        &mut world,
+                        NewGameButtons::CreateNewGame,
+                        "menu_newgame_creategame_button",
+                    );
         }
 
         Trans::None
@@ -193,17 +198,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
 }
 
 impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
-    fn insert_button(&mut self, world: &mut World, button: NewGameButtons, button_name: &str) {
-        world.exec(|finder: UiFinder| {
-            if let Some(entity) = finder.find(button_name) {
-                info!("Found {}.", button_name);
-                self.ui_buttons.insert(entity, button);
-            } else {
-                warn!("Couldn't find {}!", button_name);
-            }
-        });
-    }
-
     fn btn_click(
         &self,
         world: &mut World,
@@ -244,7 +238,7 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
             Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));
 
         Trans::Switch(Box::new({
-            ingame::IngameBaseState::new(world, ingame_ui_prefab_handle.clone())
+            ingame::IngameBaseState::new(world, ingame_ui_prefab_handle)
         }))
     }
 }

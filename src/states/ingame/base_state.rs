@@ -1,16 +1,11 @@
 use amethyst::{
     assets::{Handle, ProgressCounter},
-    core::{timing::Time, transform::components::Transform},
+    core::transform::components::Transform,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::{HiddenPropagate, VirtualKeyCode},
-    ui::{
-        UiEventType,
-        UiFinder,
-        //UiCreator, UiLoader,
-        UiPrefab,
-    },
+    renderer::VirtualKeyCode,
+    ui::{UiEventType, UiPrefab},
 };
 use std::collections::HashMap;
 use {
@@ -22,7 +17,7 @@ use {
 };
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-enum BaseStateButtons {
+pub enum BaseStateButtons {
     Inventory,
     Options,
     Exit,
@@ -32,7 +27,6 @@ enum BaseStateButtons {
 
 /// The game creation state, where a new game can be started.
 pub struct IngameBaseState<'d, 'e> {
-    menu_duration: f32,
     main_dispatcher: Option<Dispatcher<'d, 'e>>,
     shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
     progress_counter: ProgressCounter,
@@ -47,18 +41,21 @@ pub struct IngameBaseState<'d, 'e> {
 }
 
 impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
+    type StateButton = BaseStateButtons;
     fn enable_dispatcher(&mut self) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                .with(PlayerPositionSystem::default(), "player_position_system", &[])
-                .build(),
+                .with(
+                    PlayerPositionSystem::default(),
+                    "player_position_system",
+                    &[],
+                ).build(),
         );
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
         IngameBaseState {
-            menu_duration: 0.0,
             current_screen: None,
             current_screen_prefab: screen_opt,
             progress_counter: ProgressCounter::new(),
@@ -92,6 +89,10 @@ impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
     fn reset_buttons(&mut self) {
         self.b_buttons_found = false;
         self.ui_buttons.clear();
+    }
+
+    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
+        &mut self.ui_buttons
     }
 }
 
@@ -158,7 +159,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
     }
 
     fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data } = data;
+        let StateData { world, data: _ } = data;
         self.dispatch(&world);
     }
 
@@ -205,37 +206,19 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
 
     // Executed when another game state is pushed onto the stack.
     fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
+        let StateData { world: _, data: _ } = data;
         self.disable_dispatcher();
     }
 
     // Executed when the application returns to this game state,
     // after another gamestate was popped from the stack.
     fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
+        let StateData { world: _, data: _ } = data;
         self.enable_dispatcher();
     }
 }
 
 impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
-    fn insert_button(
-        &mut self,
-        world: &mut World,
-        button: BaseStateButtons,
-        button_name: &str,
-    ) -> bool {
-        world.exec(|finder: UiFinder| {
-            if let Some(entity) = finder.find(button_name) {
-                info!("Found {}.", button_name);
-                self.ui_buttons.insert(entity, button);
-                true
-            } else {
-                warn!("Couldn't find {}!", button_name);
-                false
-            }
-        })
-    }
-
     fn btn_click(
         &self,
         world: &mut World,
