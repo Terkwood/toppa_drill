@@ -15,9 +15,9 @@ name = "toppa_drill"
 path = "src/main.rs"
 
 [dependencies]
-# amethyst = { git = "https://github.com/Telzhaak/amethyst", features = []}
-amethyst = { path = "E:\\Workspaces\\Rust\\Amethyst\\00_Fork", features = ["saveload"]}
-# amethyst = { git = "https://github.com/Telzhaak/amethyst", features = ["nightly"]}
+# amethyst = { path = "E:\\Workspaces\\Rust\\Amethyst\\00_Fork", features = ["saveload"]}
+# amethyst = { git = "https://github.com/Telzhaak/amethyst", features = ["saveload"]}
+amethyst = { version = "0.9", features = ["saveload"]}
 
 log = { version = "0.4.5", features = ["serde"]}
 serde_derive = "1.0"
@@ -37,3 +37,4 @@ nightly = [
 sdl_controller = [
     "amethyst/sdl_controller",
 ]
+debug = []

@@ -28,6 +28,7 @@ use resources::{
     RenderConfig,
 };
 
+/// TODO: Serialize players.
 /// Creates a savegame by calling different serialization systems, based on the current [GameSessionData](struct.GameSessionData.html).
 /// Uses `.ron` format.
 pub struct SerSavegameSystem;
@@ -70,8 +71,10 @@ impl<'a> System<'a> for SerSavegameSystem {
         let mut dir_exists = dir_path.is_dir();
         if !dir_exists {
             if let Ok(_) = fs::create_dir(dir_path) {
+                #[cfg(feature = "debug")]
                 debug!("Savegame dir has been created at {:?}.", dir_path);
             } else {
+                #[cfg(feature = "debug")]
                 error!("Failed to create savegame dir at {:?}", dir_path);
             }
         }
@@ -114,24 +117,6 @@ impl<'a> System<'a> for SerSavegameSystem {
                 }
             }
             commence_serializing = true;
-
-        /*dir_exists = chunk_dir_path.exists();
-            if dir_exists {
-                commence_serializing = true;
-            } else {
-                if let Ok(_) = fs::create_dir(chunk_dir_path.clone()) {
-                    debug!(
-                        "Savegame's chunk dir has been created at {:?}.",
-                        chunk_dir_path.clone()
-                    );
-                    commence_serializing = true;
-                } else {
-                    error!(
-                        "Failed to create savegame's chunk dir at {:?}",
-                        chunk_dir_path.clone()
-                    );
-                }
-            }*/
         } else {
             if let Ok(_) = fs::create_dir_all(chunk_dir_path.clone()) {
                 commence_serializing = true;
@@ -142,39 +127,12 @@ impl<'a> System<'a> for SerSavegameSystem {
                     savegame_dir_path.clone()
                 );
             }
-            /*
-            if let Ok(_) = fs::create_dir(savegame_dir_path.clone()) {
-                dir_exists = chunk_dir_path.exists();
-                if dir_exists {
-                    commence_serializing = true;
-                } else {
-                    if let Ok(_) = fs::create_dir(chunk_dir_path.clone()) {
-                        debug!(
-                            "Savegame's chunk dir has been created at {:?}.",
-                            chunk_dir_path.clone()
-                        );
-
-                        commence_serializing = true;
-                    } else {
-                        error!(
-                            "Failed to create savegame's chunk dir at {:?}",
-                            chunk_dir_path.clone()
-                        );
-                    }
-                }
-            } else {
-                error!(
-                    "Failed to create savegame '{:?}'s dir at {:?}",
-                    savegame_name,
-                    savegame_dir_path.clone()
-                );
-            }
-            */
         }
 
         if commence_serializing {
+            #[cfg(feature = "debug")]
             debug!("Starting to serialize savegame.");
-
+            #[cfg(feature = "debug")]
             debug!("serializing game data.");
             let mut ser_planet = ron::ser::Serializer::new(Some(Default::default()), true);
             {
@@ -191,7 +149,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                     planet_file_path, e
                 );
             }
-
+            #[cfg(feature = "debug")]
             debug!("serializing planet.");
             for (chunk_index, chunk) in savegame_planet.iter_chunks() {
                 let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
@@ -200,6 +158,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                 */
                 {
                     use serde::ser::SerializeMap;
+                    #[cfg(feature = "debug")]
                     debug!("serializing chunk {:?}", chunk_index);
 
                     let mut serseq = ser_chunk.serialize_map(None).unwrap();
@@ -227,7 +186,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                     );
                 }
             }
-
+            #[cfg(feature = "debug")]
             debug!("Finished serializing savegame.");
         }
     }

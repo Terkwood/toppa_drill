@@ -201,9 +201,14 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         self.enable_dispatcher();
 
         // TODO: Get rid.
-        use components::for_characters::{player::Position, TagPlayer};
+        use amethyst::shrev::EventChannel;
+        use {
+            components::for_characters::{player::Position, TagPlayer},
+            events::planet_events::ChunkEvent,
+        };
         world.register::<TagPlayer>();
         world.register::<Position>();
+        world.add_resource(EventChannel::<ChunkEvent>::new());
 
         entities::player::init(world, None);
 

@@ -1,15 +1,14 @@
-use super::{CreditsState, LoadMenuState, MenuScreens, NewGameState, OptionsState};
-use amethyst::renderer::HiddenPropagate;
+use std::collections::HashMap;
 use amethyst::{
     assets::{Completion, Handle, ProgressCounter},
     core::timing::Time,
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::VirtualKeyCode,
+    renderer::{VirtualKeyCode, HiddenPropagate,},
     ui::{UiEventType, UiFinder, UiLoader, UiPrefab},
 };
-use std::collections::HashMap;
+use super::{CreditsState, LoadMenuState, MenuScreens, NewGameState, OptionsState};
 use {
     states::ToppaState,
     systems::{DummySystem, ShadowDummySystem},

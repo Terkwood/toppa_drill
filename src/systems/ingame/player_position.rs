@@ -57,14 +57,20 @@ impl<'s> System<'s> for PlayerPositionSystem{
         &mut self,
         (transforms, players, mut player_positions, session_data, render_config, mut chunk_event_channel): Self::SystemData,
     ) {
+        /*
+        #[cfg(feature = "debug")]
         debug!("+------");
+        */
         for (transform, player, mut player_pos) in
             (&transforms, &players, &mut player_positions).join()
         {
+            /*
+            #[cfg(feature = "debug")]
             debug!(
                 "| previous:\tplayer: {:?}\t pos: {:?}",
                 player.id, player_pos
             );
+            */
             let chunk_index = player_pos.chunk;
             let planet_ref = &session_data.planet;
             if let Some(tile_index) =
@@ -127,8 +133,14 @@ impl<'s> System<'s> for PlayerPositionSystem{
                     error!("Player {:?}'s ChunkIndex is out of planet bounds, maybe at negative transforms.", player.id);
                 }
             }
+            /*
+            #[cfg(feature = "debug")]
             debug!("| now:\tplayer: {:?}\t pos: {:?}", player.id, player_pos);
+            */
         }
+        /*
+        #[cfg(feature = "debug")]
         debug!("+------");
+        */
     }
 }

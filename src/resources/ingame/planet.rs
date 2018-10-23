@@ -141,7 +141,9 @@ impl Planet {
                         Some(rv)
                     }
                 } {
+                    #[cfg(feature = "debug")]
                     debug!("+----------");
+                    #[cfg(feature = "debug")]
                     debug!(
                         "| chunk number {}, {:?}",
                         { chunk_id.0 * rv.planet_dim.1 + chunk_id.1 },
@@ -152,14 +154,8 @@ impl Planet {
                     warn!("{:?} is out of bounds.", ChunkIndex(y, x));
                 }
             }
-        } /*
-        for y in 0..chunk_count_per_direction {
-            for x in 0..chunk_count_per_direction {
-                debug!("+----------");
-                debug!("| chunk number {}", { y * rv.planet_dim.0 + x });
-                rv.new_chunk(ChunkIndex(y, x));
-            }
-        }*/
+        } 
+        #[cfg(feature = "debug")]
         debug!("+----------");
         // </DEBUG>
 

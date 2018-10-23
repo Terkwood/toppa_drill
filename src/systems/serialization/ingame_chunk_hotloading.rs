@@ -28,6 +28,7 @@ use resources::{
     RenderConfig,
 };
 
+/// TODO: Everything
 /// Serializes chunks and stores them in `.ron` format.
 pub struct SerChunkSystem;
 

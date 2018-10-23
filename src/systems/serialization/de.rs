@@ -3,6 +3,7 @@ use amethyst::{
     ecs::prelude::{Read, System},
 };
 
+/// TODO: Everything.
 pub struct DeSavegameSystem;
 
 impl<'a> System<'a> for DeSavegameSystem {
