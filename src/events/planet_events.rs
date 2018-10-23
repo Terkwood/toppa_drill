@@ -1,16 +1,10 @@
-use {
-    resources::{
-        ingame::planet::{
-            ChunkIndex,
-            TileIndex,
-        },
-    },
-};
+use resources::ingame::planet::{ChunkIndex, TileIndex};
 
 /// TODO: Encompass error messages for the `failed` variants?
 /// Different events regarding [`Chunk`s](struct.Chunk.html)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ChunkEvent{
+#[allow(dead_code)]
+pub enum ChunkEvent {
     /// An event requesting a chunk to be added to the [`planet`s](struct.Planet.html) `chunk`-HashMap,
     /// either by loading from disk, or generating a new chunk.
     RequestingLoad(ChunkIndex),
@@ -31,7 +25,8 @@ pub enum ChunkEvent{
 /// TODO: Encompass error messages for the `failed` variants?
 /// Different events regarding `Tile`-entities.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TileEvent{
+#[allow(dead_code)]
+pub enum TileEvent {
     /// Every `tile` that has not been visited by a player yet is covered under a `Fog of War`.
     /// This event should be sent when a player has vision on a `tile`.
     RequestingUncover(TileIndex),

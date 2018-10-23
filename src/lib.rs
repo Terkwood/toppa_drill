@@ -21,10 +21,10 @@ extern crate serde;
 
 mod components;
 mod entities;
+mod events;
 mod resources;
 mod states;
 mod systems;
-mod events;
 mod toppa_game_data;
 
 mod utilities;

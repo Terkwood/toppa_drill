@@ -9,10 +9,7 @@ use std::{
     fmt,
 };
 
-use amethyst::{
-    core::transform::components::Transform,
-    ecs::{Builder, Entity, World},
-};
+use amethyst::{core::transform::components::Transform, ecs::Entity};
 
 use entities::tile::TileTypes;
 use resources::RenderConfig;
@@ -127,12 +124,12 @@ impl Planet {
                 if let Some(chunk_id) = {
                     let mut rv = ChunkIndex(y, x);
                     if rv.0 >= planet_dim.0 {
-                        rv.0 = (rv.0 % planet_dim.0); // + self.planet_dim.1;
+                        rv.0 = rv.0 % planet_dim.0;
                         info!("chunk y-index originally {:?} is out of bounds.", y);
                         None
                     } else {
                         if rv.1 >= planet_dim.1 {
-                            rv.1 = (rv.1 % planet_dim.1); // + self.planet_dim.0;
+                            rv.1 = rv.1 % planet_dim.1;
                             info!(
                                 "chunk x-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
                                 x, rv.1, planet_dim.1
@@ -154,7 +151,7 @@ impl Planet {
                     warn!("{:?} is out of bounds.", ChunkIndex(y, x));
                 }
             }
-        } 
+        }
         #[cfg(feature = "debug")]
         debug!("+----------");
         // </DEBUG>
@@ -166,6 +163,7 @@ impl Planet {
     /// If the given index exceeds the planet-dim bounds, it gets [clamped](struct.Planet.html#method.clamp_chunk_index).
     /// Returns `None` if no chunk at the given index exists.
     /// Try calling `new_chunk()` in that case.
+    #[allow(dead_code)]
     pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk> {
         if let Some(clamped_index) = self.clamp_chunk_index(index) {
             self.chunks.get(&clamped_index)
@@ -175,7 +173,8 @@ impl Planet {
     }
 
     /// Tile indexes out of tile-dim bounds return `None`.
-    pub fn get_tiletype(chunk: ChunkIndex, tile: TileIndex) -> Option<TileTypes> {
+    #[allow(dead_code)]
+    pub fn get_tiletype(_chunk: ChunkIndex, _tile: TileIndex) -> Option<TileTypes> {
         // TODO:
         error!("Not implemented yet.");
         None
@@ -183,15 +182,16 @@ impl Planet {
 
     /// The given chunk index gets clamped to the planet-dim by wrapping it in x-direction.
     /// Returns none if the index is out of bounds in y-direction.
+    #[allow(dead_code)]
     pub fn clamp_chunk_index(&self, index: ChunkIndex) -> Option<ChunkIndex> {
         let mut rv = index;
         if rv.0 >= self.planet_dim.0 {
-            rv.0 = (rv.0 % self.planet_dim.0); // + self.planet_dim.1;
+            rv.0 = rv.0 % self.planet_dim.0;
             info!("chunk Y-index originally  {:?} is out of bounds.", index.0);
             None
         } else {
             if rv.1 >= self.planet_dim.1 {
-                rv.1 = (rv.1 % self.planet_dim.1); // + self.planet_dim.0;
+                rv.1 = rv.1 % self.planet_dim.1;
                 info!(
                     "chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
                     index.1, rv.1, self.planet_dim.1
@@ -210,6 +210,7 @@ impl Planet {
     }
 
     /// Drains all chunks currently stored in planet, useful when `save & exit` happens.
+    #[allow(dead_code)]
     pub fn drain_chunks(&mut self) -> hash_map::Drain<ChunkIndex, Chunk> {
         self.chunks.drain()
     }
@@ -295,7 +296,7 @@ pub struct Chunk {
 
 // public interface
 impl Chunk {
-    pub fn new(depth: u64, chunk_dim: (u64, u64)) -> Chunk {
+    pub fn new(_depth: u64, chunk_dim: (u64, u64)) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
         let mut rv = Chunk {
             tile_entities: BTreeMap::new(),
@@ -316,7 +317,8 @@ impl Chunk {
 
     /// Tries to figure out the `TileType` from the BTreeMap `tiles` at the given Index.
     /// If the given index exceeds the chunk-dim bounds, returns `None`.
-    pub fn get_tile_type(&mut self, index: TileIndex) -> Option<TileTypes> {
+    #[allow(dead_code)]
+    pub fn get_tile_type(&mut self, _index: TileIndex) -> Option<TileTypes> {
         // TODO: Make this dependent on RenderConfig resource: `if index.0 > self.chunk_dim.0 || index.1 > self.chunk_dim.1 {return None};`
         // TODO: check `self.tiles` for index and figure out the tiletype, use `self.get_tile_entity`
         error!("Not implemented yet.");
@@ -325,7 +327,8 @@ impl Chunk {
 
     /// Tries to fetch a tile entity from the BTreeMap `tiles` at the given Index.
     /// If the given index exceeds the chunk-dim bounds, returns `None`.
-    pub fn get_tile_entity(&mut self, index: TileIndex) -> Option<Entity> {
+    #[allow(dead_code)]
+    pub fn get_tile_entity(&mut self, _index: TileIndex) -> Option<Entity> {
         // TODO: Make this dependent on RenderConfig resource: `if index.0 > self.chunk_dim.0 || index.1 > self.chunk_dim.1 {return None};`
         // TODO: check `self.tiles` for index and return the entity.
         error!("Not implemented yet.");
@@ -334,7 +337,8 @@ impl Chunk {
 
     /// Tries to fetch a tile from the BTreeMap `tiles_inversed` with the given entity.
     /// If the given entity is not part of this chunk, returns `None`.
-    pub fn get_tile_index(&mut self, tile: Entity) -> Option<TileIndex> {
+    #[allow(dead_code)]
+    pub fn get_tile_index(&mut self, _tile: Entity) -> Option<TileIndex> {
         // TODO: Get TileIndex for the given entity, or return `None`
         error!("Not implemented yet.");
         None
@@ -350,7 +354,8 @@ impl Chunk {
 // private methods
 impl Chunk {
     // Creates a new tile at the given Index
-    fn add_tile(&mut self, index: TileIndex, tiletype: TileTypes) {
+    #[allow(dead_code)]
+    fn add_tile(&mut self, _index: TileIndex, _tiletype: TileTypes) {
         // TODO: call into Tiles::new()
         // TODO: populate `self.tiles` & `self.tiles_inversed`
         error!("Not implemented yet.");

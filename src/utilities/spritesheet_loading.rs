@@ -9,8 +9,7 @@ use amethyst::{
     },
 };
 
-use resources::ToppaSpriteSheet;
-
+#[derive(Debug, Clone)]
 pub struct SpriteLoaderInfo {
     pub tex_id: u64,
     pub image_size: (u64, u64),

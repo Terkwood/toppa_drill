@@ -2,13 +2,7 @@ use amethyst::ecs::prelude::{Component, NullStorage};
 
 /// This component is meant for entities that can be stored inside the player's inventory.
 #[derive(Default, Debug)]
-pub struct TagCarriable {}
-
-impl TagCarriable {
-    pub fn new() -> TagCarriable {
-        TagCarriable {}
-    }
-}
+pub struct TagCarriable;
 
 impl Component for TagCarriable {
     type Storage = NullStorage<Self>;
@@ -16,13 +10,7 @@ impl Component for TagCarriable {
 
 /// This component is meant for entities that can be bought or sold in the OreShop.
 #[derive(Default, Debug)]
-pub struct TagOreShopMerch {}
-
-impl TagOreShopMerch {
-    pub fn new() -> TagOreShopMerch {
-        TagOreShopMerch {}
-    }
-}
+pub struct TagOreShopMerch;
 
 impl Component for TagOreShopMerch {
     type Storage = NullStorage<Self>;
@@ -30,13 +18,7 @@ impl Component for TagOreShopMerch {
 
 /// This component is meant for entities that can be bought or sold in the PartsShop.
 #[derive(Default, Debug)]
-pub struct TagPartsShopMerch {}
-
-impl TagPartsShopMerch {
-    pub fn new() -> TagPartsShopMerch {
-        TagPartsShopMerch {}
-    }
-}
+pub struct TagPartsShopMerch;
 
 impl Component for TagPartsShopMerch {
     type Storage = NullStorage<Self>;
@@ -44,13 +26,7 @@ impl Component for TagPartsShopMerch {
 
 /// This component is meant for ground entites the player cannot see yet.
 #[derive(Default, Debug)]
-pub struct TagFogOfWar {}
-
-impl TagFogOfWar {
-    pub fn new() -> TagFogOfWar {
-        TagFogOfWar {}
-    }
-}
+pub struct TagFogOfWar;
 
 impl Component for TagFogOfWar {
     type Storage = NullStorage<Self>;
@@ -58,13 +34,7 @@ impl Component for TagFogOfWar {
 
 /// This component is meant for player entities.
 #[derive(Default, Debug)]
-pub struct TagItem {}
-
-impl TagItem {
-    pub fn new() -> TagItem {
-        TagItem {}
-    }
-}
+pub struct TagItem;
 
 impl Component for TagItem {
     type Storage = NullStorage<Self>;

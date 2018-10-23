@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 use std::{
     fs,
     ops::{Deref, DerefMut},
@@ -40,7 +41,7 @@ impl<'a> System<'a> for SerSavegameSystem {
         ReadExpect<'a, RenderConfig>,
     );
 
-    fn run(&mut self, (time, session_data, render_config): Self::SystemData) {
+    fn run(&mut self, (_time, session_data, _render_config): Self::SystemData) {
         let mut commence_serializing = false;
 
         let save_data = &session_data.deref();

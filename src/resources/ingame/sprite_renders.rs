@@ -13,12 +13,6 @@ pub struct GameSprites {
 }
 
 impl GameSprites {
-    pub fn new() -> GameSprites {
-        GameSprites {
-            sprite_renders: HashMap::new(),
-        }
-    }
-
     pub fn add(&mut self, name: EntitySpriteRender, sprite: SpriteRender) {
         if let Some(prev_val) = self.sprite_renders.insert(name, sprite) {
             warn!("A GameSprite has been overriden: {:?}", prev_val);

@@ -124,7 +124,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
     }
 
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
+        let StateData { world, data: _ } = data;
 
         let ren_con = RenderConfig {
             tile_base_render_dim: (64.0, 64.0),
