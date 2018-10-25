@@ -16,16 +16,15 @@ use std::collections::HashMap;
 pub trait ToppaState<'g, 'h> {
     type StateButton;
     // some accessors to make implementation shorter.
-    // Implementation mandatory:
-    fn get_screen_entity(&self) -> Option<Entity>;
-    fn set_screen_entity(&mut self, screen_entity: Option<Entity>);
+    fn get_screen_entity(&self) -> Option<Entity> {None}
+    fn set_screen_entity(&mut self, screen_entity: Option<Entity>) {}
 
-    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>>;
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>);
+    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {None}
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {}
 
-    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>>;
-    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>>;
-    // Implementation optional:
+    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {None}
+    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {None}
+    
     fn reset_buttons(&mut self) {}
     fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton>> {None}
 
@@ -36,7 +35,7 @@ pub trait ToppaState<'g, 'h> {
     // Implementation optional:
     fn enable_dispatcher(&mut self) {}
     fn enable_shadow_dispatcher(&mut self) {}
-    // common impl using trait-accessors
+
     fn dispatch(&mut self, world: &World) {
         if let Some(Some(dispatcher)) = self.get_main_dispatcher() {
             dispatcher.dispatch(&world.res);
@@ -64,7 +63,6 @@ pub trait ToppaState<'g, 'h> {
             let _ = world.delete_entity(entity);
         };
     }
-
     fn enable_current_screen(&mut self, world: &mut World) {
         self.reset_buttons();
         if let Some(ref prefab_handle) = self.get_screen_prefab() {
