@@ -1,9 +1,6 @@
 target/*
 *.xcf
 Cargo.lock
-.vscode/*
-Assets/StartupScreen/DevelopedByTelzhaak.png
-Assets/StartupScreen/amethyst_thumb.png
-Assets/StartupScreen/PoweredByAmethyst.png
+.vscode/
 shells/
-savegames/*
+savegames/
