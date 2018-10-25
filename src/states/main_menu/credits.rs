@@ -74,10 +74,6 @@ impl<'d, 'e> ToppaState<'d, 'e> for CreditsState<'d, 'e> {
         Some(&mut self.main_dispatcher)
     }
 
-    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
-        Some(&mut self.shadow_dispatcher)
-    }
-
     fn reset_buttons(&mut self) {
         self.b_buttons_found = false;
         self.ui_buttons.clear();
@@ -145,21 +141,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CreditsState<'
         let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
-    }
-
-    // Executed when another game state is pushed onto the stack.
-    fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
-        self.disable_dispatcher();
-        self.disable_current_screen(&mut world);
-    }
-
-    // Executed when the application returns to this game state,
-    // after another gamestate was popped from the stack.
-    fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
-        self.enable_dispatcher();
-        self.enable_current_screen(&mut world);
     }
 }
 

@@ -19,7 +19,6 @@ pub enum LoadMenuButtons {
 pub struct LoadMenuState<'d, 'e> {
     menu_duration: f32,
     main_dispatcher: Option<Dispatcher<'d, 'e>>,
-    shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
     //progress_counter: ProgressCounter,
     current_screen: Option<Entity>,
     current_screen_prefab: Option<Handle<UiPrefab>>,
@@ -46,7 +45,6 @@ impl<'d, 'e> ToppaState<'d, 'e> for LoadMenuState<'d, 'e> {
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
-            shadow_dispatcher: None,
         }
     }
 
@@ -68,10 +66,6 @@ impl<'d, 'e> ToppaState<'d, 'e> for LoadMenuState<'d, 'e> {
 
     fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
         Some(&mut self.main_dispatcher)
-    }
-
-    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
-        Some(&mut self.shadow_dispatcher)
     }
 
     fn reset_buttons(&mut self) {
@@ -141,21 +135,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for LoadMenuState<
         let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
-    }
-
-    // Executed when another game state is pushed onto the stack.
-    fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
-        self.disable_dispatcher();
-        self.disable_current_screen(&mut world);
-    }
-
-    // Executed when the application returns to this game state,
-    // after another gamestate was popped from the stack.
-    fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
-        self.enable_dispatcher();
-        self.enable_current_screen(&mut world);
     }
 }
 
