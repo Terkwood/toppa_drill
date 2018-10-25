@@ -131,7 +131,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState
 
     fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
         let StateData { world, data: _ } = data;
-        self.dispatch(&world);
+        self.shadow_dispatch(&world);
     }
 
     fn on_start(&mut self, data: StateData<ToppaGameData>) {

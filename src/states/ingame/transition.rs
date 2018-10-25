@@ -44,21 +44,8 @@ impl<'d, 'e> ToppaState<'d, 'e> for GameStartTransitionState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn get_main_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
-        &mut self.main_dispatcher
-    }
-
-    fn get_shadow_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
-        &mut self.shadow_dispatcher
-    }
-
-    fn reset_buttons(&mut self) {
-        self.b_buttons_found = false;
-        self.ui_buttons.clear();
-    }
-
-    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
-        &mut self.ui_buttons
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
+        self.current_screen_prefab = screen_prefab;
     }
 }
 
@@ -110,7 +97,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTrans
 
     fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
         let StateData { world, data: _ } = data;
-        self.dispatch(&world);
+        self.shadow_dispatch(&world);
     }
 
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
@@ -123,18 +110,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTrans
         let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
-    }
-
-    fn on_pause(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { world: _, data: _ } = data;
-        self.disable_dispatcher();
-        //self.disable_current_screen(&mut world);
-    }
-
-    fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { world: _, data: _ } = data;
-        self.enable_dispatcher();
-        //self.enable_current_screen(&mut world);
     }
 }
 

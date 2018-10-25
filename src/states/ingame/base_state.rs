@@ -164,7 +164,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
 
     fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
         let StateData { world, data: _ } = data;
-        self.dispatch(&world);
+        self.shadow_dispatch(&world);
     }
 
     // Executed when this game state runs for the first time.
