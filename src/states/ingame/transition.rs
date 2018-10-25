@@ -10,34 +10,17 @@ use std::collections::HashMap;
 
 use {states::ToppaState, systems::DummySystem, ToppaGameData};
 
-#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum InventoryButtons {
-    Close,
-}
-
-pub struct InventoryState<'d, 'e> {
-    main_dispatcher: Option<Dispatcher<'d, 'e>>,
-    shadow_dispatcher: Option<Dispatcher<'d, 'e>>,
-
-    //progress_counter: ProgressCounter,
-    ui_buttons: HashMap<Entity, InventoryButtons>,
+pub struct GameStartTransitionState<'d, 'e> {
+    progress_counter: ProgressCounter,
     current_screen: Option<Entity>,
     current_screen_prefab: Option<Handle<UiPrefab>>,
-    b_buttons_found: bool,
 }
 
-impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
-    type StateButton = InventoryButtons;
-    fn enable_dispatcher(&mut self) {
-        self.main_dispatcher = Some(
-            DispatcherBuilder::new()
-                .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                .build(),
-        );
-    }
+impl<'d, 'e> ToppaState<'d, 'e> for GameStartTransitionState<'d, 'e> {
+    type StateButton = GameStartTransitionButtons;
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
-        InventoryState {
+        GameStartTransitionState {
             main_dispatcher: None,
             shadow_dispatcher: None,
 
@@ -61,16 +44,12 @@ impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
-        self.current_screen_prefab = screen_prefab.clone();
+    fn get_main_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
+        &mut self.main_dispatcher
     }
 
-    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
-        Some(&mut self.main_dispatcher)
-    }
-
-    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
-        Some(&mut self.shadow_dispatcher)
+    fn get_shadow_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
+        &mut self.shadow_dispatcher
     }
 
     fn reset_buttons(&mut self) {
@@ -78,12 +57,12 @@ impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
         self.ui_buttons.clear();
     }
 
-    fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton>> {
-        Some(&mut self.ui_buttons)
+    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
+        &mut self.ui_buttons
     }
 }
 
-impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState<'d, 'e> {
+impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTransitionState<'d, 'e> {
     fn handle_event(
         &mut self,
         data: StateData<ToppaGameData>,
@@ -121,8 +100,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState
         if !self.b_buttons_found {
             self.b_buttons_found = self.insert_button(
                 &mut world,
-                InventoryButtons::Close,
-                "ingame_inventory_close_button",
+                GameStartTransitionButtons::Close,
+                "ingame_GameStartTransition_close_button",
             );
         }
 
@@ -159,13 +138,13 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState
     }
 }
 
-impl<'a, 'b, 'd, 'e> InventoryState<'d, 'e> {
+impl<'a, 'b, 'd, 'e> GameStartTransitionState<'d, 'e> {
     fn btn_click(
         &self,
         _world: &mut World,
         target: Entity,
     ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        use self::InventoryButtons::*;
+        use self::GameStartTransitionButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {
                 Close => self.btn_close(),
@@ -176,7 +155,7 @@ impl<'a, 'b, 'd, 'e> InventoryState<'d, 'e> {
     }
 
     fn btn_close(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Closing inventory.");
+        info!("Closing GameStartTransition.");
         Trans::Pop
     }
 }

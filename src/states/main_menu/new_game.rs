@@ -100,12 +100,16 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn get_main_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
-        &mut self.main_dispatcher
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
+        self.current_screen_prefab = screen_prefab.clone();
     }
 
-    fn get_shadow_dispatcher(&mut self) -> &mut Option<Dispatcher<'d, 'e>> {
-        &mut self.shadow_dispatcher
+    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
+        Some(&mut self.main_dispatcher)
+    }
+
+    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
+        Some(&mut self.shadow_dispatcher)
     }
 
     fn reset_buttons(&mut self) {
@@ -113,8 +117,8 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
         self.ui_buttons.clear();
     }
 
-    fn get_buttons(&mut self) -> &mut HashMap<Entity, Self::StateButton> {
-        &mut self.ui_buttons
+    fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton>> {
+        Some(&mut self.ui_buttons)
     }
 }
 
