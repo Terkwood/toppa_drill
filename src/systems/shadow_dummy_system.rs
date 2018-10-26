@@ -20,7 +20,7 @@ impl<'a> System<'a> for ShadowDummySystem {
         self.counter = self.counter + 1;
 
         if input.key_is_down(VirtualKeyCode::O) {
-            info!("Letter O is down. Shadow update");
+            trace!("Letter O is down. Shadow update");
         }
     }
 }

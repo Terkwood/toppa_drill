@@ -9,6 +9,8 @@ use std::{
     fmt,
 };
 
+use rand::*;
+
 use amethyst::{core::transform::components::Transform, ecs::Entity};
 
 use entities::tile::TileTypes;
@@ -111,6 +113,7 @@ impl Planet {
             chunks: HashMap::with_capacity(chunk_count as usize),
         };
 
+        /*
         // <DEBUG>
         // clamp chunks to 0 <= x <= u64::MAX && 0 <= y <= u64::MAX
 
@@ -125,12 +128,12 @@ impl Planet {
                     let mut rv = ChunkIndex(y, x);
                     if rv.0 >= planet_dim.0 {
                         rv.0 = rv.0 % planet_dim.0;
-                        info!("chunk y-index originally {:?} is out of bounds.", y);
+                        {/*turn back to debug later*/}warn!("chunk y-index originally {:?} is out of bounds.", y);
                         None
                     } else {
                         if rv.1 >= planet_dim.1 {
                             rv.1 = rv.1 % planet_dim.1;
-                            info!(
+                            {/*turn back to debug later*/}warn!(
                                 "chunk x-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
                                 x, rv.1, planet_dim.1
                             );
@@ -139,9 +142,9 @@ impl Planet {
                     }
                 } {
                     #[cfg(feature = "debug")]
-                    debug!("+----------");
+                    {/*turn back to debug later*/}warn!("+----------");
                     #[cfg(feature = "debug")]
-                    debug!(
+                    {/*turn back to debug later*/}warn!(
                         "| chunk number {}, {:?}",
                         { chunk_id.0 * rv.planet_dim.1 + chunk_id.1 },
                         chunk_id
@@ -153,8 +156,8 @@ impl Planet {
             }
         }
         #[cfg(feature = "debug")]
-        debug!("+----------");
-        // </DEBUG>
+        {/*turn back to debug later*/}warn!("+----------");
+        // </DEBUG>*/
 
         rv
     }
@@ -187,12 +190,12 @@ impl Planet {
         let mut rv = index;
         if rv.0 >= self.planet_dim.0 {
             rv.0 = rv.0 % self.planet_dim.0;
-            info!("chunk Y-index originally  {:?} is out of bounds.", index.0);
+            {/*turn back to debug later*/}warn!("chunk Y-index originally  {:?} is out of bounds.", index.0);
             None
         } else {
             if rv.1 >= self.planet_dim.1 {
                 rv.1 = rv.1 % self.planet_dim.1;
-                info!(
+                {/*turn back to debug later*/}warn!(
                     "chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
                     index.1, rv.1, self.planet_dim.1
                 );
@@ -205,6 +208,7 @@ impl Planet {
     /// which can either be fetched from the world, or from its storage.
     pub fn new_chunk(&mut self, chunk_id: ChunkIndex) {
         // TODO: everything, maybe different tiles not only based on depth, but also x-pos?
+        warn!("Creating new chunk at {:?}.", chunk_id);
         self.chunks
             .insert(chunk_id, Chunk::new(chunk_id.0, self.chunk_dim));
     }
@@ -213,6 +217,10 @@ impl Planet {
     #[allow(dead_code)]
     pub fn drain_chunks(&mut self) -> hash_map::Drain<ChunkIndex, Chunk> {
         self.chunks.drain()
+    }
+
+    pub fn remove_chunk(&mut self, key: &ChunkIndex) -> Option<Chunk> {
+        self.chunks.remove(key)
     }
 
     /// Returns an iterator over all chunks currently stored in planet
@@ -307,8 +315,10 @@ impl Chunk {
         // TODO: Actual tile generation algorithm
         for y in 0..chunk_dim.0 {
             for x in 0..chunk_dim.1 {
-                debug!("|\ttile number {}", { y * chunk_dim.1 + x });
-                rv.tile_type.insert(TileIndex(y, x), TileTypes::Dirt);
+                {/*turn back to debug later*/}warn!("|\ttile number {}", { y * chunk_dim.1 + x });
+
+                let tile_number = thread_rng().gen_range(0, 16);
+                Self::add_tile(&mut rv, TileIndex(y, x), tile_number);
             }
         }
 
@@ -355,9 +365,30 @@ impl Chunk {
 impl Chunk {
     // Creates a new tile at the given Index
     #[allow(dead_code)]
-    fn add_tile(&mut self, _index: TileIndex, _tiletype: TileTypes) {
+    fn add_tile(chunk: &mut Chunk, index: TileIndex, tile_number: usize) {
         // TODO: call into Tiles::new()
         // TODO: populate `self.tiles` & `self.tiles_inversed`
-        error!("Not implemented yet.");
+        let tile_type = match tile_number {
+            0 => {TileTypes::Magnetite},
+            1 => {TileTypes::Pyrolusite},
+            2 => {TileTypes::Fossile},
+            3 => {TileTypes::Molybdenite},
+            4 => {TileTypes::Lava},
+            5 => {TileTypes::Rock},
+            6 => {TileTypes::Gas},
+            7 => {TileTypes::Galena},
+            8 => {TileTypes::Bornite},
+            9 => {TileTypes::Chromite},
+            10 => {TileTypes::Cassiterite},
+            11 => {TileTypes::Cinnabar},
+            12 => {TileTypes::Dirt},
+            13 => {TileTypes::Gold},
+            14 => {TileTypes::Empty},
+            15 => {TileTypes::Bauxite},
+            _ => {return;},
+        };
+
+        info!("|\t\t{:?}", tile_type);
+        chunk.tile_type.insert(index, tile_type);
     }
 }

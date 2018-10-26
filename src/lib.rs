@@ -18,6 +18,7 @@ extern crate log;
 extern crate serde_derive;
 extern crate ron;
 extern crate serde;
+extern crate rand;
 
 mod components;
 mod entities;

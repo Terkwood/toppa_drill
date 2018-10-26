@@ -30,11 +30,8 @@ impl StartupState {
     /// Creates a new StartupState instance with a progress counter for asset-load tracking.
     /// The display duration specifies how long each subscreen should be shown before moving on.
     pub fn new(display_duration: f32) -> Self {
-        let progress_counter = ProgressCounter::new();
-        info!("ProgressCounter created.");
-
         StartupState {
-            progress_counter,
+            progress_counter: ProgressCounter::new(),
             next_states_screen: None,
             this_states_screens: Vec::new(),
             current_screen: None,

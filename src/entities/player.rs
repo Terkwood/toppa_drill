@@ -59,6 +59,7 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
     };
 
     if let Some(position) = position_opt {
+        {/*turn back to debug later*/}warn!("Initial player position from transform.");
         let player = world
             .create_entity()
             .with(transform.clone())
@@ -70,6 +71,7 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
 
         camera::init(world, view_dim, player, transform);
     } else {
+        {/*turn back to debug later*/}warn!("Initial player position from default.");
         let player = world
             .create_entity()
             .with(transform.clone())

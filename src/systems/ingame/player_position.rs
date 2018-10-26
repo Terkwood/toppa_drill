@@ -61,14 +61,14 @@ impl<'s> System<'s> for PlayerPositionSystem {
     ) {
         /*
         #[cfg(feature = "debug")]
-        debug!("+------");
+        {/*turn back to debug later*/}warn!("+------");
         */
         for (transform, player, mut player_pos) in
             (&transforms, &players, &mut player_positions).join()
         {
             /*
             #[cfg(feature = "debug")]
-            debug!(
+            {/*turn back to debug later*/}warn!(
                 "| previous:\tplayer: {:?}\t pos: {:?}",
                 player.id, player_pos
             );
@@ -134,12 +134,12 @@ impl<'s> System<'s> for PlayerPositionSystem {
             }
             /*
             #[cfg(feature = "debug")]
-            debug!("| now:\tplayer: {:?}\t pos: {:?}", player.id, player_pos);
+            {/*turn back to debug later*/}warn!("| now:\tplayer: {:?}\t pos: {:?}", player.id, player_pos);
             */
         }
         /*
         #[cfg(feature = "debug")]
-        debug!("+------");
+        {/*turn back to debug later*/}warn!("+------");
         */
     }
 }

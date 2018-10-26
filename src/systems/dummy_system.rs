@@ -20,11 +20,11 @@ impl<'a> System<'a> for DummySystem {
         self.counter = self.counter + 1;
 
         if input.key_is_down(VirtualKeyCode::Space) {
-            info!("Space is down. Main update");
+            trace!("Space is down. Main update");
         }
         if let Some(down) = input.action_is_down("shoot") {
             if down {
-                info!("Shooting.");
+                trace!("Shooting.");
             }
         }
     }
