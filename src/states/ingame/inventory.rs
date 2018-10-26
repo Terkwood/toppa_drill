@@ -28,7 +28,7 @@ pub struct InventoryState<'d, 'e> {
 
 impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
     type StateButton = InventoryButtons;
-    fn enable_dispatcher(&mut self) {
+    fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
@@ -137,7 +137,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
-        self.enable_dispatcher();
+        self.enable_dispatcher(&mut world);
     }
 
     fn on_stop(&mut self, data: StateData<ToppaGameData>) {
@@ -153,8 +153,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState
     }
 
     fn on_resume(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { world: _, data: _ } = data;
-        self.enable_dispatcher();
+        let StateData { mut world, data: _ } = data;
+        self.enable_dispatcher(&mut world);
         //self.enable_current_screen(&mut world);
     }
 }
@@ -176,7 +176,7 @@ impl<'a, 'b, 'd, 'e> InventoryState<'d, 'e> {
     }
 
     fn btn_close(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Closing inventory.");
+        {/*turn back to debug later*/}warn!("Closing inventory.");
         Trans::Pop
     }
 }

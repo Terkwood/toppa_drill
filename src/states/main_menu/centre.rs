@@ -44,7 +44,7 @@ pub struct CentreState<'d, 'e> {
 
 impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     type StateButton = CentreButtons;
-    fn enable_dispatcher(&mut self) {
+    fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
@@ -52,7 +52,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
         );
     }
 
-    fn enable_shadow_dispatcher(&mut self) {
+    fn enable_shadow_dispatcher(&mut self, world: &mut World) {
         self.shadow_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(ShadowDummySystem { counter: 0 }, "shadow_dummy_system", &[])
@@ -260,7 +260,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
                 }
                 Complete => {
                     self.b_screens_loaded = true;
-                    info!("Loaded menu screen prefabs successfully.");
+                    {/*turn back to debug later*/}warn!("Loaded menu screen prefabs successfully.");
 
                     Trans::None
                 }
@@ -279,8 +279,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
     // Executed when this game state runs for the first time.
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
-        self.enable_dispatcher();
-        self.enable_shadow_dispatcher();
+        self.enable_dispatcher(&mut world);
+        self.enable_shadow_dispatcher(&mut world);
         self.enable_current_screen(&mut world);
 
         self.insert_reachable_menu(
@@ -324,7 +324,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
     // after another gamestate was popped from the stack.
     fn on_resume(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
-        self.enable_dispatcher();
+        self.enable_dispatcher(&mut world);
         self.enable_current_screen(&mut world);
     }
 }
@@ -357,13 +357,13 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
     }
 
     fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Shutting down.");
+        {/*turn back to debug later*/}warn!("Shutting down.");
         // TODO: User prompt : Are you sure you want to exit?
         Trans::Quit
     }
 
     fn btn_credits(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Credits screen.");
+        {/*turn back to debug later*/}warn!("Credits screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Credits) {
                 CreditsState::new(world, Some({ *handle }.clone()))
@@ -374,7 +374,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
     }
 
     fn btn_new_game(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("NewGame screen.");
+        {/*turn back to debug later*/}warn!("NewGame screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::NewGame) {
                 NewGameState::new(world, Some({ *handle }.clone()))
@@ -385,7 +385,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
     }
 
     fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("LoadGame screen.");
+        {/*turn back to debug later*/}warn!("LoadGame screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::LoadGame) {
                 LoadMenuState::new(world, Some({ *handle }.clone()))
@@ -396,7 +396,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
     }
 
     fn btn_options(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Options screen.");
+        {/*turn back to debug later*/}warn!("Options screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Options) {
                 OptionsState::new(world, Some({ *handle }.clone()))

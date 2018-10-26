@@ -45,10 +45,10 @@ pub trait ToppaState<'g, 'h> {
     // Implementation optional:
     /// Implement this function to create a custom dispatcher for this `State`,
     /// which should be dispatched every frame, as long as it is the active `State`.
-    fn enable_dispatcher(&mut self) {}
+    fn enable_dispatcher(&mut self, world: &mut World) {}
     /// Implement this function to create a custom dispatcher for this `State`,
     /// which should be dispatched every frame, even when it is not the active `State`.
-    fn enable_shadow_dispatcher(&mut self) {}
+    fn enable_shadow_dispatcher(&mut self, world: &mut World) {}
 
     /// Call this function from your `State`'s `.update()` function,
     /// to dispatch the dispatcher built in [`enable_dispatcher()`](trait.ToppaState.html#method.enable_dispatcher).
@@ -111,9 +111,8 @@ pub trait ToppaState<'g, 'h> {
     ) -> bool {
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name) {
-                info!("Found {}.", button_name);
                 if let Some(buttons) = self.get_buttons(){
-                    info!("Adding button {}.", button_name);
+                    {/*turn back to debug later*/}warn!("Adding button {}.", button_name);
                     buttons.insert(entity, button);
                 }
                 true

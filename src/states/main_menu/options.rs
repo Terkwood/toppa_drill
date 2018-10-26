@@ -19,7 +19,6 @@ pub enum OptionsButtons {
 pub struct OptionsState<'d, 'e> {
     menu_duration: f32,
     main_dispatcher: Option<Dispatcher<'d, 'e>>,
-    //progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
@@ -32,7 +31,7 @@ pub struct OptionsState<'d, 'e> {
 
 impl<'a, 'b, 'd, 'e> ToppaState<'d, 'e> for OptionsState<'d, 'e> {
     type StateButton = OptionsButtons;
-    fn enable_dispatcher(&mut self) {
+    fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
@@ -45,7 +44,6 @@ impl<'a, 'b, 'd, 'e> ToppaState<'d, 'e> for OptionsState<'d, 'e> {
             menu_duration: 0.0,
             current_screen: None,
             current_screen_prefab: screen_opt,
-            //progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
@@ -131,7 +129,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for OptionsState<'
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
-        self.enable_dispatcher();
+        self.enable_dispatcher(&mut world);
     }
 
     // Executed when this game state gets popped.
@@ -159,7 +157,7 @@ impl<'a, 'b, 'd, 'e> OptionsState<'d, 'e> {
     }
 
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Returning to CentreState.");
+        {/*turn back to debug later*/}warn!("Returning to CentreState.");
         Trans::Pop
     }
 }

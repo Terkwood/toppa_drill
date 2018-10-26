@@ -43,12 +43,21 @@ impl Default for GameInfo {
     }
 }
 
+impl GameInfo {
+    pub fn new(name: &'static str, planet_dim: (u64, u64), chunk_dim: (u64, u64)) -> Self {
+        GameInfo {
+            name,
+            planet_dim,
+            chunk_dim,
+        }
+    }
+}
+
 /// The game creation state, where a new game can be started.
 /// TODO: Buttons and TextBoxes etc, to enter GameName, planet and chunk dimensions, ... .
 pub struct NewGameState<'d, 'e> {
     menu_duration: f32,
     main_dispatcher: Option<Dispatcher<'d, 'e>>,
-    //progress_counter: ProgressCounter,
 
     // The displayed Ui Entity, if any.
     current_screen: Option<Entity>,
@@ -65,7 +74,7 @@ pub struct NewGameState<'d, 'e> {
 
 impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
     type StateButton = NewGameButtons;
-    fn enable_dispatcher(&mut self) {
+    fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some(
             DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
@@ -78,11 +87,10 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
             menu_duration: 0.0,
             current_screen: None,
             current_screen_prefab: screen_opt,
-            //progress_counter: ProgressCounter::new(),
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
-            game_info: GameInfo::default(),
+            game_info: GameInfo::new("Trumpet", (2, 3), (3, 4)),
         }
     }
 
@@ -169,7 +177,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
-        self.enable_dispatcher();
+        self.enable_dispatcher(&mut world);
     }
 
     // Executed when this game state gets popped.
@@ -198,12 +206,12 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
     }
 
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Returning to CentreState.");
+        {/*turn back to debug later*/}warn!("Returning to CentreState.");
         Trans::Pop
     }
 
     fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Creating new game.");
+        {/*turn back to debug later*/}warn!("Creating new game.");
         // NOTE: Think about how to do this better
         world.add_resource::<TagGenerator>(TagGenerator::default());
         world.add_resource::<GameSprites>(GameSprites::default());
@@ -215,7 +223,19 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
             self.game_info.chunk_dim,
             ren_con,
         );
+
+        // TODO: Get rid
+        use amethyst::shrev::EventChannel;
+        use {
+            components::for_characters::{player::Position, TagPlayer},
+            events::planet_events::ChunkEvent,
+        };
+        world.register::<TagPlayer>();
+        world.register::<Position>();
+        world.add_resource(EventChannel::<ChunkEvent>::new());
         world.add_resource::<GameSessionData>(session_data);
+        world.add_resource(EventChannel::<ChunkEvent>::new());
+        // end: get rid
 
         let ingame_ui_prefab_handle =
             Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));

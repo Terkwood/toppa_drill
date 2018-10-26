@@ -103,7 +103,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTrans
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
-        self.enable_dispatcher();
+        self.enable_dispatcher(&mut world);
     }
 
     fn on_stop(&mut self, data: StateData<ToppaGameData>) {
@@ -130,7 +130,7 @@ impl<'a, 'b, 'd, 'e> GameStartTransitionState<'d, 'e> {
     }
 
     fn btn_close(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        info!("Closing GameStartTransition.");
+        {/*turn back to debug later*/}warn!("Closing GameStartTransition.");
         Trans::Pop
     }
 }
