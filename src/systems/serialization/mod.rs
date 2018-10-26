@@ -4,6 +4,6 @@ mod ser;
 
 pub use self::{
     de::DeSavegameSystem,
-    ingame_chunk_hotloading::{DeChunkSystem, SerChunkSystem},
+    ingame_chunk_hotloading::HotChunkSystem,
     ser::SerSavegameSystem,
 };
