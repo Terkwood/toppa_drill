@@ -37,6 +37,8 @@ pub enum TileEvent {
 
     /// When a player drills into a `tile` it should be deleted.
     RequestDeletion(TileIndex),
+    /// Sent it a `tile` has been successfully deleted.
+    Deleted(TileIndex),
     /// Sent if a `tile` could not be deleted.
     FailedDelete(TileIndex),
 }

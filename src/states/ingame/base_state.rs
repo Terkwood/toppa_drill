@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use amethyst::{
     assets::{Handle, ProgressCounter},
     core::transform::components::Transform,
@@ -8,11 +7,12 @@ use amethyst::{
     renderer::VirtualKeyCode,
     ui::{UiEventType, UiPrefab},
 };
+use std::collections::HashMap;
 use {
     entities,
-    resources::ingame::{GameSprites, SavegamePaths, GameSessionData},
+    resources::ingame::{GameSessionData, GameSprites, SavegamePaths},
     states::ToppaState,
-    systems::{ingame::PlayerPositionSystem, DummySystem, serialization::HotChunkSystem},
+    systems::{ingame::PlayerPositionSystem, serialization::HotChunkSystem, DummySystem},
     ToppaGameData,
 };
 
@@ -43,25 +43,23 @@ pub struct IngameBaseState<'d, 'e> {
 impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
     type StateButton = BaseStateButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
-        self.main_dispatcher = Some(
-            {
-                let mut dispatcher = DispatcherBuilder::new()
-                    .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                    .with(
-                        PlayerPositionSystem::default(),
-                        "player_position_system",
-                        &[],
-                    )
-                    .with(
-                        HotChunkSystem::new(), "hotchunk_system", &["player_position_system"]
-                    )
-                    .build();
+        self.main_dispatcher = Some({
+            let mut dispatcher = DispatcherBuilder::new()
+                .with(DummySystem { counter: 0 }, "dummy_system", &[])
+                .with(
+                    PlayerPositionSystem::default(),
+                    "player_position_system",
+                    &[],
+                ).with(
+                    HotChunkSystem::new(),
+                    "hotchunk_system",
+                    &["player_position_system"],
+                ).build();
 
-                dispatcher.setup(&mut world.res);
+            dispatcher.setup(&mut world.res);
 
-                dispatcher
-            }
-        );
+            dispatcher
+        });
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
@@ -88,7 +86,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {
         self.current_screen_prefab = screen_prefab.clone();
     }
 
@@ -184,6 +182,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         self.enable_dispatcher(&mut world);
 
         // TODO: Get rid.
+        entities::tile::prepare_spritesheet(world, Some(&mut self.progress_counter));
         {
             let game_name = world.read_resource::<GameSessionData>().game_name;
             world.add_resource(SavegamePaths::init("./", game_name));
@@ -191,6 +190,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
 
         entities::player::init(world, None);
 
+        // Maybe pull sprite into player?
         let sprite = {
             debug!("Unwrapping GameSprites");
             world
@@ -198,13 +198,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
                 .get(entities::EntitySpriteRender::Player)
                 .unwrap()
         }.clone();
-
         let mut transform = Transform::default();
-        transform.translation[0] += 00.0;
-        transform.translation[1] += 000.0;
         entities::player::new(world, &transform, &sprite);
-
-        entities::tile::prepare_spritesheet(world, Some(&mut self.progress_counter));
     }
 
     // Executed when this game state gets popped.
@@ -249,22 +244,26 @@ impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
     }
 
     fn btn_inventory(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Opening Inventory not implemented yet.");
+        #[cfg(feature = "debug")]
+        warn!("Opening Inventory not implemented yet.");
         Trans::None
     }
 
     fn btn_options(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Opening Options not implemented yet.");
+        #[cfg(feature = "debug")]
+        warn!("Opening Options not implemented yet.");
         Trans::None
     }
 
     fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Exiting to main menu.");
+        #[cfg(feature = "debug")]
+        warn!("Exiting to main menu.");
         Trans::Pop
     }
 
     fn btn_save(&self, world: &World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Saving game.");
+        #[cfg(feature = "debug")]
+        warn!("Saving game.");
         use systems::serialization::SerSavegameSystem;
         SerSavegameSystem.run_now(&world.res);
 
@@ -272,7 +271,8 @@ impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
     }
 
     fn btn_mute(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Muting game not implemented yet..");
+        #[cfg(feature = "debug")]
+        warn!("Muting game not implemented yet..");
         Trans::None
     }
 }

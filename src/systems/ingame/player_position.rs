@@ -9,11 +9,11 @@ use amethyst::{
 };
 
 use {
-    components::for_characters::{player, TagPlayer},
+    components::for_characters::{player, PlayerBase},
     events::planet_events::ChunkEvent,
     resources::{
         ingame::{
-            planet::{ChunkIndex, TileIndex},
+            planet::{ChunkError, ChunkIndex, PlanetError, TileError, TileIndex},
             GameSessionData,
         },
         RenderConfig,
@@ -41,7 +41,7 @@ impl Default for PlayerPositionSystem {
 impl<'s> System<'s> for PlayerPositionSystem {
     type SystemData = (
         ReadStorage<'s, Transform>,
-        ReadStorage<'s, TagPlayer>,
+        ReadStorage<'s, PlayerBase>,
         WriteStorage<'s, player::Position>,
         ReadExpect<'s, GameSessionData>,
         ReadExpect<'s, RenderConfig>,
@@ -59,87 +59,93 @@ impl<'s> System<'s> for PlayerPositionSystem {
             mut chunk_event_channel,
         ): Self::SystemData,
     ) {
-        /*
-        #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("+------");
-        */
         for (transform, player, mut player_pos) in
             (&transforms, &players, &mut player_positions).join()
         {
-            /*
-            #[cfg(feature = "debug")]
-            {/*turn back to debug later*/}warn!(
-                "| previous:\tplayer: {:?}\t pos: {:?}",
-                player.id, player_pos
-            );
-            */
             let chunk_index = player_pos.chunk;
             let planet_ref = &session_data.planet;
-            if let Some(tile_index) =
-                TileIndex::from_transform(transform, chunk_index, &render_config, planet_ref)
-            {
-                // Player still on the same chunk. Easy-peasy
-                player_pos.tile = tile_index;
-            } else {
-                // Player on a new chunk.
-                if let Some(chunk_index) =
-                    ChunkIndex::from_transform(transform, &render_config, planet_ref)
-                {
-                    if let Some(tile_index) = TileIndex::from_transform(
-                        transform,
-                        chunk_index,
-                        &render_config,
-                        planet_ref,
-                    ) {
-                        let prev_chunk = player_pos.chunk;
-                        self.prev_chunks.clear();
-                        for index in self.cur_chunks.drain() {
-                            // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
-                            self.prev_chunks.insert(index);
-                        }
-
-                        // Updating player position component
-                        player_pos.tile = tile_index;
-                        player_pos.chunk = chunk_index;
-
-                        // Populating the current chunk HashSet
-                        for y in (prev_chunk.0 - render_config.chunk_render_distance)
-                            ..=(prev_chunk.0 + render_config.chunk_render_distance)
-                        {
-                            for x in (prev_chunk.1 - render_config.chunk_render_distance)
-                                ..=(prev_chunk.1 + render_config.chunk_render_distance)
+            match TileIndex::from_transform(transform, chunk_index, &render_config, planet_ref) {
+                Ok(tile_index) => {
+                    // Player still on the same chunk. Easy-peasy
+                    player_pos.tile = tile_index;
+                }
+                Err(e) => {
+                    match e {
+                        PlanetError::TileProblem(TileError::IndexOutOfBounds) => {
+                            // Player on a new chunk.
+                            match ChunkIndex::from_transform(transform, &render_config, planet_ref)
                             {
-                                // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
-                                self.cur_chunks.insert(ChunkIndex(y, x));
+                                Ok(chunk_index) => {
+                                    match TileIndex::from_transform(
+                                        transform,
+                                        chunk_index,
+                                        &render_config,
+                                        planet_ref,
+                                    ) {
+                                        Ok(tile_index) => {
+                                            let prev_chunk = player_pos.chunk;
+                                            self.prev_chunks.clear();
+                                            for index in self.cur_chunks.drain() {
+                                                // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
+                                                self.prev_chunks.insert(index);
+                                            }
+
+                                            // Updating player position component
+                                            player_pos.tile = tile_index;
+                                            player_pos.chunk = chunk_index;
+
+                                            // Populating the current chunk HashSet
+                                            for y in (prev_chunk.0
+                                                - render_config.chunk_render_distance)
+                                                ..=(prev_chunk.0
+                                                    + render_config.chunk_render_distance)
+                                            {
+                                                for x in (prev_chunk.1
+                                                    - render_config.chunk_render_distance)
+                                                    ..=(prev_chunk.1
+                                                        + render_config.chunk_render_distance)
+                                                {
+                                                    // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
+                                                    self.cur_chunks.insert(ChunkIndex(y, x));
+                                                }
+                                            }
+                                            // Comparing the current and previous HashSets (`.difference()` returns only those NOT present in the other)
+                                            let cur_chunks = self.cur_chunks.clone();
+                                            let prev_chunks = self.prev_chunks.clone();
+                                            let chunks_to_delete =
+                                                self.prev_chunks.difference(&cur_chunks);
+                                            let chunks_to_load =
+                                                self.cur_chunks.difference(&prev_chunks);
+
+                                            for &index in chunks_to_delete {
+                                                #[cfg(feature = "debug")]
+                                                warn!("Requesting load for chunk {:?}.", index);
+                                                chunk_event_channel.single_write(
+                                                    ChunkEvent::RequestingUnload(index),
+                                                );
+                                            }
+                                            for &index in chunks_to_load {
+                                                #[cfg(feature = "debug")]
+                                                warn!("Requesting unload for chunk {:?}.", index);
+                                                chunk_event_channel.single_write(
+                                                    ChunkEvent::RequestingLoad(index),
+                                                );
+                                            }
+                                        }
+                                        Err(e) => {
+                                            error!("Couldn't find TileIndex, although new ChunkIndex was calculated: {:?}", e);
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    warn!("Error calculating ChunkIndex from transform: {:?}", e)
+                                }
                             }
                         }
-                        // Comparing the current and previous HashSets (`.difference()` returns only those NOT present in the other)
-                        let cur_chunks = self.cur_chunks.clone();
-                        let prev_chunks = self.prev_chunks.clone();
-                        let chunks_to_delete = self.prev_chunks.difference(&cur_chunks);
-                        let chunks_to_load = self.cur_chunks.difference(&prev_chunks);
-
-                        for index in chunks_to_delete {
-                            chunk_event_channel.single_write(ChunkEvent::RequestingUnload(*index));
-                        }
-                        for index in chunks_to_load {
-                            chunk_event_channel.single_write(ChunkEvent::RequestingLoad(*index));
-                        }
-                    } else {
-                        error!("Player {:?}'s TileIndex is out of chunk bounds, although new ChunkIndex was calculated.", player.id);
+                        _ => {}
                     }
-                } else {
-                    error!("Player {:?}'s ChunkIndex is out of planet bounds, maybe at negative transforms.", player.id);
                 }
             }
-            /*
-            #[cfg(feature = "debug")]
-            {/*turn back to debug later*/}warn!("| now:\tplayer: {:?}\t pos: {:?}", player.id, player_pos);
-            */
         }
-        /*
-        #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("+------");
-        */
     }
 }

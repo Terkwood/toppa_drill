@@ -106,7 +106,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {
         self.current_screen_prefab = screen_prefab.clone();
     }
 
@@ -206,12 +206,14 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
     }
 
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Returning to CentreState.");
+        #[cfg(feature = "debug")]
+        warn!("Returning to CentreState.");
         Trans::Pop
     }
 
     fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Creating new game.");
+        #[cfg(feature = "debug")]
+        warn!("Creating new game.");
         // NOTE: Think about how to do this better
         world.add_resource::<TagGenerator>(TagGenerator::default());
         world.add_resource::<GameSprites>(GameSprites::default());
@@ -227,10 +229,10 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         // TODO: Get rid
         use amethyst::shrev::EventChannel;
         use {
-            components::for_characters::{player::Position, TagPlayer},
+            components::for_characters::{player::Position, PlayerBase},
             events::planet_events::ChunkEvent,
         };
-        world.register::<TagPlayer>();
+        world.register::<PlayerBase>();
         world.register::<Position>();
         world.add_resource(EventChannel::<ChunkEvent>::new());
         world.add_resource::<GameSessionData>(session_data);

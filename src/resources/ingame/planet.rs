@@ -11,10 +11,29 @@ use std::{
 
 use rand::*;
 
-use amethyst::{core::transform::components::Transform, ecs::Entity};
+use amethyst::{
+    core::{cgmath::Vector3, transform::components::Transform},
+    ecs::prelude::*,
+    ecs::{storage::MaskedStorage, world::EntitiesRes, Storage},
+    renderer::SpriteRender,
+    shred::{FetchMut, PanicHandler},
+};
 
-use entities::tile::TileTypes;
-use resources::RenderConfig;
+use {
+    components::for_ground_entities::TileBase,
+    entities::{tile::TileTypes, EntitySpriteRender},
+    resources::{ingame::GameSprites, RenderConfig},
+};
+
+/// Internal use only (for the Chunk-Hotloading), do not use!
+pub struct TileGenerationStorages<'a> {
+    pub entities: Read<'a, EntitiesRes>,
+    pub tile_base: Storage<'a, TileBase, FetchMut<'a, MaskedStorage<TileBase>>>,
+    pub sprite_render: Storage<'a, SpriteRender, FetchMut<'a, MaskedStorage<SpriteRender>>>,
+    pub transform: Storage<'a, Transform, FetchMut<'a, MaskedStorage<Transform>>>,
+    pub game_sprites: Read<'a, GameSprites, PanicHandler>,
+    pub render_config: Read<'a, RenderConfig, PanicHandler>,
+}
 
 // Currently not used. Only one planet available for the beginning.
 /*
@@ -31,6 +50,27 @@ pub struct Galaxy {
 }
 */
 
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
+pub enum TileError {
+    NotImplemented,
+    IndexOutOfBounds,
+    SpriteRenderNotFound(EntitySpriteRender),
+}
+
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
+pub enum ChunkError {
+    NotImplemented,
+    IndexOutOfBounds,
+    NotFound,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
+pub enum PlanetError {
+    NotImplemented,
+    ChunkProblem(ChunkError),
+    TileProblem(TileError),
+}
+
 /// The Index of a chunk in a [Planet](struct.Planet.html).
 /// Used to calculate the render-position of a chunk,
 /// and to figure out which chunk the player currently resides in.
@@ -44,7 +84,7 @@ impl ChunkIndex {
         transform: &Transform,
         render_config: &RenderConfig,
         planet: &Planet,
-    ) -> Option<Self> {
+    ) -> Result<Self, PlanetError> {
         // TODO: Clamp to planet.planet_dim !
         let x_transl = transform.translation[0];
         let y_transl = transform.translation[1];
@@ -57,12 +97,17 @@ impl ChunkIndex {
         let chunk_x_f32 = (x_transl / chunk_width_f32).trunc();
         let chunk_y_f32 = (y_transl / chunk_height_f32).trunc();
         if chunk_x_f32.is_sign_negative() || chunk_y_f32.is_sign_negative() {
-            return None;
+            return Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds));
         }
 
         let chunk_x = chunk_x_f32.trunc();
         let chunk_y = chunk_y_f32.trunc();
-        Some(ChunkIndex(chunk_y as u64, chunk_x as u64))
+        let chunk_id = ChunkIndex(chunk_y as u64, chunk_x as u64);
+
+        match Planet::clamp_chunk_index(planet, chunk_id) {
+            Ok(chunk_id) => Ok(chunk_id),
+            Err(e) => Err(e),
+        }
     }
 }
 
@@ -113,65 +158,20 @@ impl Planet {
             chunks: HashMap::with_capacity(chunk_count as usize),
         };
 
-        /*
-        // <DEBUG>
-        // clamp chunks to 0 <= x <= u64::MAX && 0 <= y <= u64::MAX
-
-        // Testing wrapping
-        for y in ({ rv.planet_dim.1 - render_config.chunk_render_distance })..=({
-            rv.planet_dim.1 + render_config.chunk_render_distance
-        }) {
-            for x in ({ rv.planet_dim.0 - render_config.chunk_render_distance })..=({
-                rv.planet_dim.0 + render_config.chunk_render_distance
-            }) {
-                if let Some(chunk_id) = {
-                    let mut rv = ChunkIndex(y, x);
-                    if rv.0 >= planet_dim.0 {
-                        rv.0 = rv.0 % planet_dim.0;
-                        {/*turn back to debug later*/}warn!("chunk y-index originally {:?} is out of bounds.", y);
-                        None
-                    } else {
-                        if rv.1 >= planet_dim.1 {
-                            rv.1 = rv.1 % planet_dim.1;
-                            {/*turn back to debug later*/}warn!(
-                                "chunk x-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
-                                x, rv.1, planet_dim.1
-                            );
-                        }
-                        Some(rv)
-                    }
-                } {
-                    #[cfg(feature = "debug")]
-                    {/*turn back to debug later*/}warn!("+----------");
-                    #[cfg(feature = "debug")]
-                    {/*turn back to debug later*/}warn!(
-                        "| chunk number {}, {:?}",
-                        { chunk_id.0 * rv.planet_dim.1 + chunk_id.1 },
-                        chunk_id
-                    );
-                    rv.new_chunk(chunk_id);
-                } else {
-                    warn!("{:?} is out of bounds.", ChunkIndex(y, x));
-                }
-            }
-        }
-        #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("+----------");
-        // </DEBUG>*/
-
         rv
     }
 
     /// Tries to fetch a chunk from the HashMap.
     /// If the given index exceeds the planet-dim bounds, it gets [clamped](struct.Planet.html#method.clamp_chunk_index).
-    /// Returns `None` if no chunk at the given index exists.
-    /// Try calling `new_chunk()` in that case.
+    /// Returns either a reference to a chunk, if it found one, or an error.
+    /// This Error could be `PlanetError::ChunkProblem(ChunkError::NotFound))`,
+    /// if that's the case try calling `new_chunk()`.
     #[allow(dead_code)]
-    pub fn get_chunk(&mut self, index: ChunkIndex) -> Option<&Chunk> {
-        if let Some(clamped_index) = self.clamp_chunk_index(index) {
-            self.chunks.get(&clamped_index)
-        } else {
-            None
+    pub fn get_chunk(&mut self, index: ChunkIndex) -> Result<Option<&Chunk>, PlanetError> {
+        let clamped_id_result = Self::clamp_chunk_index(&self, index);
+        match clamped_id_result {
+            Ok(clamped_index) => Ok(self.chunks.get(&clamped_index)),
+            Err(e) => Err(e),
         }
     }
 
@@ -185,32 +185,45 @@ impl Planet {
 
     /// The given chunk index gets clamped to the planet-dim by wrapping it in x-direction.
     /// Returns none if the index is out of bounds in y-direction.
-    #[allow(dead_code)]
-    pub fn clamp_chunk_index(&self, index: ChunkIndex) -> Option<ChunkIndex> {
+    pub fn clamp_chunk_index(
+        planet: &Planet,
+        index: ChunkIndex,
+    ) -> Result<ChunkIndex, PlanetError> {
         let mut rv = index;
-        if rv.0 >= self.planet_dim.0 {
-            rv.0 = rv.0 % self.planet_dim.0;
-            {/*turn back to debug later*/}warn!("chunk Y-index originally  {:?} is out of bounds.", index.0);
-            None
+        if rv.0 >= planet.planet_dim.0 {
+            Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds))
         } else {
-            if rv.1 >= self.planet_dim.1 {
-                rv.1 = rv.1 % self.planet_dim.1;
-                {/*turn back to debug later*/}warn!(
-                    "chunk X-index originally was: {:?}, got clamped to: {:?}, with planet_dim.0: {:?}",
-                    index.1, rv.1, self.planet_dim.1
-                );
+            if rv.1 >= planet.planet_dim.1 {
+                rv.1 = rv.1 % planet.planet_dim.1;
             }
-            Some(rv)
+            Ok(rv)
         }
     }
 
     /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
     /// which can either be fetched from the world, or from its storage.
-    pub fn new_chunk(&mut self, chunk_id: ChunkIndex) {
+    ///
+    /// Needs access to the storages of all components used by `Tile`'s, since it creates new `Tile`-entities,
+    /// preferably use from inside a system.
+    pub fn new_chunk(
+        &mut self,
+        chunk_id: ChunkIndex,
+        // NOTE: This is pretty ugly
+        mut storages: &mut TileGenerationStorages,
+    ) {
         // TODO: everything, maybe different tiles not only based on depth, but also x-pos?
-        warn!("Creating new chunk at {:?}.", chunk_id);
-        self.chunks
-            .insert(chunk_id, Chunk::new(chunk_id.0, self.chunk_dim));
+        match Self::clamp_chunk_index(&self, chunk_id) {
+            Ok(clamped_id) => {
+                #[cfg(feature = "debug")]
+                warn!("Creating new chunk at {:?}.", clamped_id);
+
+                let chunk = Chunk::new(&self, chunk_id, self.chunk_dim, storages);
+                self.chunks.insert(clamped_id, chunk);
+            }
+            Err(e) => {
+                error!("Requested new chunk at invalid index {:?}.", chunk_id);
+            }
+        };
     }
 
     /// Drains all chunks currently stored in planet, useful when `save & exit` happens.
@@ -245,7 +258,7 @@ impl TileIndex {
         chunk_index: ChunkIndex,
         render_config: &RenderConfig,
         planet: &Planet,
-    ) -> Option<Self> {
+    ) -> Result<Self, PlanetError> {
         let x_transl = transform.translation[0];
         let y_transl = transform.translation[1];
 
@@ -267,12 +280,12 @@ impl TileIndex {
             || tile_x_f32 > (x_chunk_transl + chunk_width_f32)
             || tile_y_f32 > (y_chunk_transl + chunk_height_f32)
         {
-            return None;
+            return Err(PlanetError::TileProblem(TileError::IndexOutOfBounds));
         }
 
         let tile_x = tile_x_f32.trunc();
         let tile_y = tile_y_f32.trunc();
-        Some(TileIndex(tile_y as u64, tile_x as u64))
+        Ok(TileIndex(tile_y as u64, tile_x as u64))
     }
 }
 
@@ -304,7 +317,13 @@ pub struct Chunk {
 
 // public interface
 impl Chunk {
-    pub fn new(_depth: u64, chunk_dim: (u64, u64)) -> Chunk {
+    pub fn new(
+        planet: &Planet,
+        index: ChunkIndex,
+        chunk_dim: (u64, u64),
+        // NOTE: This is pretty ugly
+        mut storages: &mut TileGenerationStorages,
+    ) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
         let mut rv = Chunk {
             tile_entities: BTreeMap::new(),
@@ -312,13 +331,33 @@ impl Chunk {
             tile_type: BTreeMap::new(),
         };
 
+        let base_transform = {
+            let render_config = &storages.render_config;
+            let mut transform = Transform::default();
+            transform.translation = Vector3::new(
+                index.1 as f32 * (planet.chunk_dim.1 as f32 * render_config.tile_base_render_dim.1),
+                index.0 as f32 * (planet.chunk_dim.0 as f32 * render_config.tile_base_render_dim.0),
+                0.0,
+            );
+            transform
+        };
+        #[cfg(feature = "debug")]
+        warn!(
+            "|\tbase translation: {:?}",
+            base_transform.translation.clone()
+        );
+
         // TODO: Actual tile generation algorithm
         for y in 0..chunk_dim.0 {
             for x in 0..chunk_dim.1 {
-                {/*turn back to debug later*/}warn!("|\ttile number {}", { y * chunk_dim.1 + x });
+                #[cfg(feature = "debug")]
+                warn!("|\ttile number {}", { y * chunk_dim.1 + x });
 
-                let tile_number = thread_rng().gen_range(0, 16);
-                Self::add_tile(&mut rv, TileIndex(y, x), tile_number);
+                let tile_id = TileIndex(y, x);
+                if let Err(e) = Self::add_tile(planet, &mut rv, &base_transform, tile_id, storages)
+                {
+                    error!("Error creating {:?}: {:?}!", tile_id, e);
+                };
             }
         }
 
@@ -359,36 +398,119 @@ impl Chunk {
     pub fn iter_tiles(&self) -> btree_map::Iter<TileIndex, TileTypes> {
         self.tile_type.iter()
     }
+
+    /// The given tile index gets clamped to the chunk-dim by cutting it off in all directions.
+    /// Returns none if the index is out of bounds.
+    pub fn clamp_tile_index(planet: &Planet, index: TileIndex) -> Result<TileIndex, PlanetError> {
+        let mut rv = index;
+        if rv.0 >= planet.chunk_dim.0 || rv.1 >= planet.chunk_dim.1 {
+            #[cfg(feature = "debug")]
+            warn!("tile index originally {:?} is out of bounds.", index);
+            Err(PlanetError::TileProblem(TileError::IndexOutOfBounds))
+        } else {
+            Ok(rv)
+        }
+    }
 }
 
 // private methods
 impl Chunk {
+    fn add_tile(
+        planet: &Planet,
+        chunk: &mut Chunk,
+        base_transform: &Transform,
+        tile_id: TileIndex,
+        // NOTE: This is pretty ugly
+        mut storages: &mut TileGenerationStorages,
+    ) -> Result<(), self::PlanetError> {
+        match Self::create_tile(planet, base_transform, tile_id, storages) {
+            Ok((tile_type, entity)) => {
+                chunk.tile_type.insert(tile_id, tile_type);
+                chunk.tile_index.insert(entity, tile_id);
+                chunk.tile_entities.insert(tile_id, entity);
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
     // Creates a new tile at the given Index
+    // Does not clamp the TileIndex, you have to do this yourself first.
     #[allow(dead_code)]
-    fn add_tile(chunk: &mut Chunk, index: TileIndex, tile_number: usize) {
-        // TODO: call into Tiles::new()
-        // TODO: populate `self.tiles` & `self.tiles_inversed`
-        let tile_type = match tile_number {
-            0 => {TileTypes::Magnetite},
-            1 => {TileTypes::Pyrolusite},
-            2 => {TileTypes::Fossile},
-            3 => {TileTypes::Molybdenite},
-            4 => {TileTypes::Lava},
-            5 => {TileTypes::Rock},
-            6 => {TileTypes::Gas},
-            7 => {TileTypes::Galena},
-            8 => {TileTypes::Bornite},
-            9 => {TileTypes::Chromite},
-            10 => {TileTypes::Cassiterite},
-            11 => {TileTypes::Cinnabar},
-            12 => {TileTypes::Dirt},
-            13 => {TileTypes::Gold},
-            14 => {TileTypes::Empty},
-            15 => {TileTypes::Bauxite},
-            _ => {return;},
-        };
+    fn create_tile(
+        planet: &Planet,
+        base_transform: &Transform,
+        index: TileIndex,
+        // NOTE: This is pretty ugly
+        mut storages: &mut TileGenerationStorages,
+    ) -> Result<(TileTypes, Entity), self::PlanetError> {
+        let entities = &storages.entities;
+        let mut sprite_render_storage = &mut storages.sprite_render;
+        let mut tile_base_storage = &mut storages.tile_base;
+        let mut transform_storage = &mut storages.transform;
+        let game_sprites = &storages.game_sprites;
+        let render_config = &storages.render_config;
 
-        info!("|\t\t{:?}", tile_type);
-        chunk.tile_type.insert(index, tile_type);
+        match Self::clamp_tile_index(planet, index) {
+            Ok(index) => {
+                // TODO: Proper algorithm to determine `TileTypes`, based on depth, etc.
+                let tile_number = rand::thread_rng().gen_range(0, 16);
+                let tile_type = match tile_number {
+                    0 => TileTypes::Magnetite,
+                    1 => TileTypes::Pyrolusite,
+                    2 => TileTypes::Fossile,
+                    3 => TileTypes::Molybdenite,
+                    4 => TileTypes::Lava,
+                    5 => TileTypes::Rock,
+                    6 => TileTypes::Gas,
+                    7 => TileTypes::Galena,
+                    8 => TileTypes::Bornite,
+                    9 => TileTypes::Chromite,
+                    10 => TileTypes::Cassiterite,
+                    11 => TileTypes::Cinnabar,
+                    12 => TileTypes::Dirt,
+                    13 => TileTypes::Gold,
+                    14 => TileTypes::Empty,
+                    15 => TileTypes::Bauxite,
+                    _ => {
+                        #[cfg(feature = "debug")]
+                        warn!("Non-implemented TileType requested in `Chunk::create_tile`, defaulting to `Dirt`.");
+                        TileTypes::Dirt
+                    }
+                };
+
+                let entity_sprite_render = EntitySpriteRender::Ore(tile_type);
+                match game_sprites.get(entity_sprite_render) {
+                    Some(sprite_render) => {
+                        let mut transform = base_transform.clone();
+                        transform.translation += Vector3::new(
+                            index.1 as f32 * render_config.tile_base_render_dim.1,
+                            index.0 as f32 * render_config.tile_base_render_dim.0,
+                            0.0,
+                        );
+                        let tile_base = TileBase { kind: tile_type };
+
+                        #[cfg(feature = "debug")]
+                        warn!(
+                            "|\tcreating tile with translation: {:?}",
+                            transform.translation.clone()
+                        );
+
+                        let entity = entities
+                            .build_entity()
+                            .with(tile_base, tile_base_storage)
+                            .with(sprite_render.clone(), sprite_render_storage)
+                            .with(transform, transform_storage)
+                            .build();
+
+                        info!("|\t\t{:?}", tile_type);
+                        Ok((tile_type, entity))
+                    }
+                    None => Err(PlanetError::TileProblem(TileError::SpriteRenderNotFound(
+                        entity_sprite_render,
+                    ))),
+                }
+            }
+            Err(e) => Err(e),
+        }
     }
 }

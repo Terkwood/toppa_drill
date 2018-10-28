@@ -12,10 +12,7 @@ pub struct SavegamePaths {
 }
 
 impl SavegamePaths {
-    pub fn init(
-        base_path: &'static str,
-        game_name: &'static str,
-    ) -> SavegamePaths {
+    pub fn init(base_path: &'static str, game_name: &'static str) -> SavegamePaths {
         // Directory of all savegames
         let dir_path = Path::new("savegames");
 
@@ -23,7 +20,8 @@ impl SavegamePaths {
         let mut savegame_dir_path = PathBuf::from(base_path);
         savegame_dir_path = savegame_dir_path.join(dir_path);
         savegame_dir_path = savegame_dir_path.join(Path::new(game_name));
-        {/*turn back to debug later*/}warn!("savegame_dir_path: {:?}", savegame_dir_path.clone());
+        #[cfg(feature = "debug")]
+        warn!("savegame_dir_path: {:?}", savegame_dir_path.clone());
 
         // Filepath for the serialized planet
         let mut planet_file_path = PathBuf::new();
@@ -41,16 +39,16 @@ impl SavegamePaths {
         if !dir_exists {
             if let Ok(_) = fs::create_dir(dir_path) {
                 #[cfg(feature = "debug")]
-                {/*turn back to debug later*/}warn!("Savegame dir has been created at {:?}.", dir_path);
+                warn!("Savegame dir has been created at {:?}.", dir_path);
             } else {
-                #[cfg(feature = "debug")]
                 error!("Failed to create savegame dir at {:?}", dir_path);
             }
         }
 
         dir_exists = savegame_dir_path.exists();
         if dir_exists {
-            {/*turn back to debug later*/}warn!("Overwriting old savegame: {:?}.", game_name);
+            #[cfg(feature = "debug")]
+            warn!("Overwriting old savegame: {:?}.", game_name);
             for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap() {
                 if let Ok(entry) = entry_result {
                     let entry_path = entry.path();

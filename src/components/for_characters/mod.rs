@@ -4,21 +4,21 @@ pub mod player;
 
 /// This component is meant for player entities.
 #[derive(Debug, Clone, Copy)]
-pub struct TagPlayer {
+pub struct PlayerBase {
     pub id: usize,
 }
 
-impl Component for TagPlayer {
+impl Component for PlayerBase {
     type Storage = VecStorage<Self>;
 }
 
 /// This component is meant for npc entities.
 #[derive(Debug, Clone, Copy)]
-pub struct TagNPC {
+pub struct NPCBase {
     pub id: usize,
 }
 
-impl Component for TagNPC {
+impl Component for NPCBase {
     type Storage = VecStorage<Self>;
 }
 
@@ -32,15 +32,15 @@ pub struct TagGenerator {
 }
 
 impl TagGenerator {
-    pub fn new_player_tag(&mut self) -> TagPlayer {
+    pub fn new_player_tag(&mut self) -> PlayerBase {
         self.player_count += 1;
-        TagPlayer {
+        PlayerBase {
             id: self.player_count,
         }
     }
 
-    pub fn new_npc_tag(&mut self) -> TagNPC {
+    pub fn new_npc_tag(&mut self) -> NPCBase {
         self.npc_count += 1;
-        TagNPC { id: self.npc_count }
+        NPCBase { id: self.npc_count }
     }
 }

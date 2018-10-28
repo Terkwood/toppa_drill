@@ -19,7 +19,7 @@ use amethyst::{
     ecs::prelude::*,
 };
 
-use components::for_characters::TagPlayer;
+use components::for_characters::PlayerBase;
 use entities::tile::TileTypes;
 use resources::{
     ingame::{
@@ -46,34 +46,38 @@ impl<'a> System<'a> for SerSavegameSystem {
         let savegame_planet = &save_data.planet;
 
         #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("Starting to serialize savegame.");
+        warn!("Starting to serialize savegame.");
         #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("serializing game data.");
+        warn!("serializing game data.");
         let mut ser_planet = ron::ser::Serializer::new(Some(Default::default()), true);
         {
             // TODO: Error handling. Why doesn't `?` work, even though the specs example uses it?
             use serde::ser::SerializeSeq;
-            if let Ok(mut serseq) = ser_planet.serialize_seq(None){
-                if let Err(e) = serseq.serialize_element(&session_data.deref()){
+            if let Ok(mut serseq) = ser_planet.serialize_seq(None) {
+                if let Err(e) = serseq.serialize_element(&session_data.deref()) {
                     error!("Error serializing element planet: {:?}", e);
                 }
-                if let Err(e) = serseq.end(){
+                if let Err(e) = serseq.end() {
                     error!("Error ending serialize for planet: {:?}", e);
                 }
-            }
-            else{
+            } else {
                 error!("Error starting serialize for planet.");
             }
         }
         // TODO: Write to file `{$savegame_name}/planet.ron`
-        if let Err(e) = fs::write(paths.planet_file_path.clone(), ser_planet.into_output_string()) {
+        if let Err(e) = fs::write(
+            paths.planet_file_path.clone(),
+            ser_planet.into_output_string(),
+        ) {
             error!(
                 "Writing savegame planet at '{:?}' threw error: {:?}",
-                paths.planet_file_path.clone(), e
+                paths.planet_file_path.clone(),
+                e
             );
         }
+
         #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("serializing planet.");
+        warn!("serializing planet.");
         for (chunk_index, chunk) in savegame_planet.iter_chunks() {
             let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
             /* NOTE: Use this to save disk space!
@@ -82,26 +86,34 @@ impl<'a> System<'a> for SerSavegameSystem {
             {
                 use serde::ser::SerializeMap;
                 #[cfg(feature = "debug")]
-                {/*turn back to debug later*/}warn!("serializing {:?}", chunk_index);
+                warn!("serializing {:?}", chunk_index);
 
-                if let Ok(mut serseq) = ser_chunk.serialize_map(None){
+                if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
                     for (tile_index, tile_type) in chunk.iter_tiles() {
-                        if let Err(e) = serseq.serialize_key::<TileIndex>(&tile_index){
-                            error!("Error serializing key of Tile {:?} in Chunk {:?}: {:?}", tile_index, chunk_index, e);
+                        if let Err(e) = serseq.serialize_key::<TileIndex>(&tile_index) {
+                            error!(
+                                "Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
+                                tile_index, chunk_index, e
+                            );
                         }
-                        if let Err(e) = serseq.serialize_value::<TileTypes>(&tile_type){
-                            error!("Error serializing value of Tile {:?} in Chunk {:?}: {:?}", tile_index, chunk_index, e);
+                        if let Err(e) = serseq.serialize_value::<TileTypes>(&tile_type) {
+                            error!(
+                                "Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
+                                tile_index, chunk_index, e
+                            );
                         }
                         /* NOTE: Use this to save disk space!
                         serseq.serialize_key::<u64>(&{(tile_index.1 * render_config.chunk_render_dim.0 + tile_index.0) as u64}).unwrap();
                         serseq.serialize_value::<u64>(&{*tile_type as u64}).unwrap();
                         */
                     }
-                    if let Err(e) = serseq.end(){
-                        error!("Error ending serialize for chunk {:?}: {:?}", chunk_index, e);
+                    if let Err(e) = serseq.end() {
+                        error!(
+                            "Error ending serialize for chunk {:?}: {:?}",
+                            chunk_index, e
+                        );
                     }
-                }
-                else{
+                } else {
                     error!("Error starting serialize for chunk {:?}.", chunk_index);
                 }
             }
@@ -120,6 +132,6 @@ impl<'a> System<'a> for SerSavegameSystem {
             }
         }
         #[cfg(feature = "debug")]
-        {/*turn back to debug later*/}warn!("Finished serializing savegame.");
+        warn!("Finished serializing savegame.");
     }
 }

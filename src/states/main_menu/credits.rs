@@ -62,7 +62,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for CreditsState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {
         self.current_screen_prefab = screen_prefab.clone();
     }
 
@@ -157,7 +157,8 @@ impl<'a, 'b, 'd, 'e> CreditsState<'d, 'e> {
     }
 
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Returning to CentreState.");
+        #[cfg(feature = "debug")]
+        warn!("Returning to CentreState.");
         Trans::Pop
     }
 }

@@ -61,7 +61,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
         self.current_screen_prefab.clone()
     }
 
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>){
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {
         self.current_screen_prefab = screen_prefab.clone();
     }
 
@@ -176,7 +176,8 @@ impl<'a, 'b, 'd, 'e> InventoryState<'d, 'e> {
     }
 
     fn btn_close(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        {/*turn back to debug later*/}warn!("Closing inventory.");
+        #[cfg(feature = "debug")]
+        warn!("Closing inventory.");
         Trans::Pop
     }
 }

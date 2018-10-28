@@ -8,7 +8,7 @@ use amethyst::{
         ColorMask, DepthMode, DisplayConfig, DrawSprite, Pipeline, RenderBundle, Stage, ALPHA,
     },
     ui::{DrawUi, UiBundle},
-    LoggerConfig, StdoutLog, LogLevelFilter,
+    LogLevelFilter, LoggerConfig, StdoutLog,
 };
 
 extern crate toppa_drill_lib;
@@ -16,23 +16,19 @@ use toppa_drill_lib::{StartupState, ToppaGameDataBuilder};
 
 fn main() -> Result<(), amethyst::Error> {
     #[cfg(feature = "debug")]
-    amethyst::start_logger(
-        LoggerConfig{
-            stdout: StdoutLog::Colored,
-            level_filter: LogLevelFilter::Warn,
-            log_file: None,
-            allow_env_override: false,
-        }
-    );
+    amethyst::start_logger(LoggerConfig {
+        stdout: StdoutLog::Colored,
+        level_filter: LogLevelFilter::Warn,
+        log_file: None,
+        allow_env_override: false,
+    });
     #[cfg(not(feature = "debug"))]
-    amethyst::start_logger(
-        LoggerConfig{
-            stdout: StdoutLog::Colored,
-            level_filter: LogLevelFilter::Info,
-            log_file: None,
-            allow_env_override: false,
-        }
-    );
+    amethyst::start_logger(LoggerConfig {
+        stdout: StdoutLog::Colored,
+        level_filter: LogLevelFilter::Info,
+        log_file: None,
+        allow_env_override: false,
+    });
 
     let display_config_path = format!("{}/Prefabs/display_config.ron", env!("CARGO_MANIFEST_DIR"));
     let display_config = DisplayConfig::load(&display_config_path);

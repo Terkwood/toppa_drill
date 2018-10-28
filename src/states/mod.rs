@@ -18,25 +18,35 @@ pub trait ToppaState<'g, 'h> {
     type StateButton;
     // some accessors to make implementation shorter.
     /// May return the `ToppaState`'s `current_screen`-entity, if it has one.
-    fn get_screen_entity(&self) -> Option<Entity> {None}
+    fn get_screen_entity(&self) -> Option<Entity> {
+        None
+    }
     /// Implement to set the `ToppaState`'s `current_screen`-entity, if it has this field.
     fn set_screen_entity(&mut self, screen_entity: Option<Entity>) {}
-    
+
     /// Implement to set the `ToppaState`'s `current_screen_prefab`, if it has this field.
-    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {None}
+    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {
+        None
+    }
     /// May return the `ToppaState`'s `current_screen_prefab`, if it has one.
     fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {}
 
     /// May return the `ToppaState`'s `main_dispatcher`, if it has one.
-    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {None}
+    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {
+        None
+    }
     /// May return the `ToppaState`'s `shadow_dispatcher`, if it has one.
-    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {None}
-    
+    fn get_shadow_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {
+        None
+    }
+
     /// Implement to clear the `ToppaState`'s `ui_buttons`-field and set the
     /// `b_buttons_found`-field to false, causing the update to search for the buttons again.
     fn reset_buttons(&mut self) {}
     /// May return the `ToppaState`'s `ui_buttons`-field, if it has one.
-    fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton>> {None}
+    fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton>> {
+        None
+    }
 
     // --- Actual API ---
     // Since systems change per state, individual impl necessary
@@ -60,7 +70,7 @@ pub trait ToppaState<'g, 'h> {
     /// Call this function to destroy the dispatcher built in [`enable_dispatcher()`](trait.ToppaState.html#method.enable_dispatcher).
     /// Currently necessary, since non-dispatched `System`'s `ReaderID`'s would otherwise cause the buffer to grow forever.
     fn disable_dispatcher(&mut self) {
-        if let Some(dispatcher_opt) = self.get_main_dispatcher(){
+        if let Some(dispatcher_opt) = self.get_main_dispatcher() {
             *dispatcher_opt = None;
         }
     }
@@ -75,7 +85,7 @@ pub trait ToppaState<'g, 'h> {
     /// Call this function to destroy the dispatcher built in [`enable__shadow_dispatcher()`](trait.ToppaState.html#method.enable_shadow_dispatcher).
     /// Currently necessary, since non-dispatched `System`'s `ReaderID`'s would otherwise cause the buffer to grow forever.
     fn disable_shadow_dispatcher(&mut self) {
-        if let Some(dispatcher_opt) = self.get_shadow_dispatcher(){
+        if let Some(dispatcher_opt) = self.get_shadow_dispatcher() {
             *dispatcher_opt = None;
         }
     }
@@ -111,8 +121,9 @@ pub trait ToppaState<'g, 'h> {
     ) -> bool {
         world.exec(|finder: UiFinder| {
             if let Some(entity) = finder.find(button_name) {
-                if let Some(buttons) = self.get_buttons(){
-                    {/*turn back to debug later*/}warn!("Adding button {}.", button_name);
+                if let Some(buttons) = self.get_buttons() {
+                    #[cfg(feature = "debug")]
+                    warn!("Adding button {}.", button_name);
                     buttons.insert(entity, button);
                 }
                 true

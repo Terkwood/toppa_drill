@@ -125,7 +125,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
 
         let ren_con = RenderConfig {
             tile_base_render_dim: (64.0, 64.0),
-            chunk_render_distance: 1,
+            chunk_render_distance: 0,
             view_dim: (1920, 1080),
         };
         world.add_resource::<RenderConfig>(ren_con);

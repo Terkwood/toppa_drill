@@ -1,15 +1,24 @@
 use amethyst::{
     assets::ProgressCounter,
     core::transform::components::Transform,
+    ecs::prelude::*,
     prelude::*,
     renderer::{SpriteRender, Transparent},
+    shrev::EventChannel,
 };
 
 use {
-    components::for_characters::{player::Position, TagGenerator},
+    components::{
+        for_characters::{player::Position, TagGenerator},
+        for_ground_entities::TileBase,
+    },
     entities::{camera, EntitySpriteRender},
+    events::planet_events::ChunkEvent,
     resources::{
-        ingame::{GameSessionData, GameSprites},
+        ingame::{
+            planet::{ChunkIndex, TileGenerationStorages, TileIndex},
+            GameSessionData, GameSprites,
+        },
         RenderConfig, ToppaSpriteSheet,
     },
     utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
@@ -43,6 +52,7 @@ pub fn init(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCou
 }
 /// Creates a new player and returns his ID.
 /// If `0`(Zero) is returned, the player has not been created.
+/// Also loads the chunk the player stands on.
 pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> usize {
     let player_tag = {
         let mut tag_resource = world.write_resource::<TagGenerator>();
@@ -59,7 +69,14 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
     };
 
     if let Some(position) = position_opt {
-        {/*turn back to debug later*/}warn!("Initial player position from transform.");
+        #[cfg(feature = "debug")]
+        warn!("Initial player position from transform.");
+
+        {
+            let mut chunk_event_channel = world.write_resource::<EventChannel<ChunkEvent>>();
+            chunk_event_channel.single_write(ChunkEvent::RequestingLoad(position.chunk));
+        }
+
         let player = world
             .create_entity()
             .with(transform.clone())
@@ -71,18 +88,25 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
 
         camera::init(world, view_dim, player, transform);
     } else {
-        {/*turn back to debug later*/}warn!("Initial player position from default.");
+        #[cfg(feature = "debug")]
+        warn!("Initial player position from default.");
+
+        let position = Position::default();
+        {
+            let mut chunk_event_channel = world.write_resource::<EventChannel<ChunkEvent>>();
+            chunk_event_channel.single_write(ChunkEvent::RequestingLoad(position.chunk));
+        }
+
         let player = world
             .create_entity()
             .with(transform.clone())
             .with(Transparent)
             .with(sprite.clone())
             .with(player_tag)
-            .with(Position::default())
+            .with(position)
             .build();
 
         camera::init(world, view_dim, player, transform);
     }
-
     player_tag.id
 }

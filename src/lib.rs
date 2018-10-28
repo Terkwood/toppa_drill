@@ -16,9 +16,9 @@ extern crate amethyst;
 extern crate log;
 #[macro_use]
 extern crate serde_derive;
+extern crate rand;
 extern crate ron;
 extern crate serde;
-extern crate rand;
 
 mod components;
 mod entities;
