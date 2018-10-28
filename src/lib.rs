@@ -37,6 +37,14 @@ pub use self::{
     toppa_game_data::{ToppaGameData, ToppaGameDataBuilder},
 };
 
+// CONSTANTS
+/// Eulers number e
+pub const EULER_NUMBER: f64 = 2.718281828459045;
+/// Circular number pi
+pub const PI: f64 = 3.14159265358979323846264338327950288419716939937510;
+/// Earth's gravitational constant in `m/(s^2)`
+pub const GRAVITATION: f64 = 9.81;
+
 use amethyst::core::specs::error::NoError;
 
 #[derive(Debug)]

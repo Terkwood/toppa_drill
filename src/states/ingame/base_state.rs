@@ -12,7 +12,16 @@ use {
     entities,
     resources::ingame::{GameSessionData, GameSprites, SavegamePaths},
     states::ToppaState,
-    systems::{ingame::PlayerPositionSystem, serialization::HotChunkSystem, DummySystem},
+    systems::{
+        ingame::{
+            PlayerPositionSystem,
+            EngineForceSystem,
+            GravitationSystem,
+            MovementSystem,
+        },
+        serialization::HotChunkSystem, 
+        DummySystem,
+    },
     ToppaGameData,
 };
 
@@ -45,7 +54,18 @@ impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
     fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
-                .with(DummySystem { counter: 0 }, "dummy_system", &[])
+                .with(
+                    DummySystem::default(), "dummy_system", &[]
+                )
+                .with(
+                    GravitationSystem, "gravitation_system", &[]
+                )
+                .with(
+                    EngineForceSystem, "engine_force_system", &["gravitation_system"]
+                )
+                .with(
+                    MovementSystem, "movement_system", &["engine_force_system"]
+                )
                 .with(
                     PlayerPositionSystem::default(),
                     "player_position_system",
@@ -54,7 +74,8 @@ impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
                     HotChunkSystem::new(),
                     "hotchunk_system",
                     &["player_position_system"],
-                ).build();
+                )
+                .build();
 
             dispatcher.setup(&mut world.res);
 

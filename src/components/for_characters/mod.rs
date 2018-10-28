@@ -1,6 +1,13 @@
-use amethyst::ecs::prelude::{Component, VecStorage};
+mod engine;
+mod fuel_tank;
 
 pub mod player;
+pub use self::{
+    fuel_tank::FuelTank,
+    engine::Engine,
+};
+
+use amethyst::ecs::prelude::{Component, VecStorage};
 
 /// This component is meant for player entities.
 #[derive(Debug, Clone, Copy)]

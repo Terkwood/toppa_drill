@@ -4,10 +4,14 @@
             pos: Key(D),
             neg: Key(A),
         ),
+        "up": Emulated(
+            pos: Key(W),
+            neg: Key(S),
+        ),
     },
     actions:{
-            "shoot": [
-                Key(Space),
-            ],
+        "shoot": [
+            Key(Space),
+        ],
     },
 )

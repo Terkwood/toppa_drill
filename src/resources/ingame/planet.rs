@@ -20,7 +20,7 @@ use amethyst::{
     ecs::prelude::*,
     ecs::{storage::MaskedStorage, world::EntitiesRes, Storage},
     renderer::SpriteRender,
-    shred::{FetchMut, PanicHandler},
+    shred::{FetchMut, DefaultProvider},
 };
 
 use {
@@ -35,8 +35,8 @@ pub struct TileGenerationStorages<'a> {
     pub tile_base: Storage<'a, TileBase, FetchMut<'a, MaskedStorage<TileBase>>>,
     pub sprite_render: Storage<'a, SpriteRender, FetchMut<'a, MaskedStorage<SpriteRender>>>,
     pub transform: Storage<'a, Transform, FetchMut<'a, MaskedStorage<Transform>>>,
-    pub game_sprites: Read<'a, GameSprites, PanicHandler>,
-    pub render_config: Read<'a, RenderConfig, PanicHandler>,
+    pub game_sprites: Read<'a, GameSprites, DefaultProvider>,
+    pub render_config: Read<'a, RenderConfig, DefaultProvider>,
 }
 
 // Currently not used. Only one planet available for the beginning.
@@ -89,7 +89,6 @@ impl ChunkIndex {
         render_config: &RenderConfig,
         planet: &Planet,
     ) -> Result<Self, PlanetError> {
-        // TODO: Clamp to planet.planet_dim !
         let x_transl = transform.translation[0];
         let y_transl = transform.translation[1];
 
@@ -100,7 +99,11 @@ impl ChunkIndex {
 
         let chunk_x_f32 = (x_transl / chunk_width_f32).trunc();
         let chunk_y_f32 = (y_transl / chunk_height_f32).trunc();
+
         if chunk_x_f32.is_sign_negative() || chunk_y_f32.is_sign_negative() {
+            #[cfg(feature = "debug")]
+            error!("Negative chunk index.");
+
             return Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds));
         }
 
@@ -109,7 +112,12 @@ impl ChunkIndex {
         let chunk_id = ChunkIndex(chunk_y as u64, chunk_x as u64);
 
         match Planet::clamp_chunk_index(planet, chunk_id) {
-            Ok(chunk_id) => Ok(chunk_id),
+            Ok(chunk_id) => {
+                #[cfg(feature = "debug")]
+                warn!("From transform: {:?}", chunk_id);
+
+                Ok(chunk_id)
+            },
             Err(e) => Err(e),
         }
     }
@@ -193,8 +201,13 @@ impl Planet {
         planet: &Planet,
         index: ChunkIndex,
     ) -> Result<ChunkIndex, PlanetError> {
+        #[cfg(feature = "trace")]
+        error!("ChunkIndex clamping.");
+
         let mut rv = index;
         if rv.0 >= planet.planet_dim.0 {
+            #[cfg(feature = "debug")]
+            error!("Error clamping index. To deep.");
             Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds))
         } else {
             if rv.1 >= planet.planet_dim.1 {
@@ -210,9 +223,6 @@ impl Planet {
         chunk_dir_path: PathBuf,
         //mut storages: &mut TileGenerationStorages,
     ) {
-        // TODO: Everything
-        error!("Not implemented yet.");
-
         if let Some(chunk) = self.remove_chunk(&chunk_id) {
             let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
             /* NOTE: Use this to save disk space!
@@ -351,25 +361,28 @@ impl TileIndex {
         let chunk_width_f32 = planet.chunk_dim.1 as f32 * tile_width_f32;
         let chunk_height_f32 = planet.chunk_dim.0 as f32 * tile_height_f32;
 
-        let x_chunk_transl = x_transl - (chunk_index.1 as f32 * chunk_width_f32);
-        let y_chunk_transl = y_transl - (chunk_index.0 as f32 * chunk_height_f32);
+        let chunk_offset_x = chunk_index.1 as f32 * chunk_width_f32;
+        let chunk_offset_y = chunk_index.0 as f32 * chunk_height_f32;
+
+        let x_chunk_transl = x_transl - (chunk_offset_x);
+        let y_chunk_transl = y_transl - (chunk_offset_y);
         // Supposedly more accurate, but is it necessary?
         /*let x_chunk_transl = chunk_x.mul_add(-chunk_width_f32, x_transl);
         let y_chunk_transl = chunk_y.mul_add(-chunk_height_f32, y_transl);*/
 
-        let tile_x_f32 = (x_chunk_transl / tile_width_f32).trunc();
-        let tile_y_f32 = (y_chunk_transl / tile_height_f32).trunc();
-        if tile_x_f32.is_sign_negative()
-            || tile_y_f32.is_sign_negative()
-            || tile_x_f32 > (x_chunk_transl + chunk_width_f32)
-            || tile_y_f32 > (y_chunk_transl + chunk_height_f32)
+        let tile_id_x_f32 = (x_chunk_transl / tile_width_f32).trunc();
+        let tile_id_y_f32 = (y_chunk_transl / tile_height_f32).trunc();
+        let tile_id_x = tile_id_x_f32.trunc() as u64;
+        let tile_id_y = tile_id_y_f32.trunc() as u64;
+        if tile_id_x_f32.is_sign_negative() || 
+            tile_id_y_f32.is_sign_negative() ||
+            tile_id_x >= planet.chunk_dim.1 ||
+            tile_id_y >= planet.chunk_dim.0 
         {
             return Err(PlanetError::TileProblem(TileError::IndexOutOfBounds));
         }
 
-        let tile_x = tile_x_f32.trunc();
-        let tile_y = tile_y_f32.trunc();
-        Ok(TileIndex(tile_y as u64, tile_x as u64))
+        Ok(TileIndex(tile_id_y, tile_id_x))
     }
 }
 

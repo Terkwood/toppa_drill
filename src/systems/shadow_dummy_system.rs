@@ -5,6 +5,7 @@ use amethyst::{
     renderer::VirtualKeyCode,
 };
 
+#[derive(Default)]
 pub struct ShadowDummySystem {
     pub counter: u64,
 }

@@ -75,7 +75,7 @@ impl<'a, 'b> ToppaGameDataBuilder<'a, 'b> {
         self
     }
     /// Add a system to the `ingame_core` dispatcher.
-    pub fn with_ingame_core_sytem<S>(mut self, system: S, name: &str, dependencies: &[&str]) -> Self
+    pub fn with_ingame_core_system<S>(mut self, system: S, name: &str, dependencies: &[&str]) -> Self
     where
         for<'c> S: System<'c> + Send + 'a,
     {

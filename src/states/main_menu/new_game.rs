@@ -90,7 +90,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
-            game_info: GameInfo::new("Trumpet", (2, 3), (3, 4)),
+            game_info: GameInfo::new("Mark", (7, 9), (2, 2)),//GameInfo::new("Trumpet", (2, 3), (3, 4)),
         }
     }
 
@@ -236,7 +236,6 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         world.register::<Position>();
         world.add_resource(EventChannel::<ChunkEvent>::new());
         world.add_resource::<GameSessionData>(session_data);
-        world.add_resource(EventChannel::<ChunkEvent>::new());
         // end: get rid
 
         let ingame_ui_prefab_handle =

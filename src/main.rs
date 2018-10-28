@@ -12,7 +12,10 @@ use amethyst::{
 };
 
 extern crate toppa_drill_lib;
-use toppa_drill_lib::{StartupState, ToppaGameDataBuilder};
+use toppa_drill_lib::{
+    StartupState, 
+    ToppaGameDataBuilder,
+};
 
 fn main() -> Result<(), amethyst::Error> {
     #[cfg(feature = "debug")]

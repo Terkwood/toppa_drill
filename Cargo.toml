@@ -38,3 +38,4 @@ sdl_controller = [
     "amethyst/sdl_controller",
 ]
 debug = []
+trace = []

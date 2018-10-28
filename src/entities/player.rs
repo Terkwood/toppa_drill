@@ -1,6 +1,9 @@
 use amethyst::{
     assets::ProgressCounter,
-    core::transform::components::Transform,
+    core::{
+        transform::components::Transform,
+        cgmath::Vector2,
+    },
     ecs::prelude::*,
     prelude::*,
     renderer::{SpriteRender, Transparent},
@@ -9,8 +12,17 @@ use amethyst::{
 
 use {
     components::{
-        for_characters::{player::Position, TagGenerator},
+        for_characters::{
+            player::Position, 
+            TagGenerator,
+            Engine,
+            FuelTank,
+        },
         for_ground_entities::TileBase,
+        physics::{
+            PhysicalProperties,
+            Dynamics,
+        },
     },
     entities::{camera, EntitySpriteRender},
     events::planet_events::ChunkEvent,
@@ -68,6 +80,11 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
         )
     };
 
+    let physical_properties = PhysicalProperties::new(1000.0, 1000.0, 0.3);
+    let dynamics = Dynamics::default();
+    let engine = Engine::new(Vector2::new(150000.0, 250000.0), 0.90, 0.0005);
+    let fuel_tank = FuelTank::new(5000.0, 5000.0, 0.1);
+
     if let Some(position) = position_opt {
         #[cfg(feature = "debug")]
         warn!("Initial player position from transform.");
@@ -84,7 +101,11 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
             .with(sprite.clone())
             .with(player_tag)
             .with(position)
-            .build();
+            .with(physical_properties)
+            .with(dynamics)
+            .with(engine)
+            .with(fuel_tank)
+        .build();
 
         camera::init(world, view_dim, player, transform);
     } else {
@@ -104,7 +125,11 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
             .with(sprite.clone())
             .with(player_tag)
             .with(position)
-            .build();
+            .with(physical_properties)
+            .with(dynamics)
+            .with(engine)
+            .with(fuel_tank)
+        .build();
 
         camera::init(world, view_dim, player, transform);
     }
