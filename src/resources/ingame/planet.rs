@@ -7,9 +7,13 @@
 use std::{
     collections::{btree_map, hash_map, BTreeMap, HashMap},
     fmt,
+    fs,
+    path::*,
 };
 
 use rand::*;
+use ron;
+use serde::Serializer;
 
 use amethyst::{
     core::{cgmath::Vector3, transform::components::Transform},
@@ -200,6 +204,83 @@ impl Planet {
         }
     }
 
+    pub fn save_chunk(
+        &mut self,
+        chunk_id: ChunkIndex,
+        chunk_dir_path: PathBuf,
+        //mut storages: &mut TileGenerationStorages,
+    ) {
+        // TODO: Everything
+        error!("Not implemented yet.");
+
+        if let Some(chunk) = self.remove_chunk(&chunk_id) {
+            let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
+            /* NOTE: Use this to save disk space!
+            let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), false);
+            */
+            {
+                use serde::ser::SerializeMap;
+                #[cfg(feature = "debug")]
+                warn!("serializing chunk {:?}", chunk_id);
+
+                if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
+                    for (tile_index, tile_type) in chunk.iter_tiles() {
+                        if let Err(e) = serseq.serialize_key::<TileIndex>(&tile_index) {
+                            error!(
+                                "Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
+                                tile_index, chunk_id, e
+                            );
+                        }
+                        if let Err(e) = serseq.serialize_value::<TileTypes>(&tile_type) {
+                            error!(
+                                "Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
+                                tile_index, chunk_id, e
+                            );
+                        }
+                        /* NOTE: Use this to save disk space!
+                        serseq.serialize_key::<u64>(&{(tile_index.1 * render_config.chunk_render_dim.0 + tile_index.0) as u64}).unwrap();
+                        serseq.serialize_value::<u64>(&{*tile_type as u64}).unwrap();
+                        */
+                    }
+                    if let Err(e) = serseq.end() {
+                        error!("Error ending serialize for chunk {:?}: {:?}", chunk_id, e);
+                    }
+                } else {
+                    error!("Error starting serialize for chunk {:?}.", chunk_id);
+                }
+            }
+
+            let mut chunk_file_path = chunk_dir_path.clone();
+            chunk_file_path = chunk_file_path.join(Path::new(
+                &{ (chunk_id.1 * self.planet_dim.0 + chunk_id.0) as u64 }
+                    .to_string(),
+            ));
+            chunk_file_path.set_extension("ron");
+
+            if let Err(e) =
+                fs::write(chunk_file_path.clone(), ser_chunk.into_output_string())
+            {
+                error!(
+                    "Writing chunk {:?} at '{:?}' resulted in {:?}",
+                    chunk_id, chunk_file_path, e
+                );
+            }
+        }
+        else{
+            #[cfg(feature = "debug")]warn!("Removing {:?} failed, since it was not found.", chunk_id);
+        }
+    }
+
+    pub fn load_chunk(
+        &mut self,
+        chunk_id: ChunkIndex,
+        path: PathBuf,
+        mut storages: &mut TileGenerationStorages
+    ) {
+        // TODO: Everything
+        error!("load_chunk Not implemented yet.");
+    }
+
     /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
     /// which can either be fetched from the world, or from its storage.
     ///
@@ -229,16 +310,19 @@ impl Planet {
     /// Drains all chunks currently stored in planet, useful when `save & exit` happens.
     #[allow(dead_code)]
     pub fn drain_chunks(&mut self) -> hash_map::Drain<ChunkIndex, Chunk> {
+        #[cfg(feature = "debug")]warn!("Draining chunks.");
         self.chunks.drain()
     }
 
     pub fn remove_chunk(&mut self, key: &ChunkIndex) -> Option<Chunk> {
+        #[cfg(feature = "debug")]warn!("Removing {:?}.", key);
         self.chunks.remove(key)
     }
 
     /// Returns an iterator over all chunks currently stored in planet
     /// mapping `ChunkIndex <-> Chunk`.
     pub fn iter_chunks(&self) -> hash_map::Iter<ChunkIndex, Chunk> {
+        #[cfg(feature = "debug")]warn!("Iterating over chunks.");
         self.chunks.iter()
     }
 }
@@ -491,7 +575,8 @@ impl Chunk {
 
                         #[cfg(feature = "debug")]
                         warn!(
-                            "|\tcreating tile with translation: {:?}",
+                            "|\t{:?},\t{:?}",
+                            entity_sprite_render,
                             transform.translation.clone()
                         );
 

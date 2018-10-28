@@ -89,8 +89,6 @@ impl<'a> System<'a> for HotChunkSystem {
             game_sprites: game_sprites,
             render_config: render_config,
         };
-        //self.chunks_to_load.clear();
-        //self.chunks_to_unload.clear();
 
         if let Some(ref mut event_reader) = self.event_reader {
             for &event in chunk_events.read(event_reader) {
@@ -106,59 +104,8 @@ impl<'a> System<'a> for HotChunkSystem {
             }
 
             for chunk_id in self.chunks_to_unload.drain(0..) {
-                if let Some(chunk) = session_data.planet.remove_chunk(&chunk_id) {
-                    let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
-                    /* NOTE: Use this to save disk space!
-                    let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), false);
-                    */
-                    {
-                        use serde::ser::SerializeMap;
-                        #[cfg(feature = "debug")]
-                        warn!("serializing chunk {:?}", chunk_id);
-
-                        if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
-                            for (tile_index, tile_type) in chunk.iter_tiles() {
-                                if let Err(e) = serseq.serialize_key::<TileIndex>(&tile_index) {
-                                    error!(
-                                        "Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
-                                        tile_index, chunk_id, e
-                                    );
-                                }
-                                if let Err(e) = serseq.serialize_value::<TileTypes>(&tile_type) {
-                                    error!(
-                                        "Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
-                                        tile_index, chunk_id, e
-                                    );
-                                }
-                                /* NOTE: Use this to save disk space!
-                                serseq.serialize_key::<u64>(&{(tile_index.1 * render_config.chunk_render_dim.0 + tile_index.0) as u64}).unwrap();
-                                serseq.serialize_value::<u64>(&{*tile_type as u64}).unwrap();
-                                */
-                            }
-                            if let Err(e) = serseq.end() {
-                                error!("Error ending serialize for chunk {:?}: {:?}", chunk_id, e);
-                            }
-                        } else {
-                            error!("Error starting serialize for chunk {:?}.", chunk_id);
-                        }
-                    }
-
-                    let mut chunk_file_path = paths.chunk_dir_path.clone();
-                    chunk_file_path = chunk_file_path.join(Path::new(
-                        &{ (chunk_id.1 * session_data.planet.planet_dim.0 + chunk_id.0) as u64 }
-                            .to_string(),
-                    ));
-                    chunk_file_path.set_extension("ron");
-
-                    if let Err(e) =
-                        fs::write(chunk_file_path.clone(), ser_chunk.into_output_string())
-                    {
-                        error!(
-                            "Writing chunk {:?} at '{:?}' resulted in {:?}",
-                            chunk_id, chunk_file_path, e
-                        );
-                    }
-                }
+                // Move this to `planet.save_chunk`
+                session_data.planet.save_chunk(chunk_id, paths.chunk_dir_path.clone(), );                
             }
 
             for chunk_id in self.chunks_to_load.drain(0..) {
@@ -171,12 +118,7 @@ impl<'a> System<'a> for HotChunkSystem {
                 chunk_file_path.set_extension("ron");
 
                 if chunk_file_path.is_file() {
-                    // TODO: Deserialize
-                    warn!(
-                        "Found a file for chunk {:?} at {:?}.",
-                        chunk_id,
-                        chunk_file_path.clone()
-                    );
+                    session_data.planet.load_chunk(chunk_id, chunk_file_path.clone(), &mut tile_gen);
                 } else {
                     // Create new chunk
                     session_data.planet.new_chunk(chunk_id, &mut tile_gen);

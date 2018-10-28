@@ -192,12 +192,15 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
 
         // Maybe pull sprite into player?
         let sprite = {
-            debug!("Unwrapping GameSprites");
+            debug!("Unwrapping GameSprites. START");
             world
                 .read_resource::<GameSprites>()
                 .get(entities::EntitySpriteRender::Player)
                 .unwrap()
+
         }.clone();
+        debug!("Unwrapping GameSprites. END");
+
         let mut transform = Transform::default();
         entities::player::new(world, &transform, &sprite);
     }
