@@ -112,12 +112,13 @@ pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Re
             let mut tag_resource = world.write_resource::<TagGenerator>();
             tag_resource.new_player_tag()
         };
-        let (position_opt, view_dim) = {
-            let render_config = &world.read_resource::<RenderConfig>();
+        let (position_opt, view_dim, chunk_render_distance) = {
+            let ren_con = &world.read_resource::<RenderConfig>();
             let planet = &world.read_resource::<GameSessionData>().planet;
             (
-                Position::from_transform(&transform, render_config, planet),
-                render_config.view_dim,
+                Position::from_transform(&transform, ren_con, planet),
+                ren_con.view_dim,
+                ren_con.chunk_render_distance,
             )
         };
 
@@ -132,7 +133,54 @@ pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Re
 
             {
                 let mut chunk_event_channel = world.write_resource::<EventChannel<ChunkEvent>>();
-                chunk_event_channel.single_write(ChunkEvent::RequestingLoad(position.chunk));
+                
+                use std::u64;
+                //dealing with over- and underflow
+                let lower_y = {
+                    if position.chunk.0 >= chunk_render_distance{
+                        position.chunk.0 - chunk_render_distance
+                    }
+                    else{
+                        0
+                    }
+                };
+                let lower_x = {
+                    if position.chunk.1 >= chunk_render_distance{
+                        position.chunk.1 - chunk_render_distance
+                    }
+                    else{
+                        // TODO: World-wrapping
+                        0
+                    }
+                };
+                
+                let upper_y = {
+                    let buff = position.chunk.0 + chunk_render_distance;
+                    if buff >= position.chunk.0 {
+                        buff
+                    }
+                    else{
+                        u64::MAX
+                    }
+                };
+                let upper_x = {
+                    let buff = position.chunk.1 + chunk_render_distance;
+                    if buff >= position.chunk.1 {
+                        buff
+                    }
+                    else{
+                        // TODO: World-wrapping
+                        u64::MAX
+                    }
+                };
+
+                for y in lower_y..=upper_y
+                {
+                    for x in lower_x..=upper_x
+                    {
+                        chunk_event_channel.single_write(ChunkEvent::RequestingLoad(ChunkIndex(y, x)));
+                    }
+                }
             }
 
             let player = world

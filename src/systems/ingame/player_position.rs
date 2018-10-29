@@ -66,12 +66,11 @@ impl<'s> System<'s> for PlayerPositionSystem {
             for (transform, player, mut player_pos) in
                 (&transforms, &players, &mut player_positions).join()
             {
-                let chunk_index = player_pos.chunk;
                 let planet_ref = &session_data.planet;
-                match TileIndex::from_transform(transform, chunk_index, &render_config, planet_ref) {
+                match TileIndex::from_transform(transform, player_pos.chunk, &render_config, planet_ref) {
                     Ok(tile_index) => {
-                        //#[cfg(feature = "trace")]
-                        //warn!("Same chunk.");
+                        #[cfg(feature = "trace")]
+                        trace!("Same chunk.");
                         // Player still on the same chunk. Easy-peasy
                         player_pos.tile = tile_index;
                     }
@@ -96,14 +95,13 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                         ) {
                                             Ok(tile_index) => {
                                                 #[cfg(feature = "trace")]
-                                                error!("New {:?}.", tile_index);
+                                                trace!("New {:?}.", tile_index);
 
-                                                let prev_chunk = player_pos.chunk;
                                                 self.prev_chunks.clear();
+                                                self.prev_chunks.insert(player_pos.chunk);
                                                 for index in self.cur_chunks.drain() {
                                                     // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
                                                     self.prev_chunks.insert(index);
-                                                    error!("Draining...");
                                                 }
 
                                                 // Updating player position component
@@ -112,25 +110,26 @@ impl<'s> System<'s> for PlayerPositionSystem {
 
                                                 //dealing with over- and underflow
                                                 let lower_y = {
-                                                    if prev_chunk.0 >= render_config.chunk_render_distance{
-                                                        prev_chunk.0 - render_config.chunk_render_distance
+                                                    if chunk_index.0 >= render_config.chunk_render_distance{
+                                                        chunk_index.0 - render_config.chunk_render_distance
                                                     }
                                                     else{
                                                         0
                                                     }
                                                 };
                                                 let lower_x = {
-                                                    if prev_chunk.1 >= render_config.chunk_render_distance{
-                                                        prev_chunk.1 - render_config.chunk_render_distance
+                                                    if chunk_index.1 >= render_config.chunk_render_distance{
+                                                        chunk_index.1 - render_config.chunk_render_distance
                                                     }
                                                     else{
+                                                        // TODO: World-wrapping
                                                         0
                                                     }
                                                 };
                                                 
                                                 let upper_y = {
-                                                    let buff = prev_chunk.0 + render_config.chunk_render_distance;
-                                                    if buff >= prev_chunk.0 {
+                                                    let buff = chunk_index.0 + render_config.chunk_render_distance;
+                                                    if buff >= chunk_index.0 {
                                                         buff
                                                     }
                                                     else{
@@ -138,20 +137,15 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                     }
                                                 };
                                                 let upper_x = {
-                                                    let buff = prev_chunk.1 + render_config.chunk_render_distance;
-                                                    if buff >= prev_chunk.1 {
+                                                    let buff = chunk_index.1 + render_config.chunk_render_distance;
+                                                    if buff >= chunk_index.1 {
                                                         buff
                                                     }
                                                     else{
+                                                        // TODO: World-wrapping
                                                         u64::MAX
                                                     }
                                                 };
-                                                error!("prev_chunk {:?}\t render_dis: {:?}\ty: {}..={},\tx: {}..={}", 
-                                                    prev_chunk, 
-                                                    render_config.chunk_render_distance,
-                                                    lower_y, upper_y,
-                                                    lower_x, upper_x
-                                                );
 
                                                 // Populating the current chunk HashSet
                                                 for y in lower_y..=upper_y
@@ -161,18 +155,15 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                         // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
                                                         let chunk_id = ChunkIndex(y, x);
                                                         self.cur_chunks.insert(chunk_id);
-                                                        error!("Inserting {:?}.", chunk_id)
                                                     }
                                                 }
                                                 // Comparing the current and previous HashSets (`.difference()` returns only those NOT present in the other)
-                                                let cur_chunks = self.cur_chunks.clone();
-                                                error!("current: {:?}", self.cur_chunks.clone());
-                                                let prev_chunks = self.prev_chunks.clone();
-                                                error!("previous: {:?}", self.prev_chunks.clone());
+                                                //let cur_chunks = self.cur_chunks.clone();
+                                                //let prev_chunks = self.prev_chunks.clone();
                                                 let chunks_to_delete =
-                                                    self.prev_chunks.difference(&cur_chunks);
+                                                    self.prev_chunks.difference(&self.cur_chunks);
                                                 let chunks_to_load =
-                                                    self.cur_chunks.difference(&prev_chunks);
+                                                    self.cur_chunks.difference(&self.prev_chunks);
 
                                                 for &index in chunks_to_delete {
                                                     #[cfg(feature = "debug")]

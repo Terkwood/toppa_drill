@@ -37,7 +37,7 @@ use {
     },
 };
 
-/// TODO: Everything
+/// TODO: Deletion of initial chunks not working
 pub struct HotChunkSystem {
     event_reader: Option<ReaderId<ChunkEvent>>,
     chunks_to_load: Vec<ChunkIndex>,
@@ -118,23 +118,24 @@ impl<'a> System<'a> for HotChunkSystem {
                 }
 
                 for chunk_id in self.chunks_to_unload.drain(0..) {
-                    // Move this to `planet.save_chunk`
-                    session_data.planet.save_chunk(chunk_id, paths.chunk_dir_path.clone(), );                
+                    session_data.planet.save_chunk(chunk_id, paths.chunk_dir_path.clone());
+                    session_data.planet.delete_chunk(chunk_id, &tile_gen.entities);
                 }
 
                 for chunk_id in self.chunks_to_load.drain(0..) {
-                    // TODO: Use this path to look for chunk
-                    let mut chunk_file_path = paths.chunk_dir_path.clone();
-                    chunk_file_path = chunk_file_path.join(Path::new(
-                        &{ (chunk_id.1 * session_data.planet.planet_dim.0 + chunk_id.0) as u64 }
-                            .to_string(),
-                    ));
-                    chunk_file_path.set_extension("ron");
+                    let chunk_file_path = paths.chunk_dir_path.clone()
+                            .join(
+                                &{ (chunk_id.1 * session_data.planet.planet_dim.0 + chunk_id.0) as u64 }
+                                    .to_string(),
+                            )
+                            .with_extension("ron");
 
                     if chunk_file_path.is_file() {
                         session_data.planet.load_chunk(chunk_id, chunk_file_path.clone(), &mut tile_gen);
-                    } else {
-                        // Create new chunk
+                    } else  if chunk_file_path.is_dir(){
+                        error!("Chunk file path is a directory?! {:?}", chunk_file_path);
+                    }
+                    else{
                         session_data.planet.new_chunk(chunk_id, &mut tile_gen);
                     }
                 }

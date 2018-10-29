@@ -18,21 +18,21 @@ impl SavegamePaths {
 
         // Directory of this savegame
         let mut savegame_dir_path = PathBuf::from(base_path);
-        savegame_dir_path = savegame_dir_path.join(dir_path);
-        savegame_dir_path = savegame_dir_path.join(Path::new(game_name));
+        savegame_dir_path.push(dir_path);
+        savegame_dir_path.push(Path::new(game_name));
         #[cfg(feature = "debug")]
         debug!("savegame_dir_path: {:?}", savegame_dir_path.clone());
 
         // Filepath for the serialized planet
         let mut planet_file_path = PathBuf::new();
-        planet_file_path = planet_file_path.join(savegame_dir_path.clone());
-        planet_file_path = planet_file_path.join(Path::new("session_data"));
+        planet_file_path.push(savegame_dir_path.clone());
+        planet_file_path.push(Path::new("session_data"));
         planet_file_path.set_extension("ron");
 
         // Directory-path for the serialized chunks, need to append the individual chunks Id
         let mut chunk_dir_path = PathBuf::new();
-        chunk_dir_path = chunk_dir_path.join(savegame_dir_path.clone());
-        chunk_dir_path = chunk_dir_path.join(Path::new("chunks"));
+        chunk_dir_path.push(savegame_dir_path.clone());
+        chunk_dir_path.push(Path::new("chunks"));
 
         // NOTE: Maybe replace all these file operations with walk_dir crate?
         let mut dir_exists = dir_path.is_dir();

@@ -90,7 +90,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                     debug!("serializing {:?}", chunk_index);
 
                     if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
-                        for (tile_index, tile_type) in chunk.iter_tiles() {
+                        for (tile_index, tile_type) in chunk.iter_tiletypes() {
                             if let Err(e) = serseq.serialize_key::<TileIndex>(&tile_index) {
                                 error!(
                                     "Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
