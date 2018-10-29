@@ -209,21 +209,16 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
             world.add_resource(SavegamePaths::init("./", game_name));
         }
 
-        entities::player::init(world, None);
-
-        // Maybe pull sprite into player?
-        let sprite = {
-            debug!("Unwrapping GameSprites. START");
-            world
-                .read_resource::<GameSprites>()
-                .get(entities::EntitySpriteRender::Player)
-                .unwrap()
-
-        }.clone();
-        debug!("Unwrapping GameSprites. END");
+        entities::player_parts::init(world, None);
 
         let mut transform = Transform::default();
-        entities::player::new(world, &transform, &sprite);
+        if let Err(e) = entities::player_parts::new(
+            world, 
+            &transform, 
+            entities::player_parts::ShipTypes::NotImplemented
+        ){
+            error!("Error creating new player: {:?}", e);
+        };
     }
 
     // Executed when this game state gets popped.

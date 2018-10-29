@@ -576,7 +576,7 @@ impl Chunk {
                 };
 
                 let entity_sprite_render = EntitySpriteRender::Ore(tile_type);
-                match game_sprites.get(entity_sprite_render) {
+                match game_sprites.get(&entity_sprite_render) {
                     Some(sprite_render) => {
                         let mut transform = base_transform.clone();
                         transform.translation += Vector3::new(

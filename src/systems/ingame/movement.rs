@@ -7,7 +7,7 @@ use amethyst::{
         Join, Read, ReadStorage, WriteStorage, System,
     },
     core::cgmath::{
-        Rad, Angle, Vector3,
+        Rad, Angle, Vector3, Vector2,
     },
 };
 
@@ -53,7 +53,19 @@ impl<'s> System<'s> for MovementSystem{
 
             // Calculating acceleration based on applied Force, 
             // no potential part, since there is currently no spring attached to any entity making it `= 0`.
-            let accel = (dynamic.force - physical_property.fric * dynamic.vel) / physical_property.mass;
+            let mut accel = Vector2::new(0.0, 0.0);
+            match (physical_property.friction, physical_property.air_resistance) {
+                (Some(friction), Some(air_resistance)) => {
+                    accel = (dynamic.force - 0.5 * (air_resistance + friction) * dynamic.vel) / physical_property.mass;
+                },
+                (Some(friction), None) => {
+                    accel = (dynamic.force - friction * dynamic.vel) / physical_property.mass;
+                },
+                (None, Some(air_resistance)) => {
+                    accel = (dynamic.force - air_resistance * dynamic.vel) / physical_property.mass;
+                },
+                (None, None) => {/*No acceleration if no dampening mechanism is in place. Otherwise vel of infinity is possible.*/},
+            }
 
             dynamic.vel = vel_cur + accel * dt.into();
 

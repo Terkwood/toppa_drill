@@ -5,8 +5,13 @@ use amethyst::{
     ecs::prelude::World,
     renderer::{
         MaterialTextureSet, PngFormat, Sprite, SpriteSheet, SpriteSheetHandle, Texture,
-        TextureCoordinates, TextureMetadata,
+        TextureCoordinates, TextureMetadata, SpriteRender,
     },
+};
+
+use {
+    entities::EntitySpriteRender,
+    resources::ingame::GameSprites,
 };
 
 #[derive(Debug, Clone)]
@@ -120,8 +125,12 @@ pub fn load_sprites_from_spritesheet(
         let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
 
         if let Some(progress_counter_ref) = progress_counter_ref_opt {
+            #[cfg(feature = "debug")]
+            debug!("Loading spritesheet with ProgressCounter.");
             loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
         } else {
+            #[cfg(feature = "debug")]
+            debug!("Loading spritesheet without ProgressCounter.");
             loader.load_from_data(sprite_sheet, (), &sprite_sheet_storage)
         }
     };

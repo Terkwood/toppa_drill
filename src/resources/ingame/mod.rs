@@ -7,5 +7,11 @@ mod savegame_path;
 
 pub mod planet;
 pub use self::{
-    game_session::GameSessionData, game_sprites::GameSprites, savegame_path::SavegamePaths,
+    game_session::GameSessionData, 
+    game_sprites::{
+        GameSprites, 
+        add_spriterender,
+        get_spriterender,
+    }, 
+    savegame_path::SavegamePaths,
 };

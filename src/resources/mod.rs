@@ -1,6 +1,6 @@
 mod render_config;
-mod spritesheets;
+mod toppa_spritesheets;
 
 pub mod ingame;
 
-pub use self::{render_config::RenderConfig, spritesheets::ToppaSpriteSheet};
+pub use self::{render_config::RenderConfig, toppa_spritesheets::ToppaSpriteSheet};
