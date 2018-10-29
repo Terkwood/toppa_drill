@@ -18,6 +18,13 @@ use {
     },
 };
 
+/// TODO: Calculate inertia based on ShipParts' masses and distances
+/// TODO: Combine air-resistance/friction of individual parts
+/// TODO: Rotation, rotation-based horizontal/vertical forces.
+/// TODO: Collision physics here, or in a seperate (afterwards) system?
+/// TODO: handle friction and better (seperately?). Has ground contact, is mid-air, what materials (collision) are involved?
+/// TODO: Should a ship/rock even have friction component, or is that part of a material, or a material-tuple?
+/// TODO: Does a ship/rock have a potential component, or is that its own entity, or a entity-transform-tuple?
 #[derive(Default)]
 pub struct MovementSystem;
 
@@ -38,15 +45,8 @@ impl<'s> System<'s> for MovementSystem{
     ){
         let dt = time.delta_seconds();
 
-        // TODO: Collision physics here, or in a seperate (afterwards) system?
-
-        // potentials unused, since currently nothing is bound to a spring or something like that
         for (mut transform, mut dynamic, physical_property) 
         in (&mut transforms, &mut dynamics, &physical_properties).join(){
-            // TODO: handle friction and potential forces better (seperately?). Has ground contact, is mid-air, what materials (collision) are involved?
-            // TODO: Should a ship/rock even have friction component, or is that part of a material, or a material-tuple?
-            // TODO: Does a ship/rock have a potential component, or is that its own entity, or a entity-transform-tuple?
-
             // Current values
             let pos_cur = transform.translation;
             let vel_cur = dynamic.vel;

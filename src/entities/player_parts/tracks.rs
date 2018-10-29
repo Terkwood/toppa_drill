@@ -88,6 +88,7 @@ pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
 
 /// Creates new tracks associated with a player,
 /// requires the player-Entity-Struct to be passed as a parameter.
+/// TODO: Make tracks animated.
 pub fn new_tracks(world: &mut World, parent: Entity) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating tracks for player {:?}.", parent);

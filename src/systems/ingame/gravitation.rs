@@ -16,6 +16,8 @@ use {
     GRAVITATION,
 };
 
+/// NOTE: Currently only resets force vec and torque, no gravitational effect.
+/// TODO: Get rotational diff local - world rotation.
 #[derive(Default)]
 pub struct GravitationSystem;
 
@@ -30,9 +32,6 @@ impl<'s> System<'s> for GravitationSystem{
         &mut self, 
         (mut dynamics, transforms, masses): Self::SystemData,
     ){
-        // TODO: Get rotational diff local - world rotation.
-
-        // Transform currently unused, later used for rotational diff against world
         for (mut dynamic, transform, mass) 
         in (&mut dynamics, &transforms, &masses).join(){
             let grav_force2 = (mass.mass * -GRAVITATION * 20.0) 

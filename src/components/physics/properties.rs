@@ -7,10 +7,10 @@ use amethyst::{
 /// otherwise it won't move.
 #[derive(Debug, Default, Clone)]
 pub struct PhysicalProperties {
-    /// The weight of the entity itself (if it has any), like a car's empty mass.
+    /// The weight of the entity itself, like a car's empty mass.
     pub mass: f64,
     /// The resistance against rotational acceleration.
-    /// If it is none, this entity cannot be rotated.
+    /// If it is `None`, this entity cannot be rotated.
     pub inertia: Option<f64>,
     /// The value of the friction coefficient.
     /// If it is `None`, this entity has supposedly no ground contact,
