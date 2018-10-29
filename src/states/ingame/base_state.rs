@@ -269,25 +269,25 @@ impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
 
     fn btn_inventory(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Opening Inventory not implemented yet.");
+        debug!("Opening Inventory not implemented yet.");
         Trans::None
     }
 
     fn btn_options(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Opening Options not implemented yet.");
+        debug!("Opening Options not implemented yet.");
         Trans::None
     }
 
     fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Exiting to main menu.");
+        debug!("Exiting to main menu.");
         Trans::Pop
     }
 
     fn btn_save(&self, world: &World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Saving game.");
+        debug!("Saving game.");
         use systems::serialization::SerSavegameSystem;
         SerSavegameSystem.run_now(&world.res);
 
@@ -296,7 +296,7 @@ impl<'a, 'b, 'd, 'e> IngameBaseState<'d, 'e> {
 
     fn btn_mute(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Muting game not implemented yet..");
+        debug!("Muting game not implemented yet..");
         Trans::None
     }
 }

@@ -130,7 +130,7 @@ impl<'a, 'b, 'd, 'e> GameStartTransitionState<'d, 'e> {
     }
 
     fn btn_close(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        #[cfg(feature = "debug")]warn!("Closing GameStartTransition.");
+        #[cfg(feature = "debug")]debug!("Closing GameStartTransition.");
         Trans::Pop
     }
 }

@@ -21,7 +21,7 @@ impl SavegamePaths {
         savegame_dir_path = savegame_dir_path.join(dir_path);
         savegame_dir_path = savegame_dir_path.join(Path::new(game_name));
         #[cfg(feature = "debug")]
-        warn!("savegame_dir_path: {:?}", savegame_dir_path.clone());
+        debug!("savegame_dir_path: {:?}", savegame_dir_path.clone());
 
         // Filepath for the serialized planet
         let mut planet_file_path = PathBuf::new();
@@ -39,7 +39,7 @@ impl SavegamePaths {
         if !dir_exists {
             if let Ok(_) = fs::create_dir(dir_path) {
                 #[cfg(feature = "debug")]
-                warn!("Savegame dir has been created at {:?}.", dir_path);
+                debug!("Savegame dir has been created at {:?}.", dir_path);
             } else {
                 error!("Failed to create savegame dir at {:?}", dir_path);
             }
@@ -48,7 +48,7 @@ impl SavegamePaths {
         dir_exists = savegame_dir_path.exists();
         if dir_exists {
             #[cfg(feature = "debug")]
-            warn!("Overwriting old savegame: {:?}.", game_name);
+            debug!("Overwriting old savegame: {:?}.", game_name);
             for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap() {
                 if let Ok(entry) = entry_result {
                     let entry_path = entry.path();

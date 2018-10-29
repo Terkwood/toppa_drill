@@ -81,7 +81,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
                     let mut trans = Trans::None;
 
                     for err in self.progress_counter.errors() {
-                        warn!("Asset type: {}\terror: {}", err.asset_type_name, err.error);
+                        error!("Asset type: {}\terror: {}", err.asset_type_name, err.error);
 
                         if err.asset_name == "Prefabs/ui/MenuScreens/Centre.ron" {
                             error!("Main Menu screen could not be loaded. Closing application.");

@@ -38,19 +38,19 @@ impl Position {
                         };
 
                         #[cfg(feature = "debug")]
-                        warn!("Created position from transform. {:?}", rv);
+                        debug!("Created position from transform. {:?}", rv);
                         Some(rv)
                     }
                     Err(e) => {
                         #[cfg(feature = "debug")]
-                        warn!("No valid TileIndex from transform found: {:?}", e);
+                        debug!("No valid TileIndex from transform found: {:?}", e);
                         None
                     }
                 }
             }
             Err(e) => {
                 #[cfg(feature = "debug")]
-                warn!("No valid ChunkIndex from transform found: {:?}", e);
+                debug!("No valid ChunkIndex from transform found: {:?}", e);
                 None
             }
         }
@@ -60,7 +60,7 @@ impl Position {
 impl Default for Position {
     fn default() -> Self {
         #[cfg(feature = "debug")]
-        warn!("Created default position.");
+        debug!("Created default position.");
         Self::new(ChunkIndex(0, 0), TileIndex(0, 0))
     }
 }

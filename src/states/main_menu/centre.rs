@@ -262,7 +262,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
                 Complete => {
                     self.b_screens_loaded = true;
                     #[cfg(feature = "debug")]
-                    warn!("Loaded menu screen prefabs successfully.");
+                    debug!("Loaded menu screen prefabs successfully.");
 
                     Trans::None
                 }
@@ -360,14 +360,14 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
 
     fn btn_exit(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Shutting down.");
+        debug!("Shutting down.");
         // TODO: User prompt : Are you sure you want to exit?
         Trans::Quit
     }
 
     fn btn_credits(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Credits screen.");
+        debug!("Credits screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Credits) {
                 CreditsState::new(world, Some({ *handle }.clone()))
@@ -379,7 +379,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
 
     fn btn_new_game(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("NewGame screen.");
+        debug!("NewGame screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::NewGame) {
                 NewGameState::new(world, Some({ *handle }.clone()))
@@ -391,7 +391,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
 
     fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("LoadGame screen.");
+        debug!("LoadGame screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::LoadGame) {
                 LoadMenuState::new(world, Some({ *handle }.clone()))
@@ -403,7 +403,7 @@ impl<'a, 'b, 'd, 'e, 'f, 'g> CentreState<'d, 'e> {
 
     fn btn_options(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Options screen.");
+        debug!("Options screen.");
         Trans::Push(Box::new({
             if let Some(ref handle) = self.screen_prefabs.get(&MenuScreens::Options) {
                 OptionsState::new(world, Some({ *handle }.clone()))

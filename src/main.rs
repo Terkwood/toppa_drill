@@ -1,4 +1,7 @@
+use std::env;
+
 extern crate amethyst;
+extern crate pretty_env_logger;
 
 use amethyst::{
     core::transform::bundle::TransformBundle,
@@ -8,7 +11,6 @@ use amethyst::{
         ColorMask, DepthMode, DisplayConfig, DrawSprite, Pipeline, RenderBundle, Stage, ALPHA,
     },
     ui::{DrawUi, UiBundle},
-    LogLevelFilter, LoggerConfig, StdoutLog,
 };
 
 extern crate toppa_drill_lib;
@@ -18,20 +20,14 @@ use toppa_drill_lib::{
 };
 
 fn main() -> Result<(), amethyst::Error> {
-    #[cfg(feature = "debug")]
-    amethyst::start_logger(LoggerConfig {
-        stdout: StdoutLog::Colored,
-        level_filter: LogLevelFilter::Warn,
-        log_file: None,
-        allow_env_override: false,
-    });
-    #[cfg(not(feature = "debug"))]
-    amethyst::start_logger(LoggerConfig {
-        stdout: StdoutLog::Colored,
-        level_filter: LogLevelFilter::Info,
-        log_file: None,
-        allow_env_override: false,
-    });
+    match env::var("RUST_LOG") {
+        Err(env::VarError::NotPresent) => {
+            env::set_var("RUST_LOG", "debug,gfx_device_gl=warn,amethyst_assets=warn");
+        }
+        _ => {env::set_var("RUST_LOG", "debug,gfx_device_gl=warn,amethyst_assets=warn");},
+    }
+
+    pretty_env_logger::init();
 
     let display_config_path = format!("{}/Prefabs/display_config.ron", env!("CARGO_MANIFEST_DIR"));
     let display_config = DisplayConfig::load(&display_config_path);

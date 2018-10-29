@@ -207,13 +207,13 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
 
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Returning to CentreState.");
+        debug!("Returning to CentreState.");
         Trans::Pop
     }
 
     fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Creating new game.");
+        debug!("Creating new game.");
         // NOTE: Think about how to do this better
         world.add_resource::<TagGenerator>(TagGenerator::default());
         world.add_resource::<GameSprites>(GameSprites::default());

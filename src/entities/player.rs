@@ -87,7 +87,7 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
 
     if let Some(position) = position_opt {
         #[cfg(feature = "debug")]
-        warn!("Initial player position from transform.");
+        debug!("Initial player position from transform.");
 
         {
             let mut chunk_event_channel = world.write_resource::<EventChannel<ChunkEvent>>();
@@ -110,7 +110,7 @@ pub fn new(world: &mut World, transform: &Transform, sprite: &SpriteRender) -> u
         camera::init(world, view_dim, player, transform);
     } else {
         #[cfg(feature = "debug")]
-        warn!("Initial player position from default.");
+        debug!("Initial player position from default.");
 
         let position = Position::default();
         {

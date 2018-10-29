@@ -154,7 +154,7 @@ impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e> {
 
     fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Returning to CentreState.");
+        debug!("Returning to CentreState.");
         Trans::Pop
     }
 }

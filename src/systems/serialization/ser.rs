@@ -47,9 +47,9 @@ impl<'a> System<'a> for SerSavegameSystem {
             let savegame_planet = &save_data.planet;
 
             #[cfg(feature = "debug")]
-            warn!("Starting to serialize savegame.");
+            debug!("Starting to serialize savegame.");
             #[cfg(feature = "debug")]
-            warn!("serializing game data.");
+            debug!("Serializing game data.");
             let mut ser_planet = ron::ser::Serializer::new(Some(Default::default()), true);
             {
                 // TODO: Error handling. Why doesn't `?` work, even though the specs example uses it?
@@ -78,7 +78,7 @@ impl<'a> System<'a> for SerSavegameSystem {
             }
 
             #[cfg(feature = "debug")]
-            warn!("serializing planet.");
+            debug!("serializing planet.");
             for (chunk_index, chunk) in savegame_planet.iter_chunks() {
                 let mut ser_chunk = ron::ser::Serializer::new(Some(Default::default()), true);
                 /* NOTE: Use this to save disk space!
@@ -87,7 +87,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                 {
                     use serde::ser::SerializeMap;
                     #[cfg(feature = "debug")]
-                    warn!("serializing {:?}", chunk_index);
+                    debug!("serializing {:?}", chunk_index);
 
                     if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
                         for (tile_index, tile_type) in chunk.iter_tiles() {
@@ -133,7 +133,7 @@ impl<'a> System<'a> for SerSavegameSystem {
                 }
             }
             #[cfg(feature = "debug")]
-            warn!("Finished serializing savegame.");
+            debug!("Finished serializing savegame.");
         }
         else{
             error!("Resources not found.")

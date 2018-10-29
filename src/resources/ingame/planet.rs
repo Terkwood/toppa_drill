@@ -102,7 +102,7 @@ impl ChunkIndex {
 
         if chunk_x_f32.is_sign_negative() || chunk_y_f32.is_sign_negative() {
             #[cfg(feature = "debug")]
-            error!("Negative chunk index.");
+            debug!("Negative chunk index.");
 
             return Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds));
         }
@@ -114,7 +114,7 @@ impl ChunkIndex {
         match Planet::clamp_chunk_index(planet, chunk_id) {
             Ok(chunk_id) => {
                 #[cfg(feature = "debug")]
-                warn!("From transform: {:?}", chunk_id);
+                debug!("From transform: {:?}", chunk_id);
 
                 Ok(chunk_id)
             },
@@ -207,7 +207,7 @@ impl Planet {
         let mut rv = index;
         if rv.0 >= planet.planet_dim.0 {
             #[cfg(feature = "debug")]
-            error!("Error clamping index. To deep.");
+            debug!("Error clamping index. To deep.");
             Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds))
         } else {
             if rv.1 >= planet.planet_dim.1 {
@@ -231,7 +231,7 @@ impl Planet {
             {
                 use serde::ser::SerializeMap;
                 #[cfg(feature = "debug")]
-                warn!("serializing chunk {:?}", chunk_id);
+                debug!("serializing chunk {:?}", chunk_id);
 
                 if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
                     for (tile_index, tile_type) in chunk.iter_tiles() {
@@ -277,7 +277,7 @@ impl Planet {
             }
         }
         else{
-            #[cfg(feature = "debug")]warn!("Removing {:?} failed, since it was not found.", chunk_id);
+            #[cfg(feature = "debug")]debug!("Removing {:?} failed, since it was not found.", chunk_id);
         }
     }
 
@@ -306,7 +306,7 @@ impl Planet {
         match Self::clamp_chunk_index(&self, chunk_id) {
             Ok(clamped_id) => {
                 #[cfg(feature = "debug")]
-                warn!("Creating new chunk at {:?}.", clamped_id);
+                debug!("Creating new chunk at {:?}.", clamped_id);
 
                 let chunk = Chunk::new(&self, chunk_id, self.chunk_dim, storages);
                 self.chunks.insert(clamped_id, chunk);
@@ -320,19 +320,19 @@ impl Planet {
     /// Drains all chunks currently stored in planet, useful when `save & exit` happens.
     #[allow(dead_code)]
     pub fn drain_chunks(&mut self) -> hash_map::Drain<ChunkIndex, Chunk> {
-        #[cfg(feature = "debug")]warn!("Draining chunks.");
+        #[cfg(feature = "debug")]debug!("Draining chunks.");
         self.chunks.drain()
     }
 
     pub fn remove_chunk(&mut self, key: &ChunkIndex) -> Option<Chunk> {
-        #[cfg(feature = "debug")]warn!("Removing {:?}.", key);
+        #[cfg(feature = "debug")]debug!("Removing {:?}.", key);
         self.chunks.remove(key)
     }
 
     /// Returns an iterator over all chunks currently stored in planet
     /// mapping `ChunkIndex <-> Chunk`.
     pub fn iter_chunks(&self) -> hash_map::Iter<ChunkIndex, Chunk> {
-        #[cfg(feature = "debug")]warn!("Iterating over chunks.");
+        #[cfg(feature = "debug")]debug!("Iterating over chunks.");
         self.chunks.iter()
     }
 }
@@ -439,7 +439,7 @@ impl Chunk {
             transform
         };
         #[cfg(feature = "debug")]
-        warn!(
+        debug!(
             "|\tbase translation: {:?}",
             base_transform.translation.clone()
         );
@@ -448,7 +448,7 @@ impl Chunk {
         for y in 0..chunk_dim.0 {
             for x in 0..chunk_dim.1 {
                 #[cfg(feature = "debug")]
-                warn!("|\ttile number {}", { y * chunk_dim.1 + x });
+                debug!("|\ttile number {}", { y * chunk_dim.1 + x });
 
                 let tile_id = TileIndex(y, x);
                 if let Err(e) = Self::add_tile(planet, &mut rv, &base_transform, tile_id, storages)
@@ -502,7 +502,7 @@ impl Chunk {
         let mut rv = index;
         if rv.0 >= planet.chunk_dim.0 || rv.1 >= planet.chunk_dim.1 {
             #[cfg(feature = "debug")]
-            warn!("tile index originally {:?} is out of bounds.", index);
+            debug!("tile index originally {:?} is out of bounds.", index);
             Err(PlanetError::TileProblem(TileError::IndexOutOfBounds))
         } else {
             Ok(rv)
@@ -570,7 +570,7 @@ impl Chunk {
                     15 => TileTypes::Bauxite,
                     _ => {
                         #[cfg(feature = "debug")]
-                        warn!("Non-implemented TileType requested in `Chunk::create_tile`, defaulting to `Dirt`.");
+                        debug!("Non-implemented TileType requested in `Chunk::create_tile`, defaulting to `Dirt`.");
                         TileTypes::Dirt
                     }
                 };
@@ -587,7 +587,7 @@ impl Chunk {
                         let tile_base = TileBase { kind: tile_type };
 
                         #[cfg(feature = "debug")]
-                        warn!(
+                        debug!(
                             "|\t{:?},\t{:?}",
                             entity_sprite_render,
                             transform.translation.clone()

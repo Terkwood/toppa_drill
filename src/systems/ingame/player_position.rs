@@ -81,7 +81,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                         match e {
                             PlanetError::TileProblem(TileError::IndexOutOfBounds) => {
                                 #[cfg(feature = "debug")]
-                                warn!("New chunk.");
+                                debug!("New chunk.");
                                 // Player on a new chunk.
                                 match ChunkIndex::from_transform(transform, &render_config, planet_ref)
                                 {
@@ -176,14 +176,14 @@ impl<'s> System<'s> for PlayerPositionSystem {
 
                                                 for &index in chunks_to_delete {
                                                     #[cfg(feature = "debug")]
-                                                    warn!("Requesting load for chunk {:?}.", index);
+                                                    debug!("Requesting load for chunk {:?}.", index);
                                                     chunk_event_channel.single_write(
                                                         ChunkEvent::RequestingUnload(index),
                                                     );
                                                 }
                                                 for &index in chunks_to_load {
                                                     #[cfg(feature = "debug")]
-                                                    warn!("Requesting unload for chunk {:?}.", index);
+                                                    debug!("Requesting unload for chunk {:?}.", index);
                                                     chunk_event_channel.single_write(
                                                         ChunkEvent::RequestingLoad(index),
                                                     );

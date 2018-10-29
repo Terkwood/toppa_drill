@@ -177,7 +177,7 @@ impl<'a, 'b, 'd, 'e> InventoryState<'d, 'e> {
 
     fn btn_close(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         #[cfg(feature = "debug")]
-        warn!("Closing inventory.");
+        debug!("Closing inventory.");
         Trans::Pop
     }
 }

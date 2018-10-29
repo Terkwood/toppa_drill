@@ -82,8 +82,6 @@ impl<'s> System<'s> for EngineForceSystem{
                     // If enough fuel is present, only reduce fuel level.
                     tank.fuel_level -= fuel_consumption;
                 }
-                //#[cfg(feature = "debug")]
-                //warn!("Fuel level: {}", tank.fuel_level);
             }
             // Add engine force (player input) to *natural*/physical forces, e.g. gravitational force.
             let world_force_x = dot(engine_force_vec, Vector2::new(transform.orientation().right[0] as f64, transform.orientation().right[1] as f64));

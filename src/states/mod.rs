@@ -123,7 +123,7 @@ pub trait ToppaState<'g, 'h> {
             if let Some(entity) = finder.find(button_name) {
                 if let Some(buttons) = self.get_buttons() {
                     #[cfg(feature = "debug")]
-                    warn!("Adding button {}.", button_name);
+                    debug!("Adding button {}.", button_name);
                     buttons.insert(entity, button);
                 }
                 true
