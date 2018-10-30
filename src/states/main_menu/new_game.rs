@@ -10,16 +10,14 @@ use amethyst::{
     ui::{UiEventType, UiLoader, UiPrefab},
 };
 
-use {
-    components::for_characters::TagGenerator,
-    resources::{
-        ingame::{GameSessionData, GameSprites},
-        RenderConfig,
-    },
-    states::{ingame, ToppaState},
-    systems::DummySystem,
-    ToppaGameData,
+use components::for_characters::TagGenerator;
+use resources::{
+    ingame::{GameSessionData, GameSprites},
+    RenderConfig,
 };
+use states::{ingame, ToppaState};
+use systems::DummySystem;
+use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum NewGameButtons {
@@ -90,7 +88,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
-            game_info: GameInfo::new("Mark", (7, 9), (2, 2)),//GameInfo::new("Trumpet", (2, 3), (3, 4)),
+            game_info: GameInfo::new("Mark", (7, 9), (2, 2)), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
         }
     }
 
@@ -228,10 +226,8 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
 
         // TODO: Get rid
         use amethyst::shrev::EventChannel;
-        use {
-            components::for_characters::{player::Position, PlayerBase},
-            events::planet_events::ChunkEvent,
-        };
+        use components::for_characters::{player::Position, PlayerBase};
+        use events::planet_events::ChunkEvent;
         world.register::<PlayerBase>();
         world.register::<Position>();
         world.add_resource(EventChannel::<ChunkEvent>::new());

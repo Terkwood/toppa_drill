@@ -1,5 +1,5 @@
 use amethyst::{
-    core::cgmath::{Vector2, Rad},
+    core::cgmath::{Rad, Vector2},
     ecs::prelude::{Component, VecStorage},
 };
 
@@ -23,7 +23,12 @@ pub struct PhysicalProperties {
 }
 
 impl PhysicalProperties {
-    pub fn new(mass: f64, inertia: Option<f64>, friction: Option<f64>, air_resistance: Option<f64>) -> Self {
+    pub fn new(
+        mass: f64,
+        inertia: Option<f64>,
+        friction: Option<f64>,
+        air_resistance: Option<f64>,
+    ) -> Self {
         PhysicalProperties {
             mass,
             inertia,

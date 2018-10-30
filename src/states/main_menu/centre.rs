@@ -8,12 +8,10 @@ use amethyst::{
     renderer::{HiddenPropagate, VirtualKeyCode},
     ui::{UiEventType, UiLoader, UiPrefab},
 };
+use states::ToppaState;
 use std::collections::HashMap;
-use {
-    states::ToppaState,
-    systems::{DummySystem, ShadowDummySystem},
-    ToppaGameData,
-};
+use systems::{DummySystem, ShadowDummySystem};
+use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum CentreButtons {

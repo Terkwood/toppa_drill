@@ -1,9 +1,6 @@
 //! Makes the camera follow the player.
 
-use std::{
-    collections::HashSet,
-    u64,
-};
+use std::{collections::HashSet, u64};
 
 use amethyst::{
     core::transform::components::Transform,
@@ -11,16 +8,14 @@ use amethyst::{
     shrev::EventChannel,
 };
 
-use {
-    components::for_characters::{player, PlayerBase},
-    events::planet_events::ChunkEvent,
-    resources::{
-        ingame::{
-            planet::{ChunkError, ChunkIndex, PlanetError, TileError, TileIndex},
-            GameSessionData,
-        },
-        RenderConfig,
+use components::for_characters::{player, PlayerBase};
+use events::planet_events::ChunkEvent;
+use resources::{
+    ingame::{
+        planet::{ChunkError, ChunkIndex, PlanetError, TileError, TileIndex},
+        GameSessionData,
     },
+    RenderConfig,
 };
 
 /// TODO: Reference swapping instead of toggle-magic! Reduces duplicate code.
@@ -62,12 +57,19 @@ impl<'s> System<'s> for PlayerPositionSystem {
             mut chunk_event_channel,
         ): Self::SystemData,
     ) {
-        if let (Some(session_data), Some(render_config), Some(mut chunk_event_channel)) = (session_data, render_config, chunk_event_channel){
+        if let (Some(session_data), Some(render_config), Some(mut chunk_event_channel)) =
+            (session_data, render_config, chunk_event_channel)
+        {
             for (transform, player, mut player_pos) in
                 (&transforms, &players, &mut player_positions).join()
             {
                 let planet_ref = &session_data.planet;
-                match TileIndex::from_transform(transform, player_pos.chunk, &render_config, planet_ref) {
+                match TileIndex::from_transform(
+                    transform,
+                    player_pos.chunk,
+                    &render_config,
+                    planet_ref,
+                ) {
                     Ok(tile_index) => {
                         #[cfg(feature = "trace")]
                         trace!("Same chunk.");
@@ -82,8 +84,11 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                 #[cfg(feature = "debug")]
                                 debug!("New chunk.");
                                 // Player on a new chunk.
-                                match ChunkIndex::from_transform(transform, &render_config, planet_ref)
-                                {
+                                match ChunkIndex::from_transform(
+                                    transform,
+                                    &render_config,
+                                    planet_ref,
+                                ) {
                                     Ok(chunk_index) => {
                                         #[cfg(feature = "trace")]
                                         error!("New {:?}.", chunk_index);
@@ -110,48 +115,50 @@ impl<'s> System<'s> for PlayerPositionSystem {
 
                                                 //dealing with over- and underflow
                                                 let lower_y = {
-                                                    if chunk_index.0 >= render_config.chunk_render_distance{
-                                                        chunk_index.0 - render_config.chunk_render_distance
-                                                    }
-                                                    else{
+                                                    if chunk_index.0
+                                                        >= render_config.chunk_render_distance
+                                                    {
+                                                        chunk_index.0
+                                                            - render_config.chunk_render_distance
+                                                    } else {
                                                         0
                                                     }
                                                 };
                                                 let lower_x = {
-                                                    if chunk_index.1 >= render_config.chunk_render_distance{
-                                                        chunk_index.1 - render_config.chunk_render_distance
-                                                    }
-                                                    else{
+                                                    if chunk_index.1
+                                                        >= render_config.chunk_render_distance
+                                                    {
+                                                        chunk_index.1
+                                                            - render_config.chunk_render_distance
+                                                    } else {
                                                         // TODO: World-wrapping
                                                         0
                                                     }
                                                 };
-                                                
+
                                                 let upper_y = {
-                                                    let buff = chunk_index.0 + render_config.chunk_render_distance;
+                                                    let buff = chunk_index.0
+                                                        + render_config.chunk_render_distance;
                                                     if buff >= chunk_index.0 {
                                                         buff
-                                                    }
-                                                    else{
+                                                    } else {
                                                         u64::MAX
                                                     }
                                                 };
                                                 let upper_x = {
-                                                    let buff = chunk_index.1 + render_config.chunk_render_distance;
+                                                    let buff = chunk_index.1
+                                                        + render_config.chunk_render_distance;
                                                     if buff >= chunk_index.1 {
                                                         buff
-                                                    }
-                                                    else{
+                                                    } else {
                                                         // TODO: World-wrapping
                                                         u64::MAX
                                                     }
                                                 };
 
                                                 // Populating the current chunk HashSet
-                                                for y in lower_y..=upper_y
-                                                {
-                                                    for x in lower_x..=upper_x
-                                                    {
+                                                for y in lower_y..=upper_y {
+                                                    for x in lower_x..=upper_x {
                                                         // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
                                                         let chunk_id = ChunkIndex(y, x);
                                                         self.cur_chunks.insert(chunk_id);
@@ -167,14 +174,20 @@ impl<'s> System<'s> for PlayerPositionSystem {
 
                                                 for &index in chunks_to_delete {
                                                     #[cfg(feature = "debug")]
-                                                    debug!("Requesting load for chunk {:?}.", index);
+                                                    debug!(
+                                                        "Requesting load for chunk {:?}.",
+                                                        index
+                                                    );
                                                     chunk_event_channel.single_write(
                                                         ChunkEvent::RequestingUnload(index),
                                                     );
                                                 }
                                                 for &index in chunks_to_load {
                                                     #[cfg(feature = "debug")]
-                                                    debug!("Requesting unload for chunk {:?}.", index);
+                                                    debug!(
+                                                        "Requesting unload for chunk {:?}.",
+                                                        index
+                                                    );
                                                     chunk_event_channel.single_write(
                                                         ChunkEvent::RequestingLoad(index),
                                                     );
@@ -185,9 +198,10 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                             }
                                         }
                                     }
-                                    Err(e) => {
-                                        warn!("Error calculating ChunkIndex from transform: {:?}", e)
-                                    }
+                                    Err(e) => warn!(
+                                        "Error calculating ChunkIndex from transform: {:?}",
+                                        e
+                                    ),
                                 }
                             }
                             _ => {
@@ -197,8 +211,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                     }
                 }
             }
-        }
-        else{
+        } else {
             error!("Resources not found.");
         }
     }

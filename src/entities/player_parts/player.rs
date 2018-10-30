@@ -1,44 +1,28 @@
 use amethyst::{
     assets::ProgressCounter,
-    core::{
-        transform::components::Transform,
-        cgmath::Vector2,
-    },
+    core::{cgmath::Vector2, transform::components::Transform},
     ecs::prelude::*,
     prelude::*,
     renderer::{SpriteRender, Transparent},
     shrev::EventChannel,
 };
 
-use {
-    components::{
-        for_characters::{
-            player::Position, 
-            TagGenerator,
-            Engine,
-            FuelTank,
-        },
-        for_ground_entities::TileBase,
-        physics::{
-            PhysicalProperties,
-            Dynamics,
-        },
-    },
-    entities::{
-        camera, 
-        EntitySpriteRender,
-        EntityError,
-    },
-    events::planet_events::ChunkEvent,
-    resources::{
-        ingame::{
-            planet::{ChunkIndex, TileGenerationStorages, TileIndex},
-            GameSessionData, GameSprites, add_spriterender, get_spriterender,
-        },
-        RenderConfig, ToppaSpriteSheet,
-    },
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo,},
+use components::{
+    for_characters::{player::Position, Engine, FuelTank, TagGenerator},
+    for_ground_entities::TileBase,
+    physics::{Dynamics, PhysicalProperties},
 };
+use entities::{camera, EntityError, EntitySpriteRender};
+use events::planet_events::ChunkEvent;
+use resources::{
+    ingame::{
+        add_spriterender, get_spriterender,
+        planet::{ChunkIndex, TileGenerationStorages, TileIndex},
+        GameSessionData, GameSprites,
+    },
+    RenderConfig, ToppaSpriteSheet,
+};
+use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 use super::PlayerParts;
 
@@ -59,7 +43,7 @@ pub enum ShipTypes {
     /// Mid tier model with moderate resistance against heat, forces and impact.
     Albatros,
     /// Highest end model, providing the highest resistance against heat, forces and impact.
-    L14Ultra,    
+    L14Ultra,
 }
 
 pub fn init(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter>) {
@@ -78,12 +62,24 @@ pub fn init(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCou
         progress_counter_ref_opt,
     ) {
         let mut game_sprites = world.write_resource::<GameSprites>();
-        
+
         let sprites = [
-            (0, EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::NotImplemented))),
-            (1, EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506))),
-            (2, EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros))),
-            (3, EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra))),
+            (
+                0,
+                EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::NotImplemented)),
+            ),
+            (
+                1,
+                EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
+            ),
+            (
+                2,
+                EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
+            ),
+            (
+                3,
+                EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
+            ),
         ];
 
         for (sprite_number, entity_sprite_render) in sprites.iter() {
@@ -101,11 +97,18 @@ pub fn init(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCou
 /// Creates a new player and returns his ID.
 /// If `0`(Zero) is returned, the player has not been created.
 /// Also loads the chunk the player stands on.
-pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Result<(), EntityError> {
+pub fn new(
+    world: &mut World,
+    transform: &Transform,
+    ship_type: ShipTypes,
+) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating player with ship type {:?}.", ship_type);
 
-    let sprite_render_opt = get_spriterender(world, EntitySpriteRender::Player(PlayerParts::Ship(ship_type)));
+    let sprite_render_opt = get_spriterender(
+        world,
+        EntitySpriteRender::Player(PlayerParts::Ship(ship_type)),
+    );
 
     if let Some(sprite_render) = sprite_render_opt {
         let player_tag = {
@@ -133,7 +136,9 @@ pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Re
 
             {
                 let mut chunk_event_channel = world.write_resource::<EventChannel<ChunkEvent>>();
-                
+
+                chunk_event_channel.single_write(ChunkEvent::RequestingLoad(position.chunk));
+                /* THIS IS BROKEN, these entities are not affected by the hotloading system.
                 use std::u64;
                 //dealing with over- and underflow
                 let lower_y = {
@@ -173,7 +178,7 @@ pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Re
                         u64::MAX
                     }
                 };
-
+                
                 for y in lower_y..=upper_y
                 {
                     for x in lower_x..=upper_x
@@ -181,6 +186,7 @@ pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Re
                         chunk_event_channel.single_write(ChunkEvent::RequestingLoad(ChunkIndex(y, x)));
                     }
                 }
+                */
             }
 
             let player = world
@@ -194,15 +200,18 @@ pub fn new(world: &mut World, transform: &Transform, ship_type: ShipTypes) -> Re
                 .with(dynamics)
                 .with(engine)
                 .with(fuel_tank)
-            .build();
+                .build();
 
             camera::init(world, view_dim, player, transform);
             Ok(())
         } else {
-            Err(EntityError::PlayerProblem(PlayerError::NoPositionFromTransform))
+            Err(EntityError::PlayerProblem(
+                PlayerError::NoPositionFromTransform,
+            ))
         }
-    }
-    else{
-        Err(EntityError::PlayerProblem(PlayerError::MissingSpriteRender(ship_type)))
+    } else {
+        Err(EntityError::PlayerProblem(
+            PlayerError::MissingSpriteRender(ship_type),
+        ))
     }
 }

@@ -1,16 +1,14 @@
 use amethyst::{assets::ProgressCounter, prelude::*, renderer::SpriteRender};
 
-use {
-    entities::EntitySpriteRender,
-    resources::{
-        ingame::{
-            planet::{ChunkIndex, TileIndex},
-            GameSprites,
-        },
-        ToppaSpriteSheet,
+use entities::EntitySpriteRender;
+use resources::{
+    ingame::{
+        planet::{ChunkIndex, TileIndex},
+        GameSprites,
     },
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
+    ToppaSpriteSheet,
 };
+use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 /// An enumaration of all ground tile types.
 #[allow(dead_code)]
@@ -148,8 +146,8 @@ pub fn create_ore_with_world(
     _tiletype: TileTypes,
 ) {
     // TODO: Get spriteSheetHandle from texture id.
-    // TODO: Get sprite from TileType
-    // TODO: Calculate transform based on TileIndex & ChunkIndex
+    // --: Get sprite from TileType
+    // --: Calculate transform based on TileIndex & ChunkIndex
     /*
     let drill_sprite = SpriteRender {
         sprite_sheet: ss_handle,
@@ -159,7 +157,7 @@ pub fn create_ore_with_world(
     };
     let mut transform = Transform::default();
     transform.translation = Vector3::new(0.0, 0.0, 0.0);
-
+    
     world
         .create_entity()
         .with(transform)

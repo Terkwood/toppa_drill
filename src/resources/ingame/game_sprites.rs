@@ -2,10 +2,7 @@ use std::collections::HashMap;
 
 use amethyst::{
     ecs::prelude::World,
-    renderer::{
-        SpriteRender,
-        SpriteSheetHandle,
-    },
+    renderer::{SpriteRender, SpriteSheetHandle},
 };
 
 use entities::EntitySpriteRender;
@@ -36,9 +33,9 @@ impl GameSprites {
 
 pub fn add_spriterender(
     entity_sprite_render: EntitySpriteRender,
-    mut game_sprites: &mut GameSprites, 
-    spritesheet_handle: SpriteSheetHandle, 
-    sprite_number: usize, 
+    mut game_sprites: &mut GameSprites,
+    spritesheet_handle: SpriteSheetHandle,
+    sprite_number: usize,
     flip_horizontal: bool,
     flip_vertical: bool,
 ) {
@@ -57,10 +54,9 @@ pub fn get_spriterender(
 ) -> Option<SpriteRender> {
     let game_sprites = &world.read_resource::<GameSprites>();
     let entity_sprite_render = entity_sprite_render;
-    if let Some(sprite_render) = game_sprites.get(&entity_sprite_render){
+    if let Some(sprite_render) = game_sprites.get(&entity_sprite_render) {
         Some(sprite_render.clone())
-    }
-    else{
+    } else {
         None
     }
 }

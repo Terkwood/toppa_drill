@@ -1,7 +1,4 @@
-mod properties;
 mod dynamics;
+mod properties;
 
-pub use self::{
-    properties::PhysicalProperties,
-    dynamics::Dynamics,
-};
+pub use self::{dynamics::Dynamics, properties::PhysicalProperties};

@@ -1,11 +1,11 @@
 use amethyst::{
-    core::cgmath::{Vector2, Rad},
+    core::cgmath::{Rad, Vector2},
     ecs::prelude::{Component, VecStorage},
 };
 
 #[derive(Debug, Clone)]
-pub struct Dynamics{
-    /// The current velocity, consisting of an x-component and a y-component. 
+pub struct Dynamics {
+    /// The current velocity, consisting of an x-component and a y-component.
     /// The vectors length should be limited by the System using this, e.g. implicitely due to the movement equation.
     pub vel: Vector2<f64>,
 
@@ -24,7 +24,7 @@ pub struct Dynamics{
     pub torque: f64,
 }
 
-impl Dynamics{
+impl Dynamics {
     pub fn new(vel: Vector2<f64>, omega: Rad<f64>, force: Vector2<f64>, torque: f64) -> Self {
         Dynamics {
             vel,
@@ -36,11 +36,16 @@ impl Dynamics{
 }
 
 impl Default for Dynamics {
-    fn default() -> Self{
-        Self::new(Vector2::new(0.0, 0.0), Rad(0.0), Vector2::new(0.0, 0.0), 0.0)
+    fn default() -> Self {
+        Self::new(
+            Vector2::new(0.0, 0.0),
+            Rad(0.0),
+            Vector2::new(0.0, 0.0),
+            0.0,
+        )
     }
 }
 
-impl Component for Dynamics{
+impl Component for Dynamics {
     type Storage = VecStorage<Self>;
 }

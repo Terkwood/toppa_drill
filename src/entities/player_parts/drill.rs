@@ -1,47 +1,31 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        transform::components::{
-            Transform,
-            Parent,
-        },
         cgmath::Vector2,
+        transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
     prelude::*,
-    renderer::{SpriteRender, Transparent, SpriteSheetHandle,},
+    renderer::{SpriteRender, SpriteSheetHandle, Transparent},
     shrev::EventChannel,
 };
 
-use {
-    components::{
-        for_characters::{
-            player::Position, 
-            TagGenerator,
-            Engine,
-            FuelTank,
-        },
-        for_ground_entities::TileBase,
-        physics::{
-            PhysicalProperties,
-            Dynamics,
-        },
-    },
-    entities::{
-        camera, 
-        EntitySpriteRender,
-        EntityError,
-    },
-    events::planet_events::ChunkEvent,
-    resources::{
-        ingame::{
-            planet::{ChunkIndex, TileGenerationStorages, TileIndex},
-            GameSessionData, GameSprites, add_spriterender, get_spriterender,
-        },
-        RenderConfig, ToppaSpriteSheet,
-    },
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo,},
+use components::{
+    for_characters::{player::Position, Engine, FuelTank, TagGenerator},
+    for_ground_entities::TileBase,
+    physics::{Dynamics, PhysicalProperties},
 };
+use entities::{camera, EntityError, EntitySpriteRender};
+use events::planet_events::ChunkEvent;
+use resources::{
+    ingame::{
+        add_spriterender, get_spriterender,
+        planet::{ChunkIndex, TileGenerationStorages, TileIndex},
+        GameSessionData, GameSprites,
+    },
+    RenderConfig, ToppaSpriteSheet,
+};
+use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 use super::PlayerParts;
 
@@ -54,7 +38,7 @@ pub enum DrillError {
 
 /// Different types of drill provide different drilling speeds and durability
 /// TODO: Make Drill retractable, retract when it is not used.
-/// TODO: Make Drill animated.
+/// --: Make Drill animated.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DrillTypes {
     /// Dummy, if a drill has no implementation yet
@@ -63,7 +47,7 @@ pub enum DrillTypes {
     C45U,
     /// Cold work steel, very low performance
     C105U,
-    /// Speed steel, low performance 
+    /// Speed steel, low performance
     HS6_5_2C,
     /// Speed steel, high performance
     HS6_5_2_5,
@@ -89,12 +73,30 @@ pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut Progr
         let mut game_sprites = world.write_resource::<GameSprites>();
 
         let sprites = [
-            (0, EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::NotImplemented))),
-            (1, EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C45U))),
-            (2, EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C105U))),
-            (3, EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2C))),
-            (4, EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5))),
-            (5, EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5Diamond))),
+            (
+                0,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::NotImplemented)),
+            ),
+            (
+                1,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C45U)),
+            ),
+            (
+                2,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C105U)),
+            ),
+            (
+                3,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2C)),
+            ),
+            (
+                4,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5)),
+            ),
+            (
+                5,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5Diamond)),
+            ),
         ];
 
         for (sprite_number, entity_sprite_render) in sprites.iter() {
@@ -112,11 +114,18 @@ pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut Progr
 
 /// Creates a new drill associated with a player,
 /// requires the player-Entity-Struct to be passed as a parameter.
-pub fn new_drill(world: &mut World, parent: Entity, drill_type: DrillTypes) -> Result<(), EntityError> {
+pub fn new_drill(
+    world: &mut World,
+    parent: Entity,
+    drill_type: DrillTypes,
+) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating drill for player {:?}.", parent);
 
-    let sprite_render_opt = get_spriterender(world, EntitySpriteRender::Player(PlayerParts::Drill(drill_type)));
+    let sprite_render_opt = get_spriterender(
+        world,
+        EntitySpriteRender::Player(PlayerParts::Drill(drill_type)),
+    );
 
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8), None);
@@ -128,11 +137,12 @@ pub fn new_drill(world: &mut World, parent: Entity, drill_type: DrillTypes) -> R
             .with(Transparent)
             .with(sprite_render)
             .with(physical_properties)
-        .build();
+            .build();
 
         Ok(())
-    }
-    else{
-        Err(EntityError::DrillProblem(DrillError::MissingSpriteRender(drill_type)))
+    } else {
+        Err(EntityError::DrillProblem(DrillError::MissingSpriteRender(
+            drill_type,
+        )))
     }
 }

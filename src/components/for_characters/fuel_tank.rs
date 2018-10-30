@@ -1,5 +1,5 @@
 use amethyst::{
-    core::cgmath::{Vector2, Rad},
+    core::cgmath::{Rad, Vector2},
     ecs::prelude::{Component, VecStorage},
 };
 
@@ -29,6 +29,6 @@ impl FuelTank {
     }
 }
 
-impl Component for FuelTank{
+impl Component for FuelTank {
     type Storage = VecStorage<Self>;
 }

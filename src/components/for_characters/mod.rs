@@ -2,10 +2,7 @@ mod engine;
 mod fuel_tank;
 
 pub mod player;
-pub use self::{
-    fuel_tank::FuelTank,
-    engine::Engine,
-};
+pub use self::{engine::Engine, fuel_tank::FuelTank};
 
 use amethyst::ecs::prelude::{Component, VecStorage};
 

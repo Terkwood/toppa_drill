@@ -7,8 +7,10 @@ use amethyst::{
     renderer::VirtualKeyCode,
     ui::{UiEventType, UiPrefab},
 };
+use states::ToppaState;
 use std::collections::HashMap;
-use {states::ToppaState, systems::DummySystem, ToppaGameData};
+use systems::DummySystem;
+use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum CreditsButtons {

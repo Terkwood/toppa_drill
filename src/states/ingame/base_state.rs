@@ -7,23 +7,16 @@ use amethyst::{
     renderer::VirtualKeyCode,
     ui::{UiEventType, UiPrefab},
 };
+use entities;
+use resources::ingame::{GameSessionData, GameSprites, SavegamePaths};
+use states::ToppaState;
 use std::collections::HashMap;
-use {
-    entities,
-    resources::ingame::{GameSessionData, GameSprites, SavegamePaths},
-    states::ToppaState,
-    systems::{
-        ingame::{
-            PlayerPositionSystem,
-            EngineForceSystem,
-            GravitationSystem,
-            MovementSystem,
-        },
-        serialization::HotChunkSystem, 
-        DummySystem,
-    },
-    ToppaGameData,
+use systems::{
+    ingame::{EngineForceSystem, GravitationSystem, MovementSystem, PlayerPositionSystem},
+    serialization::HotChunkSystem,
+    DummySystem,
 };
+use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum BaseStateButtons {
@@ -54,23 +47,20 @@ impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
     fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
+                .with(DummySystem::default(), "dummy_system", &[])
+                .with(GravitationSystem, "gravitation_system", &[])
                 .with(
-                    DummySystem::default(), "dummy_system", &[]
+                    EngineForceSystem,
+                    "engine_force_system",
+                    &["gravitation_system"],
                 )
-                .with(
-                    GravitationSystem, "gravitation_system", &[]
-                )
-                .with(
-                    EngineForceSystem, "engine_force_system", &["gravitation_system"]
-                )
-                .with(
-                    MovementSystem, "movement_system", &["engine_force_system"]
-                )
+                .with(MovementSystem, "movement_system", &["engine_force_system"])
                 .with(
                     PlayerPositionSystem::default(),
                     "player_position_system",
                     &[],
-                ).with(
+                )
+                .with(
                     HotChunkSystem::new(),
                     "hotchunk_system",
                     &["player_position_system"],
@@ -213,10 +203,10 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
 
         let mut transform = Transform::default();
         if let Err(e) = entities::player_parts::new(
-            world, 
-            &transform, 
-            entities::player_parts::ShipTypes::NotImplemented
-        ){
+            world,
+            &transform,
+            entities::player_parts::ShipTypes::NotImplemented,
+        ) {
             error!("Error creating new player: {:?}", e);
         };
     }

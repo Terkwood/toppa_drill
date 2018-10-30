@@ -1,5 +1,5 @@
 use amethyst::{
-    core::cgmath::{Vector2},
+    core::cgmath::Vector2,
     ecs::prelude::{Component, VecStorage},
 };
 
@@ -7,35 +7,35 @@ use amethyst::{
 /// Holds `max_force` providing maximum movement force in a given direction.
 /// Holds `efficiency` at which consumed fuel is turned into force.
 /// Holds `consumption`, which represents the fuel consumption rate per force.
-/// 
+///
 /// Burning fuel results in heat generation.
-/// 
+///
 /// Can be upgraded.
 #[derive(Debug, Clone)]
-pub struct Engine{
+pub struct Engine {
     /// Maximum force in x- and y-direction (right, upwards) of machine's local coordinate system,
     /// specific to this machine, as it acts as an helicopter.
-    /// 
+    ///
     /// If the machine is tilted, the rotational degree is required to map local directions of force to global.
     pub max_force: Vector2<f64>,
 
     /// Engine efficiency, defines how much fuel is transformed into force, and how much into heat.
     /// Values between 0.0 and 1.0 are legal.
-    /// 
+    ///
     /// Based on:
     /// `actual_force = (efficiency) * fuel_used / (consumption_coeff * dt)`
     /// and
     /// `heat = (1 - engine_efficiency) * fuel_used / (consumption_coeff * dt)`
     pub efficiency: f64,
 
-    /// Fuel consumption coefficient for 
+    /// Fuel consumption coefficient for
     /// `fuel_used = consumption_coeff * actual_force * dt / engine_efficiency`
     pub consumption: f64,
 }
 
-impl Engine{
-    pub fn new(force: Vector2<f64>, fuel_efficiency: f64, fuel_consumption: f64) -> Engine{
-        Engine{
+impl Engine {
+    pub fn new(force: Vector2<f64>, fuel_efficiency: f64, fuel_consumption: f64) -> Engine {
+        Engine {
             max_force: force,
             consumption: fuel_consumption,
             efficiency: fuel_efficiency,
@@ -49,6 +49,6 @@ impl Default for Engine {
     }
 }
 
-impl Component for Engine{
+impl Component for Engine {
     type Storage = VecStorage<Self>;
 }

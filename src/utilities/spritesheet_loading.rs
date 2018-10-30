@@ -4,15 +4,13 @@ use amethyst::{
     assets::{AssetStorage, Loader, ProgressCounter},
     ecs::prelude::World,
     renderer::{
-        MaterialTextureSet, PngFormat, Sprite, SpriteSheet, SpriteSheetHandle, Texture,
-        TextureCoordinates, TextureMetadata, SpriteRender,
+        MaterialTextureSet, PngFormat, Sprite, SpriteRender, SpriteSheet, SpriteSheetHandle,
+        Texture, TextureCoordinates, TextureMetadata,
     },
 };
 
-use {
-    entities::EntitySpriteRender,
-    resources::ingame::GameSprites,
-};
+use entities::EntitySpriteRender;
+use resources::ingame::GameSprites;
 
 #[derive(Debug, Clone)]
 pub struct SpriteLoaderInfo {

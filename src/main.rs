@@ -14,17 +14,16 @@ use amethyst::{
 };
 
 extern crate toppa_drill_lib;
-use toppa_drill_lib::{
-    StartupState, 
-    ToppaGameDataBuilder,
-};
+use toppa_drill_lib::{StartupState, ToppaGameDataBuilder};
 
 fn main() -> Result<(), amethyst::Error> {
     match env::var("RUST_LOG") {
         Err(env::VarError::NotPresent) => {
             env::set_var("RUST_LOG", "debug,gfx_device_gl=warn,amethyst_assets=warn");
         }
-        _ => {env::set_var("RUST_LOG", "debug,gfx_device_gl=warn,amethyst_assets=warn");},
+        _ => {
+            env::set_var("RUST_LOG", "debug,gfx_device_gl=warn,amethyst_assets=warn");
+        }
     }
 
     pretty_env_logger::init();
@@ -41,13 +40,15 @@ fn main() -> Result<(), amethyst::Error> {
                 ColorMask::all(),
                 ALPHA,
                 Some(DepthMode::LessEqualWrite),
-            )).with_pass(DrawUi::new()),
+            ))
+            .with_pass(DrawUi::new()),
     );
 
     let toppa_game_data = ToppaGameDataBuilder::default()
         .with_core_bundle(
             InputBundle::<String, String>::new().with_bindings_from_file(&input_config)?,
-        )?.with_core_bundle(TransformBundle::new())?
+        )?
+        .with_core_bundle(TransformBundle::new())?
         .with_core_bundle(UiBundle::<String, String>::new())?
         .with_core_bundle(
             RenderBundle::new(pipe, Some(display_config))

@@ -1,5 +1,5 @@
-pub mod player_parts;
 pub mod camera;
+pub mod player_parts;
 pub mod tile;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]

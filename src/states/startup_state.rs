@@ -8,11 +8,9 @@ use amethyst::{
     ui::{UiCreator, UiLoader, UiPrefab},
 };
 
-use {
-    resources::RenderConfig,
-    states::{main_menu, ToppaState},
-    ToppaGameData,
-};
+use resources::RenderConfig;
+use states::{main_menu, ToppaState};
+use ToppaGameData;
 
 /// The default state after opening Toppa Drill.
 /// It should display a short amethyst logo, and then transist over to the Main Menu State.

@@ -1,47 +1,31 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        transform::components::{
-            Transform,
-            Parent,
-        },
         cgmath::Vector2,
+        transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
     prelude::*,
-    renderer::{SpriteRender, Transparent, SpriteSheetHandle,},
+    renderer::{SpriteRender, SpriteSheetHandle, Transparent},
     shrev::EventChannel,
 };
 
-use {
-    components::{
-        for_characters::{
-            player::Position, 
-            TagGenerator,
-            Engine,
-            FuelTank,
-        },
-        for_ground_entities::TileBase,
-        physics::{
-            PhysicalProperties,
-            Dynamics,
-        },
-    },
-    entities::{
-        camera, 
-        EntitySpriteRender,
-        EntityError,
-    },
-    events::planet_events::ChunkEvent,
-    resources::{
-        ingame::{
-            planet::{ChunkIndex, TileGenerationStorages, TileIndex},
-            GameSessionData, GameSprites, add_spriterender, get_spriterender,
-        },
-        RenderConfig, ToppaSpriteSheet,
-    },
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo,},
+use components::{
+    for_characters::{player::Position, Engine, FuelTank, TagGenerator},
+    for_ground_entities::TileBase,
+    physics::{Dynamics, PhysicalProperties},
 };
+use entities::{camera, EntityError, EntitySpriteRender};
+use events::planet_events::ChunkEvent;
+use resources::{
+    ingame::{
+        add_spriterender, get_spriterender,
+        planet::{ChunkIndex, TileGenerationStorages, TileIndex},
+        GameSessionData, GameSprites,
+    },
+    RenderConfig, ToppaSpriteSheet,
+};
+use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 use super::PlayerParts;
 
@@ -69,9 +53,7 @@ pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
     ) {
         let mut game_sprites = world.write_resource::<GameSprites>();
 
-        let sprites = [
-            (0, EntitySpriteRender::Player(PlayerParts::Tracks)),
-        ];
+        let sprites = [(0, EntitySpriteRender::Player(PlayerParts::Tracks))];
 
         for (sprite_number, entity_sprite_render) in sprites.iter() {
             add_spriterender(
@@ -93,7 +75,8 @@ pub fn new_tracks(world: &mut World, parent: Entity) -> Result<(), EntityError> 
     #[cfg(feature = "debug")]
     debug!("Creating tracks for player {:?}.", parent);
 
-    let sprite_render_opt = get_spriterender(world, EntitySpriteRender::Player(PlayerParts::Tracks));
+    let sprite_render_opt =
+        get_spriterender(world, EntitySpriteRender::Player(PlayerParts::Tracks));
 
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(500.0, None, Some(0.3), None);
@@ -105,11 +88,10 @@ pub fn new_tracks(world: &mut World, parent: Entity) -> Result<(), EntityError> 
             .with(Transparent)
             .with(sprite_render)
             .with(physical_properties)
-        .build();
+            .build();
 
         Ok(())
-    }
-    else{
+    } else {
         Err(EntityError::TracksProblem(TracksError::MissingSpriteRender))
     }
 }

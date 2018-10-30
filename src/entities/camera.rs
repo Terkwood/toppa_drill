@@ -16,7 +16,8 @@ pub fn init(world: &mut World, view_dim: (u32, u32), parent: Entity, parent_tran
             (view_dim.0 as f32) / 2.0,
             (view_dim.1 as f32) / 2.0,
             -(view_dim.1 as f32) / 2.0,
-        ))).with(transform)
+        )))
+        .with(transform)
         .with(Parent { entity: parent })
         .build();
 }

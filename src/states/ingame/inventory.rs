@@ -8,7 +8,9 @@ use amethyst::{
 };
 use std::collections::HashMap;
 
-use {states::ToppaState, systems::DummySystem, ToppaGameData};
+use states::ToppaState;
+use systems::DummySystem;
+use ToppaGameData;
 
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum InventoryButtons {

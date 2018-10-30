@@ -1,11 +1,5 @@
 // delete before releasing !!
-#![allow(
-    dead_code,
-    unused_imports,
-    unused_variables,
-    unused_mut,
-    unused_parens
-)]
+#![allow(dead_code, unused_imports, unused_variables, unused_mut, unused_parens)]
 // maybe keep?
 #![allow(unreachable_patterns)]
 // Enable before releasing!

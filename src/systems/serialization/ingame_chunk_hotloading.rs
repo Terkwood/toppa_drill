@@ -24,20 +24,18 @@ use amethyst::{
     shrev::EventChannel,
 };
 
-use {
-    components::{for_characters::PlayerBase, for_ground_entities::TileBase},
-    entities::tile::TileTypes,
-    events::planet_events::ChunkEvent,
-    resources::{
-        ingame::{
-            planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
-            GameSessionData, GameSprites, SavegamePaths,
-        },
-        RenderConfig,
+use components::{for_characters::PlayerBase, for_ground_entities::TileBase};
+use entities::tile::TileTypes;
+use events::planet_events::ChunkEvent;
+use resources::{
+    ingame::{
+        planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
+        GameSessionData, GameSprites, SavegamePaths,
     },
+    RenderConfig,
 };
 
-/// TODO: Deletion of initial chunks not working
+/// TODO: Deletion of initial chunks not working properly.
 pub struct HotChunkSystem {
     event_reader: Option<ReaderId<ChunkEvent>>,
     chunks_to_load: Vec<ChunkIndex>,
@@ -81,12 +79,11 @@ impl<'a> System<'a> for HotChunkSystem {
             render_config,
         ): Self::SystemData,
     ) {
-        if let 
-        (
-            Some(mut session_data), 
-            Some(mut chunk_events), 
-            Some(paths), 
-            Some(game_sprites), 
+        if let (
+            Some(mut session_data),
+            Some(mut chunk_events),
+            Some(paths),
+            Some(game_sprites),
             Some(render_config),
         ) = (
             session_data,
@@ -94,7 +91,7 @@ impl<'a> System<'a> for HotChunkSystem {
             paths,
             game_sprites,
             render_config,
-        ){
+        ) {
             let mut tile_gen = TileGenerationStorages {
                 entities: entities,
                 tile_base: tag_tiles,
@@ -118,32 +115,42 @@ impl<'a> System<'a> for HotChunkSystem {
                 }
 
                 for chunk_id in self.chunks_to_unload.drain(0..) {
-                    session_data.planet.save_chunk(chunk_id, paths.chunk_dir_path.clone());
-                    session_data.planet.delete_chunk(chunk_id, &tile_gen.entities);
+                    session_data
+                        .planet
+                        .save_chunk(chunk_id, paths.chunk_dir_path.clone());
+                    session_data
+                        .planet
+                        .delete_chunk(chunk_id, &tile_gen.entities);
                 }
 
                 for chunk_id in self.chunks_to_load.drain(0..) {
-                    let chunk_file_path = paths.chunk_dir_path.clone()
-                            .join(
-                                &{ (chunk_id.1 * session_data.planet.planet_dim.0 + chunk_id.0) as u64 }
-                                    .to_string(),
-                            )
-                            .with_extension("ron");
+                    let chunk_file_path = paths
+                        .chunk_dir_path
+                        .clone()
+                        .join(
+                            &{
+                                (chunk_id.1 * session_data.planet.planet_dim.0 + chunk_id.0) as u64
+                            }
+                            .to_string(),
+                        )
+                        .with_extension("ron");
 
                     if chunk_file_path.is_file() {
-                        session_data.planet.load_chunk(chunk_id, chunk_file_path.clone(), &mut tile_gen);
-                    } else  if chunk_file_path.is_dir(){
+                        session_data.planet.load_chunk(
+                            chunk_id,
+                            chunk_file_path.clone(),
+                            &mut tile_gen,
+                        );
+                    } else if chunk_file_path.is_dir() {
                         error!("Chunk file path is a directory?! {:?}", chunk_file_path);
-                    }
-                    else{
+                    } else {
                         session_data.planet.new_chunk(chunk_id, &mut tile_gen);
                     }
                 }
             } else {
                 error!("No event ReaderId found for HotChunkSystem.");
             }
-        }
-        else{
+        } else {
             error!("Resources not found.");
         }
     }
