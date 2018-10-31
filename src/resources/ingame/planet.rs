@@ -234,8 +234,6 @@ impl Planet {
     /// Saves a chunk in the specified directory without removing it from the planet.
     /// TODO: Save with less space-usage
     pub fn save_chunk(&self, chunk_id: ChunkIndex, chunk_dir_path: PathBuf) {
-        #[cfg(feature = "debug")]
-        debug!("+------------");
         let planet_width_in_chunks = self.planet_dim.0;
         match self.get_chunk(chunk_id) {
             Ok(chunk_opt) => {
@@ -261,22 +259,7 @@ impl Planet {
                                         "| Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
                                         tile_index, chunk_id, e
                                     );
-                                }
-                                // NOTE: Use this to save disk space!
-                                /*                               
-                                if let Err(e) = serseq.serialize_key::<u64>(&{(tile_index.1 * self.chunk_dim.0 + tile_index.0) as u64}) {
-                                    error!(
-                                        "Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
-                                        tile_index, chunk_id, e
-                                    );
-                                }
-                                if let Err(e) = serseq.serialize_value::<u64>(&{*tile_type as u64}) {
-                                    error!(
-                                        "Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
-                                        tile_index, chunk_id, e
-                                    );
-                                }
-                                */                            }
+                                }                           }
                             if let Err(e) = serseq.end() {
                                 error!(
                                     "| Error ending serialize for chunk {:?}: {:?}",
@@ -311,8 +294,6 @@ impl Planet {
                 error!("| Error getting chunk from planet: {:?}.", e);
             }
         }
-        #[cfg(feature = "debug")]
-        debug!("+------------");
     }
 
     /// TODO: When save_chunk uses less-space-variant, custom deserializer needed.

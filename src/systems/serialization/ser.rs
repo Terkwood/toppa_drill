@@ -50,7 +50,7 @@ impl<'a> System<'a> for SerSavegameSystem {
         {
             session_data.save(&paths);
         } else {
-            error!(" Resources not found.")
+            error!("| Resources not found.")
         }
         #[cfg(feature = "debug")]
         debug!("+------------");

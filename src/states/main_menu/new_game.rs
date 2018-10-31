@@ -220,7 +220,7 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
 
         let ren_con = &world.read_resource::<RenderConfig>().clone();
         let session_data = GameSessionData::new(
-            self.game_info.name,
+            self.game_info.name.to_string(),
             self.game_info.planet_dim,
             self.game_info.chunk_dim,
             ren_con,

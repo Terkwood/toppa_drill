@@ -2,27 +2,27 @@ use std::{fs, path::*};
 
 pub struct SavegamePaths {
     pub savegame_dir_path: PathBuf,
-    pub planet_file_path: PathBuf,
+    pub savegame_file_path: PathBuf,
     pub chunk_dir_path: PathBuf,
 }
 
 impl SavegamePaths {
-    pub fn init(base_path: &'static str, game_name: &'static str) -> SavegamePaths {
+    pub fn init(base_path: &'static str, game_name: String) -> SavegamePaths {
         // Directory of all savegames
         let dir_path = Path::new("savegames");
 
         // Directory of this savegame
         let mut savegame_dir_path = PathBuf::from(base_path);
         savegame_dir_path.push(dir_path);
-        savegame_dir_path.push(Path::new(game_name));
+        savegame_dir_path.push(Path::new(&game_name));
         #[cfg(feature = "debug")]
         debug!("savegame_dir_path: {:?}", savegame_dir_path.clone());
 
         // Filepath for the serialized planet
-        let mut planet_file_path = PathBuf::new();
-        planet_file_path.push(savegame_dir_path.clone());
-        planet_file_path.push(Path::new("session_data"));
-        planet_file_path.set_extension("ron");
+        let mut savegame_file_path = PathBuf::new();
+        savegame_file_path.push(savegame_dir_path.clone());
+        savegame_file_path.push(Path::new("session_data"));
+        savegame_file_path.set_extension("ron");
 
         // Directory-path for the serialized chunks, need to append the individual chunks Id
         let mut chunk_dir_path = PathBuf::new();
@@ -91,7 +91,7 @@ impl SavegamePaths {
 
         SavegamePaths {
             savegame_dir_path,
-            planet_file_path,
+            savegame_file_path,
             chunk_dir_path,
         }
     }

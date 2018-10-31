@@ -3,9 +3,12 @@ use std::fs;
 use ron;
 use serde::Serializer;
 
-use amethyst::ecs::prelude::Read;
+use amethyst::ecs::prelude::{Read, Write};
 
-use resources::RenderConfig;
+use resources::{
+    RenderConfig,
+    ingame::planet::TileGenerationStorages,
+};
 
 use super::{planet::Planet, SavegamePaths};
 
@@ -15,7 +18,7 @@ use super::{planet::Planet, SavegamePaths};
 pub struct GameSessionData {
     /// The name of this game, also used as the savegame's name, and should be individual each time,
     /// lest another savegame gets overwritten.
-    pub game_name: &'static str,
+    pub game_name: String,
 
     /// The planet is basically a container for chunks, which hold the different tiles.
     /// This enables loading and unloading areas in larger bits than single entites, helping with performance,
@@ -25,7 +28,7 @@ pub struct GameSessionData {
 
 impl GameSessionData {
     pub fn new(
-        name: &'static str,
+        name: String,
         planet_dim: (u64, u64),
         chunk_dim: (u64, u64),
         render_config: &RenderConfig,
@@ -62,12 +65,12 @@ impl GameSessionData {
         }
         // TODO: Write to file `{$savegame_name}/planet.ron`
         if let Err(e) = fs::write(
-            paths.planet_file_path.clone(),
+            paths.savegame_file_path.clone(),
             ser_planet.into_output_string(),
         ) {
             error!(
-                "| Writing savegame planet at '{:?}' threw error: {:?}",
-                paths.planet_file_path.clone(),
+                "| Writing savegame at '{:?}' threw error: {:?}",
+                paths.savegame_file_path.clone(),
                 e
             );
         }
@@ -81,5 +84,43 @@ impl GameSessionData {
 
         #[cfg(feature = "debug")]
         debug!("| Finished serializing savegame.");
+    }
+
+    /// TODO: Error handling
+    pub fn load( 
+        paths: &Read<'_, SavegamePaths>, 
+    ) -> Result<GameSessionData, ()> {
+        #[cfg(feature = "debug")]
+        debug!("| Starting to deserialize savegame.");
+
+        #[cfg(feature = "debug")]
+        debug!("| Deserializing game data.");
+
+        let savegame_file_path = paths.savegame_file_path.clone();
+
+        let file = match fs::File::open(&savegame_file_path) {
+            Ok(rv) => rv,
+            Err(e) => {
+                error!("| Could not open {:?}: {:?}.", savegame_file_path.clone(), e);
+                return Err(());
+            }
+        };
+
+        let session_data: GameSessionData = match ron::de::from_reader(&file) {
+            Ok(data) => data,
+            Err(e) => {
+                error!(
+                    "| Error deserializing {:?}: {:?}.",
+                    savegame_file_path.clone(),
+                    e
+                );
+                return Err(());
+            }
+        };
+
+        #[cfg(feature = "debug")]
+        debug!("| Finished deserializing savegame.");
+
+        Ok(session_data)
     }
 }

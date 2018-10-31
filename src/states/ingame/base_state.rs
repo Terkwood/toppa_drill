@@ -195,7 +195,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         // TODO: Get rid.
         entities::tile::prepare_spritesheet(world, Some(&mut self.progress_counter));
         {
-            let game_name = world.read_resource::<GameSessionData>().game_name;
+            let game_name = world.read_resource::<GameSessionData>().game_name.clone();
             world.add_resource(SavegamePaths::init("./", game_name));
         }
 
