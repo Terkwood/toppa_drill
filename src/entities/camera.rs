@@ -6,8 +6,8 @@ use amethyst::{
 };
 
 pub fn init(world: &mut World, view_dim: (u32, u32), parent: Entity, parent_transform: &Transform) {
-    let mut transform = parent_transform.clone();
-    transform.translation[2] = 10.0;
+    let mut transform = Transform::default();
+    transform.translation[2] += (parent_transform.translation[2] + 100.0);
 
     world
         .create_entity()

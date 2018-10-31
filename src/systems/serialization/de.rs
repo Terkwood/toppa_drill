@@ -4,6 +4,7 @@ use amethyst::{
 };
 
 /// TODO: Everything.
+#[allow(dead_code)]
 pub struct DeSavegameSystem;
 
 impl<'a> System<'a> for DeSavegameSystem {

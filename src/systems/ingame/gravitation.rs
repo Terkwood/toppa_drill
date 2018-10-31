@@ -20,7 +20,7 @@ impl<'s> System<'s> for GravitationSystem {
 
     fn run(&mut self, (mut dynamics, transforms, masses): Self::SystemData) {
         for (mut dynamic, transform, mass) in (&mut dynamics, &transforms, &masses).join() {
-            let grav_force2 = (mass.mass * -GRAVITATION * 20.0)
+            let _grav_force2 = (mass.mass * -GRAVITATION * 20.0)
                 * Vector2::new(
                     transform.orientation().up[0] as f64,
                     transform.orientation().up[1] as f64,

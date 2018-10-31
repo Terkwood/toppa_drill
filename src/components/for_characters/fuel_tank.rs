@@ -1,5 +1,4 @@
 use amethyst::{
-    core::cgmath::{Rad, Vector2},
     ecs::prelude::{Component, VecStorage},
 };
 

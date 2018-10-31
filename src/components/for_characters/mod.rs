@@ -43,6 +43,8 @@ impl TagGenerator {
         }
     }
 
+    /// TODO: Use when NPC's introduced
+    #[allow(dead_code)]
     pub fn new_npc_tag(&mut self) -> NPCBase {
         self.npc_count += 1;
         NPCBase { id: self.npc_count }

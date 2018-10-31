@@ -1,8 +1,6 @@
 use std::{
     fs,
-    ops::{Deref, DerefMut},
     path::*,
-    string::ToString,
 };
 
 pub struct SavegamePaths {

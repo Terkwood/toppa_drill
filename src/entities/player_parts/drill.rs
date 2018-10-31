@@ -1,29 +1,23 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        cgmath::Vector2,
         transform::components::{Parent, Transform},
+        cgmath::Vector3,
     },
     ecs::prelude::*,
-    prelude::*,
-    renderer::{SpriteRender, SpriteSheetHandle, Transparent},
-    shrev::EventChannel,
+    renderer::Transparent,
 };
 
 use components::{
-    for_characters::{player::Position, Engine, FuelTank, TagGenerator},
-    for_ground_entities::TileBase,
-    physics::{Dynamics, PhysicalProperties},
+    physics::PhysicalProperties,
 };
-use entities::{camera, EntityError, EntitySpriteRender};
-use events::planet_events::ChunkEvent;
+use entities::{EntityError, EntitySpriteRender};
 use resources::{
     ingame::{
         add_spriterender, get_spriterender,
-        planet::{ChunkIndex, TileGenerationStorages, TileIndex},
-        GameSessionData, GameSprites,
+        GameSprites,
     },
-    RenderConfig, ToppaSpriteSheet,
+    ToppaSpriteSheet,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
@@ -31,8 +25,8 @@ use super::PlayerParts;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DrillError {
+    #[allow(dead_code)]
     NotImplemented,
-    NoPositionFromTransform,
     MissingSpriteRender(DrillTypes),
 }
 
@@ -42,6 +36,7 @@ pub enum DrillError {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DrillTypes {
     /// Dummy, if a drill has no implementation yet
+    #[allow(dead_code)]
     NotImplemented,
     /// Cold work steel, lowest performance
     C45U,
@@ -59,9 +54,9 @@ pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut Progr
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
     let loader_info = SpriteLoaderInfo {
         tex_id: ToppaSpriteSheet::Drill as u64,
-        image_size: (128, 128),
+        image_size: (96, 64),
         sprite_count: (3, 2),
-        sprite_render_size: (64.0, 64.0),
+        sprite_render_size: (32.0, 32.0),
     };
 
     if let Some(ss_handle) = load_sprites_from_spritesheet(
@@ -118,6 +113,7 @@ pub fn new_drill(
     world: &mut World,
     parent: Entity,
     drill_type: DrillTypes,
+    parent_transform: &Transform,
 ) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating drill for player {:?}.", parent);
@@ -129,10 +125,15 @@ pub fn new_drill(
 
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8), None);
-        let transform = Transform::default();
+        let mut transform = Transform::default();
+        transform.translation += Vector3::new(
+            22.0,
+            -32.0,
+            parent_transform.translation[2] - 1.0,
+        );
 
-        let drill = world
-            .create_entity()
+        world.create_entity()
+            .with(Parent{entity: parent})
             .with(transform)
             .with(Transparent)
             .with(sprite_render)

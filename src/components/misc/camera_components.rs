@@ -8,6 +8,7 @@ use resources::RenderConfig;
 /// - - min
 /// - - max
 /// - Offset to player
+/// TODO: Use as component.
 #[derive(Debug)]
 pub struct CameraProperties {
     pub player_id: usize,
@@ -34,6 +35,7 @@ impl Default for CameraProperties {
 }
 
 impl CameraProperties {
+    #[allow(dead_code)]
     pub fn new(
         player_id: usize,
         zoom_min: f32,

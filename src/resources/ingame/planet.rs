@@ -52,6 +52,7 @@ pub struct Galaxy {
 
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
 pub enum TileError {
+    #[allow(dead_code)]
     NotImplemented,
     IndexOutOfBounds,
     SpriteRenderNotFound(EntitySpriteRender),
@@ -59,6 +60,7 @@ pub enum TileError {
 
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
 pub enum ChunkIndexError {
+    #[allow(dead_code)]
     NotImplemented,
     SkyLimit,
     TooDeep,
@@ -66,6 +68,7 @@ pub enum ChunkIndexError {
 
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
 pub enum ChunkError {
+    #[allow(dead_code)]
     NotImplemented,
     IndexOutOfBounds(ChunkIndexError),
     NotFound,
@@ -73,6 +76,7 @@ pub enum ChunkError {
 
 #[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash, Debug)]
 pub enum PlanetError {
+    #[allow(dead_code)]
     NotImplemented,
     ChunkProblem(ChunkError),
     TileProblem(TileError),
@@ -105,7 +109,7 @@ impl ChunkIndex {
 
         if chunk_x_f32.is_sign_negative() || chunk_y_f32.is_sign_negative() {
             #[cfg(feature = "debug")]
-            debug!("Negative chunk index.");
+            debug!("| Negative chunk index.");
 
             return Err(PlanetError::ChunkProblem(ChunkError::IndexOutOfBounds(
                 ChunkIndexError::TooDeep,
@@ -119,7 +123,7 @@ impl ChunkIndex {
         match Planet::clamp_chunk_index(planet, chunk_id) {
             Ok(chunk_id) => {
                 #[cfg(feature = "debug")]
-                debug!("From transform: {:?}", chunk_id);
+                debug!("| From transform: {:?}", chunk_id);
 
                 Ok(chunk_id)
             }
@@ -169,13 +173,11 @@ impl Planet {
         // Chunk of the player + render distance in two directions (left+right | top+bottom)
         let chunk_count_per_direction = 1 + 2 * render_config.chunk_render_distance;
         let chunk_count = chunk_count_per_direction * chunk_count_per_direction;
-        let mut rv = Planet {
+        Planet {
             planet_dim,
             chunk_dim,
             chunks: HashMap::with_capacity(chunk_count as usize),
-        };
-
-        rv
+        }
     }
 
     /// Tries to fetch a chunk from the HashMap.
@@ -188,7 +190,10 @@ impl Planet {
         let clamped_id_result = Self::clamp_chunk_index(&self, index);
         match clamped_id_result {
             Ok(clamped_index) => Ok(self.chunks.get(&clamped_index)),
-            Err(e) => Err(e),
+            Err(e) => {
+                warn!("| Error clamping chunk index: {:?}", e);
+                Err(PlanetError::ChunkProblem(ChunkError::NotFound))
+            },
         }
     }
 
@@ -220,7 +225,7 @@ impl Planet {
                 let buff = rv.1;
                 rv.1 = rv.1 % planet.planet_dim.1;
                 #[cfg(feature = "debug")]
-                debug!("Wrapping index from {:?} to {:?}.", buff, rv.1);
+                debug!("| Wrapping index from {:?} to {:?}.", buff, rv.1);
             }
             Ok(rv)
         }
@@ -229,6 +234,8 @@ impl Planet {
     /// Saves a chunk in the specified directory without removing it from the planet.
     /// TODO: Save with less space-usage
     pub fn save_chunk(&self, chunk_id: ChunkIndex, chunk_dir_path: PathBuf) {
+        #[cfg(feature = "debug")]
+        debug!("+------------");
         let planet_width_in_chunks = self.planet_dim.0;
         match self.get_chunk(chunk_id) {
             Ok(chunk_opt) => {
@@ -239,19 +246,19 @@ impl Planet {
                     {
                         use serde::ser::SerializeMap;
                         #[cfg(feature = "debug")]
-                        debug!("serializing chunk {:?}", chunk_id);
+                        debug!("| serializing {:?}", chunk_id);
 
                         if let Ok(mut serseq) = ser_chunk.serialize_map(None) {
                             for (tile_index, tile_type) in chunk.iter_tiletypes() {
                                 if let Err(e) = serseq.serialize_key::<TileIndex>(&tile_index) {
                                     error!(
-                                        "Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
+                                        "| Error serializing key of Tile {:?} in Chunk {:?}: {:?}",
                                         tile_index, chunk_id, e
                                     );
                                 }
                                 if let Err(e) = serseq.serialize_value::<TileTypes>(&tile_type) {
                                     error!(
-                                        "Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
+                                        "| Error serializing value of Tile {:?} in Chunk {:?}: {:?}",
                                         tile_index, chunk_id, e
                                     );
                                 }
@@ -271,10 +278,10 @@ impl Planet {
                                 }
                                 */                            }
                             if let Err(e) = serseq.end() {
-                                error!("Error ending serialize for chunk {:?}: {:?}", chunk_id, e);
+                                error!("| Error ending serialize for chunk {:?}: {:?}", chunk_id, e);
                             }
                         } else {
-                            error!("Error starting serialize for chunk {:?}.", chunk_id);
+                            error!("| Error starting serialize for chunk {:?}.", chunk_id);
                         }
                     }
 
@@ -288,19 +295,21 @@ impl Planet {
                         fs::write(chunk_file_path.clone(), ser_chunk.into_output_string())
                     {
                         error!(
-                            "Writing chunk {:?} at '{:?}' resulted in {:?}",
+                            "| Writing chunk {:?} at '{:?}' resulted in {:?}",
                             chunk_id, chunk_file_path, e
                         );
                     }
                 } else {
                     #[cfg(feature = "debug")]
-                    debug!("Removing {:?} failed, since it was not found.", chunk_id);
+                    debug!("| Removing {:?} failed, since it was not found.", chunk_id);
                 }
             }
             Err(e) => {
-                error!("Error getting chunk from planet: {:?}.", e);
+                error!("| Error getting chunk from planet: {:?}.", e);
             }
         }
+        #[cfg(feature = "debug")]
+        debug!("+------------");
     }
 
     /// TODO: When save_chunk uses less-space-variant, custom deserializer needed.
@@ -308,17 +317,17 @@ impl Planet {
         &mut self,
         chunk_id: ChunkIndex,
         chunk_file_path: PathBuf,
-        mut storages: &mut TileGenerationStorages,
+        storages: &mut TileGenerationStorages,
     ) {
-        let planet_width_in_chunks = self.planet_dim.0;
-
         #[cfg(feature = "debug")]
-        debug!("chunk_file_path: {:?}", chunk_file_path);
+        debug!("+------------");
+        #[cfg(feature = "debug")]
+        debug!("| chunk_file_path: {:?}", chunk_file_path);
 
         let file = match fs::File::open(&chunk_file_path) {
             Ok(rv) => rv,
             Err(e) => {
-                error!("Could not open {:?}: {:?}.", chunk_file_path.clone(), e);
+                error!("| Could not open {:?}: {:?}.", chunk_file_path.clone(), e);
                 return;
             }
         };
@@ -327,7 +336,7 @@ impl Planet {
             Ok(chunk) => chunk,
             Err(e) => {
                 error!(
-                    "Error deserializing {:?}: {:?}.",
+                    "| Error deserializing {:?}: {:?}.",
                     chunk_file_path.clone(),
                     e
                 );
@@ -365,7 +374,7 @@ impl Planet {
                 storages,
             ) {
                 error!(
-                    "ABORTING! Error adding loaded {:?} to loaded {:?}: {:?}.",
+                    "| ABORTING! Error adding loaded {:?} to loaded {:?}: {:?}.",
                     tile_id, chunk_id, e
                 );
                 return;
@@ -373,9 +382,9 @@ impl Planet {
         }
 
         self.chunks.insert(chunk_id, chunk);
-
+        
         #[cfg(feature = "debug")]
-        debug!("de_chunk: {:?}", tiles);
+        debug!("+------------");
     }
 
     /// Creates a new chunk at the given index. The chunk dimension and tile render sizes are taken from the RenderConfig-resource,
@@ -387,19 +396,19 @@ impl Planet {
         &mut self,
         chunk_id: ChunkIndex,
         // NOTE: This is pretty ugly
-        mut storages: &mut TileGenerationStorages,
+        storages: &mut TileGenerationStorages,
     ) {
         // TODO: everything, maybe different tiles not only based on depth, but also x-pos?
         match Self::clamp_chunk_index(&self, chunk_id) {
             Ok(clamped_id) => {
                 #[cfg(feature = "debug")]
-                debug!("Creating new chunk at {:?}.", clamped_id);
+                debug!("| Creating {:?}.", clamped_id);
 
                 let chunk = Chunk::new(&self, chunk_id, self.chunk_dim, storages);
                 self.chunks.insert(clamped_id, chunk);
             }
             Err(e) => {
-                error!("Requested new chunk at invalid index {:?}.", chunk_id);
+                error!("| Requested index {:?}: {:?}.", chunk_id, e);
             }
         };
     }
@@ -408,7 +417,7 @@ impl Planet {
     #[allow(dead_code)]
     pub fn drain_chunks(&mut self) -> hash_map::Drain<ChunkIndex, Chunk> {
         #[cfg(feature = "debug")]
-        debug!("Draining chunks.");
+        debug!("| Draining chunks.");
         self.chunks.drain()
     }
 
@@ -419,15 +428,15 @@ impl Planet {
         entities: &Read<'_, EntitiesRes, DefaultProvider>,
     ) {
         #[cfg(feature = "debug")]
-        debug!("Deleting {:?}.", index);
+        debug!("| Deleting {:?}.", index);
         if let Some(chunk) = self.chunks.remove(&index) {
             for (&tile_id, &entity) in chunk.iter_tile_entities() {
                 if let Err(e) = entities.delete(entity) {
-                    error!("Error deleting {:?}: {:?}", tile_id, e);
+                    error!("| Error deleting {:?}: {:?}", tile_id, e);
                 }
             }
         } else {
-            error!("Tried to delete non-existing {:?}", index);
+            error!("| Tried to delete non-existing {:?}", index);
         }
     }
 
@@ -435,7 +444,7 @@ impl Planet {
     /// mapping `ChunkIndex <-> Chunk`.
     pub fn iter_chunks(&self) -> hash_map::Iter<ChunkIndex, Chunk> {
         #[cfg(feature = "debug")]
-        debug!("Iterating over chunks.");
+        debug!("| Iterating over chunks.");
         self.chunks.iter()
     }
 }
@@ -530,7 +539,7 @@ impl Chunk {
         chunk_id: ChunkIndex,
         chunk_dim: (u64, u64),
         // NOTE: This is pretty ugly
-        mut storages: &mut TileGenerationStorages,
+        storages: &mut TileGenerationStorages,
     ) -> Chunk {
         // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
         let mut rv = Chunk {
@@ -619,7 +628,7 @@ impl Chunk {
     /// The given tile index gets clamped to the chunk-dim by cutting it off in all directions.
     /// Returns none if the index is out of bounds.
     pub fn clamp_tile_index(planet: &Planet, index: TileIndex) -> Result<TileIndex, PlanetError> {
-        let mut rv = index;
+        let rv = index;
         if rv.0 >= planet.chunk_dim.0 || rv.1 >= planet.chunk_dim.1 {
             #[cfg(feature = "debug")]
             debug!("tile index originally {:?} is out of bounds.", index);
@@ -639,7 +648,7 @@ impl Chunk {
         tile_id: TileIndex,
         tile_type_opt: Option<TileTypes>,
         // NOTE: This is pretty ugly
-        mut storages: &mut TileGenerationStorages,
+        storages: &mut TileGenerationStorages,
     ) -> Result<(), self::PlanetError> {
         match Self::create_tile(planet, base_transform, tile_id, tile_type_opt, storages) {
             Ok((tile_type, entity)) => {
@@ -660,12 +669,12 @@ impl Chunk {
         tile_id: TileIndex,
         tile_type_opt: Option<TileTypes>,
         // NOTE: This is pretty ugly
-        mut storages: &mut TileGenerationStorages,
+        storages: &mut TileGenerationStorages,
     ) -> Result<(TileTypes, Entity), self::PlanetError> {
         let entities = &storages.entities;
-        let mut sprite_render_storage = &mut storages.sprite_render;
-        let mut tile_base_storage = &mut storages.tile_base;
-        let mut transform_storage = &mut storages.transform;
+        let sprite_render_storage = &mut storages.sprite_render;
+        let tile_base_storage = &mut storages.tile_base;
+        let transform_storage = &mut storages.transform;
         let game_sprites = &storages.game_sprites;
         let render_config = &storages.render_config;
 

@@ -12,9 +12,6 @@ use serde::Serializer;
 
 use amethyst::{
     core::{
-        specs::saveload::{
-            DeserializeComponents, SerializeComponents, U64Marker, U64MarkerAllocator,
-        },
         timing::Time,
         transform::components::Transform,
     },
@@ -46,8 +43,8 @@ impl HotChunkSystem {
     pub fn new() -> Self {
         HotChunkSystem {
             event_reader: None,
-            chunks_to_load: Vec::with_capacity(9),
-            chunks_to_unload: Vec::with_capacity(9),
+            chunks_to_load: Vec::with_capacity(10),
+            chunks_to_unload: Vec::with_capacity(10),
         }
     }
 }
@@ -69,11 +66,11 @@ impl<'a> System<'a> for HotChunkSystem {
         &mut self,
         (
             entities,
-            mut tag_tiles,
-            mut sprite_renders,
-            mut transforms,
-            mut session_data,
-            mut chunk_events,
+            tag_tiles,
+            sprite_renders,
+            transforms,
+            session_data,
+            chunk_events,
             paths,
             game_sprites,
             render_config,
@@ -81,7 +78,7 @@ impl<'a> System<'a> for HotChunkSystem {
     ) {
         if let (
             Some(mut session_data),
-            Some(mut chunk_events),
+            Some(chunk_events),
             Some(paths),
             Some(game_sprites),
             Some(render_config),
@@ -142,16 +139,16 @@ impl<'a> System<'a> for HotChunkSystem {
                             &mut tile_gen,
                         );
                     } else if chunk_file_path.is_dir() {
-                        error!("Chunk file path is a directory?! {:?}", chunk_file_path);
+                        error!("| Chunk file path is a directory?! {:?}", chunk_file_path);
                     } else {
                         session_data.planet.new_chunk(chunk_id, &mut tile_gen);
                     }
                 }
             } else {
-                error!("No event ReaderId found for HotChunkSystem.");
+                error!("| No event ReaderId found for HotChunkSystem.");
             }
         } else {
-            error!("Resources not found.");
+            error!("| Resources not found.");
         }
     }
 

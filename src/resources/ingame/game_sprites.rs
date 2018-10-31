@@ -21,7 +21,8 @@ impl GameSprites {
             warn!("A GameSprite has been overriden: {:?}", prev_val);
         };
     }
-
+    
+    #[allow(dead_code)]
     pub fn remove(&mut self, name: EntitySpriteRender) {
         self.sprite_renders.remove(&name);
     }
@@ -33,7 +34,7 @@ impl GameSprites {
 
 pub fn add_spriterender(
     entity_sprite_render: EntitySpriteRender,
-    mut game_sprites: &mut GameSprites,
+    game_sprites: &mut GameSprites,
     spritesheet_handle: SpriteSheetHandle,
     sprite_number: usize,
     flip_horizontal: bool,

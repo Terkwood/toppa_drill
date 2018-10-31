@@ -10,7 +10,7 @@ use amethyst::{
 
 use components::{
     for_characters::{Engine, FuelTank},
-    physics::{Dynamics, PhysicalProperties},
+    physics::Dynamics,
 };
 
 #[derive(Default)]

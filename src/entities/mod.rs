@@ -10,6 +10,7 @@ pub enum EntitySpriteRender {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EntityError {
+    #[allow(dead_code)]
     NotImplemented,
     PlayerProblem(player_parts::PlayerError),
     DrillProblem(player_parts::DrillError),

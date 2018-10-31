@@ -12,7 +12,7 @@ use components::for_characters::{player, PlayerBase};
 use events::planet_events::ChunkEvent;
 use resources::{
     ingame::{
-        planet::{ChunkError, ChunkIndex, PlanetError, TileError, TileIndex},
+        planet::{ChunkIndex, PlanetError, TileError, TileIndex},
         GameSessionData,
     },
     RenderConfig,
@@ -54,13 +54,13 @@ impl<'s> System<'s> for PlayerPositionSystem {
             mut player_positions,
             session_data,
             render_config,
-            mut chunk_event_channel,
+            chunk_event_channel,
         ): Self::SystemData,
     ) {
         if let (Some(session_data), Some(render_config), Some(mut chunk_event_channel)) =
             (session_data, render_config, chunk_event_channel)
         {
-            for (transform, player, mut player_pos) in
+            for (transform, _player, mut player_pos) in
                 (&transforms, &players, &mut player_positions).join()
             {
                 let planet_ref = &session_data.planet;
@@ -72,17 +72,20 @@ impl<'s> System<'s> for PlayerPositionSystem {
                 ) {
                     Ok(tile_index) => {
                         #[cfg(feature = "trace")]
-                        trace!("Same chunk.");
+                        trace!("| Same chunk.");
                         // Player still on the same chunk. Easy-peasy
                         player_pos.tile = tile_index;
                     }
                     Err(e) => {
                         #[cfg(feature = "trace")]
-                        error!("Maybe new chunk.");
+                        error!("| Maybe new chunk.");
+
                         match e {
                             PlanetError::TileProblem(TileError::IndexOutOfBounds) => {
                                 #[cfg(feature = "debug")]
-                                debug!("New chunk.");
+                                debug!("+------------");
+                                #[cfg(feature = "debug")]
+                                debug!("| On new chunk.");
                                 // Player on a new chunk.
                                 match ChunkIndex::from_transform(
                                     transform,
@@ -90,8 +93,8 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                     planet_ref,
                                 ) {
                                     Ok(chunk_index) => {
-                                        #[cfg(feature = "trace")]
-                                        error!("New {:?}.", chunk_index);
+                                        #[cfg(feature = "debug")]
+                                        debug!("| New {:?}.", chunk_index);
                                         match TileIndex::from_transform(
                                             transform,
                                             chunk_index,
@@ -100,7 +103,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                         ) {
                                             Ok(tile_index) => {
                                                 #[cfg(feature = "trace")]
-                                                trace!("New {:?}.", tile_index);
+                                                trace!("| New {:?}.", tile_index);
 
                                                 self.prev_chunks.clear();
                                                 self.prev_chunks.insert(player_pos.chunk);
@@ -175,7 +178,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                 for &index in chunks_to_delete {
                                                     #[cfg(feature = "debug")]
                                                     debug!(
-                                                        "Requesting load for chunk {:?}.",
+                                                        "| Requesting load for chunk {:?}.",
                                                         index
                                                     );
                                                     chunk_event_channel.single_write(
@@ -185,7 +188,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                 for &index in chunks_to_load {
                                                     #[cfg(feature = "debug")]
                                                     debug!(
-                                                        "Requesting unload for chunk {:?}.",
+                                                        "| Requesting unload for chunk {:?}.",
                                                         index
                                                     );
                                                     chunk_event_channel.single_write(
@@ -194,25 +197,27 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                 }
                                             }
                                             Err(e) => {
-                                                error!("Couldn't find TileIndex, although new ChunkIndex was calculated: {:?}", e);
+                                                error!("| Couldn't find TileIndex, although new ChunkIndex was calculated: {:?}", e);
                                             }
                                         }
                                     }
                                     Err(e) => warn!(
-                                        "Error calculating ChunkIndex from transform: {:?}",
+                                        "| Error calculating ChunkIndex from transform: {:?}",
                                         e
                                     ),
                                 }
+                                #[cfg(feature = "debug")]
+                                debug!("+------------");
                             }
                             _ => {
-                                error!("Error: {:?}", e);
+                                error!("| Error: {:?}", e);
                             }
                         }
                     }
                 }
             }
         } else {
-            error!("Resources not found.");
+            error!("| Resources not found.");
         }
     }
 }

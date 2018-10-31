@@ -1,29 +1,23 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        cgmath::Vector2,
         transform::components::{Parent, Transform},
+        cgmath::Vector3,
     },
     ecs::prelude::*,
-    prelude::*,
-    renderer::{SpriteRender, SpriteSheetHandle, Transparent},
-    shrev::EventChannel,
+    renderer::Transparent,
 };
 
 use components::{
-    for_characters::{player::Position, Engine, FuelTank, TagGenerator},
-    for_ground_entities::TileBase,
-    physics::{Dynamics, PhysicalProperties},
+    physics::{PhysicalProperties},
 };
-use entities::{camera, EntityError, EntitySpriteRender};
-use events::planet_events::ChunkEvent;
+use entities::{EntityError, EntitySpriteRender};
 use resources::{
     ingame::{
         add_spriterender, get_spriterender,
-        planet::{ChunkIndex, TileGenerationStorages, TileIndex},
-        GameSessionData, GameSprites,
+        GameSprites,
     },
-    RenderConfig, ToppaSpriteSheet,
+    ToppaSpriteSheet,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
@@ -31,18 +25,18 @@ use super::PlayerParts;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum TracksError {
+    #[allow(dead_code)]
     NotImplemented,
-    NoPositionFromTransform,
     MissingSpriteRender,
 }
 
 pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter>) {
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
     let loader_info = SpriteLoaderInfo {
-        tex_id: ToppaSpriteSheet::Drill as u64,
-        image_size: (128, 128),
-        sprite_count: (3, 2),
-        sprite_render_size: (64.0, 64.0),
+        tex_id: ToppaSpriteSheet::Tracks as u64,
+        image_size: (64, 16),
+        sprite_count: (1, 1),
+        sprite_render_size: (64.0, 16.0),
     };
 
     if let Some(ss_handle) = load_sprites_from_spritesheet(
@@ -71,7 +65,7 @@ pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
 /// Creates new tracks associated with a player,
 /// requires the player-Entity-Struct to be passed as a parameter.
 /// TODO: Make tracks animated.
-pub fn new_tracks(world: &mut World, parent: Entity) -> Result<(), EntityError> {
+pub fn new_tracks(world: &mut World, parent: Entity, parent_transform: &Transform) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating tracks for player {:?}.", parent);
 
@@ -80,10 +74,15 @@ pub fn new_tracks(world: &mut World, parent: Entity) -> Result<(), EntityError> 
 
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(500.0, None, Some(0.3), None);
-        let transform = Transform::default();
+        let mut transform = Transform::default();
+        transform.translation += Vector3::new(
+            0.0,
+            -56.0,
+            parent_transform.translation[2] + 5.0,
+        );
 
-        let drill = world
-            .create_entity()
+        world.create_entity()
+            .with(Parent{entity: parent})
             .with(transform)
             .with(Transparent)
             .with(sprite_render)
