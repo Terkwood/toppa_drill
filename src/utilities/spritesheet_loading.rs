@@ -4,13 +4,10 @@ use amethyst::{
     assets::{AssetStorage, Loader, ProgressCounter},
     ecs::prelude::World,
     renderer::{
-        MaterialTextureSet, PngFormat, Sprite, SpriteRender, SpriteSheet, SpriteSheetHandle,
+        MaterialTextureSet, PngFormat, Sprite, SpriteSheet, SpriteSheetHandle,
         Texture, TextureCoordinates, TextureMetadata,
     },
 };
-
-use entities::EntitySpriteRender;
-use resources::ingame::GameSprites;
 
 #[derive(Debug, Clone)]
 pub struct SpriteLoaderInfo {
@@ -111,26 +108,42 @@ pub fn load_sprites_from_spritesheet(
         sprites: sprites,
     };
 
-    load_image_png(
-        world,
-        sheet_path,
-        sprite_sheet.texture_id,
-        None, //not necessary since the following loader.load uses a ProgressCounter
-    );
+    if let Some(progress_counter_ref) = progress_counter_ref_opt {
+        #[cfg(feature = "debug")]
+        debug!("Loading spritesheet with ProgressCounter.");
+        
+        load_image_png(
+            world,
+            sheet_path,
+            sprite_sheet.texture_id,
+            Some(progress_counter_ref),
+        );
 
-    let sprite_sheet_handle = {
-        let loader = world.read_resource::<Loader>();
-        let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
+        let sprite_sheet_handle = {
+            let loader = world.read_resource::<Loader>();
+            let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
 
-        if let Some(progress_counter_ref) = progress_counter_ref_opt {
-            #[cfg(feature = "debug")]
-            debug!("Loading spritesheet with ProgressCounter.");
             loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
-        } else {
-            #[cfg(feature = "debug")]
-            debug!("Loading spritesheet without ProgressCounter.");
+        };
+        Some(sprite_sheet_handle)
+    }
+    else {
+        #[cfg(feature = "debug")]
+        debug!("Loading spritesheet without ProgressCounter.");
+
+        load_image_png(
+            world,
+            sheet_path,
+            sprite_sheet.texture_id,
+            None,
+        );
+
+        let sprite_sheet_handle = {
+            let loader = world.read_resource::<Loader>();
+            let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
+
             loader.load_from_data(sprite_sheet, (), &sprite_sheet_storage)
-        }
-    };
-    Some(sprite_sheet_handle)
+        };
+        Some(sprite_sheet_handle)
+    }
 }
