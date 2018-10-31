@@ -1,14 +1,18 @@
 use amethyst::{
     assets::{Handle, ProgressCounter},
-    core::transform::components::Transform,
+    core::{
+        transform::components::Transform,
+        cgmath::Vector3,
+    },
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
     renderer::VirtualKeyCode,
     ui::{UiEventType, UiPrefab},
 };
+
 use entities;
-use resources::ingame::{GameSessionData, GameSprites, SavegamePaths};
+use resources::ingame::{GameSessionData, SavegamePaths};
 use states::ToppaState;
 use std::collections::HashMap;
 use systems::{
@@ -142,7 +146,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
                     _ => Trans::None,
                 }
             }
-            _ => Trans::None,
         }
     }
 
@@ -199,10 +202,15 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
             world.add_resource(SavegamePaths::init("./", game_name));
         }
 
-        entities::player_parts::init(world, None);
+        entities::player_parts::init_player(world, None);
 
         let mut transform = Transform::default();
-        if let Err(e) = entities::player_parts::new(
+        transform.translation = Vector3::new(
+            500.0,
+            400.0,
+            40.0
+        );
+        if let Err(e) = entities::player_parts::new_player(
             world,
             &transform,
             entities::player_parts::ShipTypes::NotImplemented,

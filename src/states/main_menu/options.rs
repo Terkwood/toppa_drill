@@ -34,11 +34,14 @@ pub struct OptionsState<'d, 'e> {
 impl<'a, 'b, 'd, 'e> ToppaState<'d, 'e> for OptionsState<'d, 'e> {
     type StateButton = OptionsButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
-        self.main_dispatcher = Some(
-            DispatcherBuilder::new()
+        self.main_dispatcher = Some({
+            let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                .build(),
-        );
+                .build();
+
+            dispatcher.setup(&mut world.res);
+            dispatcher
+        });
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
@@ -105,7 +108,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for OptionsState<'
                     _ => Trans::None,
                 }
             }
-            _ => Trans::None,
         }
     }
 

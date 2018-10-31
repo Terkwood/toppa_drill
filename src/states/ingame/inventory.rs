@@ -31,11 +31,14 @@ pub struct InventoryState<'d, 'e> {
 impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
     type StateButton = InventoryButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
-        self.main_dispatcher = Some(
-            DispatcherBuilder::new()
+        self.main_dispatcher = Some({
+            let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                .build(),
-        );
+                .build();
+            
+            dispatcher.setup(&mut world.res);
+            dispatcher
+        });
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
@@ -108,7 +111,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for InventoryState
                     _ => Trans::None,
                 }
             }
-            _ => Trans::None,
         }
     }
 

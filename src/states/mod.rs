@@ -7,7 +7,6 @@ pub use self::startup_state::StartupState;
 use amethyst::{
     assets::Handle,
     ecs::prelude::*,
-    prelude::*,
     ui::{UiFinder, UiPrefab},
 };
 use std::collections::HashMap;
@@ -22,14 +21,14 @@ pub trait ToppaState<'g, 'h> {
         None
     }
     /// Implement to set the `ToppaState`'s `current_screen`-entity, if it has this field.
-    fn set_screen_entity(&mut self, screen_entity: Option<Entity>) {}
+    fn set_screen_entity(&mut self, _screen_entity: Option<Entity>) {}
 
     /// Implement to set the `ToppaState`'s `current_screen_prefab`, if it has this field.
     fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {
         None
     }
     /// May return the `ToppaState`'s `current_screen_prefab`, if it has one.
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {}
+    fn set_screen_prefab(&mut self, _screen_prefab: Option<Handle<UiPrefab>>) {}
 
     /// May return the `ToppaState`'s `main_dispatcher`, if it has one.
     fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'g, 'h>>> {
@@ -55,10 +54,10 @@ pub trait ToppaState<'g, 'h> {
     // Implementation optional:
     /// Implement this function to create a custom dispatcher for this `State`,
     /// which should be dispatched every frame, as long as it is the active `State`.
-    fn enable_dispatcher(&mut self, world: &mut World) {}
+    fn enable_dispatcher(&mut self, _world: &mut World) {}
     /// Implement this function to create a custom dispatcher for this `State`,
     /// which should be dispatched every frame, even when it is not the active `State`.
-    fn enable_shadow_dispatcher(&mut self, world: &mut World) {}
+    fn enable_shadow_dispatcher(&mut self, _world: &mut World) {}
 
     /// Call this function from your `State`'s `.update()` function,
     /// to dispatch the dispatcher built in [`enable_dispatcher()`](trait.ToppaState.html#method.enable_dispatcher).

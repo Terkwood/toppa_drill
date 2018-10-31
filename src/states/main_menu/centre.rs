@@ -43,19 +43,25 @@ pub struct CentreState<'d, 'e> {
 impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     type StateButton = CentreButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
-        self.main_dispatcher = Some(
-            DispatcherBuilder::new()
+        self.main_dispatcher = Some({
+            let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
-                .build(),
-        );
+                .build();
+
+            dispatcher.setup(&mut world.res);
+            dispatcher
+        });
     }
 
     fn enable_shadow_dispatcher(&mut self, world: &mut World) {
-        self.shadow_dispatcher = Some(
-            DispatcherBuilder::new()
+        self.shadow_dispatcher = Some({
+            let mut dispatcher = DispatcherBuilder::new()
                 .with(ShadowDummySystem { counter: 0 }, "shadow_dummy_system", &[])
-                .build(),
-        );
+                .build();
+
+            dispatcher.setup(&mut world.res);
+            dispatcher
+        });
     }
 
     fn disable_current_screen(&mut self, world: &mut World) {
@@ -195,7 +201,6 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for CentreState<'d
                     _ => Trans::None,
                 }
             }
-            _ => Trans::None,
         }
     }
 
