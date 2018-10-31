@@ -193,7 +193,7 @@ impl Planet {
             Err(e) => {
                 warn!("| Error clamping chunk index: {:?}", e);
                 Err(PlanetError::ChunkProblem(ChunkError::NotFound))
-            },
+            }
         }
     }
 
@@ -278,7 +278,10 @@ impl Planet {
                                 }
                                 */                            }
                             if let Err(e) = serseq.end() {
-                                error!("| Error ending serialize for chunk {:?}: {:?}", chunk_id, e);
+                                error!(
+                                    "| Error ending serialize for chunk {:?}: {:?}",
+                                    chunk_id, e
+                                );
                             }
                         } else {
                             error!("| Error starting serialize for chunk {:?}.", chunk_id);
@@ -382,7 +385,7 @@ impl Planet {
         }
 
         self.chunks.insert(chunk_id, chunk);
-        
+
         #[cfg(feature = "debug")]
         debug!("+------------");
     }

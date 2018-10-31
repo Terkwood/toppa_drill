@@ -1,6 +1,4 @@
-use amethyst::{
-    ecs::prelude::{Component, VecStorage},
-};
+use amethyst::ecs::prelude::{Component, VecStorage};
 
 /// The ship's fuel tank.
 /// Holds `fuel_level`, the current amount of fuel in the tank.

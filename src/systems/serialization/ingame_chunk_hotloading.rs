@@ -11,10 +11,7 @@ use ron;
 use serde::Serializer;
 
 use amethyst::{
-    core::{
-        timing::Time,
-        transform::components::Transform,
-    },
+    core::{timing::Time, transform::components::Transform},
     ecs::prelude::*,
     renderer::SpriteRender,
     shred::Resources,

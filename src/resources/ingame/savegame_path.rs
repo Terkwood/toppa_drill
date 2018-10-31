@@ -1,7 +1,4 @@
-use std::{
-    fs,
-    path::*,
-};
+use std::{fs, path::*};
 
 pub struct SavegamePaths {
     pub savegame_dir_path: PathBuf,

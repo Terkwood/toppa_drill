@@ -4,8 +4,8 @@ use amethyst::{
     assets::{AssetStorage, Loader, ProgressCounter},
     ecs::prelude::World,
     renderer::{
-        MaterialTextureSet, PngFormat, Sprite, SpriteSheet, SpriteSheetHandle,
-        Texture, TextureCoordinates, TextureMetadata,
+        MaterialTextureSet, PngFormat, Sprite, SpriteSheet, SpriteSheetHandle, Texture,
+        TextureCoordinates, TextureMetadata,
     },
 };
 
@@ -111,7 +111,7 @@ pub fn load_sprites_from_spritesheet(
     if let Some(progress_counter_ref) = progress_counter_ref_opt {
         #[cfg(feature = "debug")]
         debug!("Loading spritesheet with ProgressCounter.");
-        
+
         load_image_png(
             world,
             sheet_path,
@@ -126,17 +126,11 @@ pub fn load_sprites_from_spritesheet(
             loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
         };
         Some(sprite_sheet_handle)
-    }
-    else {
+    } else {
         #[cfg(feature = "debug")]
         debug!("Loading spritesheet without ProgressCounter.");
 
-        load_image_png(
-            world,
-            sheet_path,
-            sprite_sheet.texture_id,
-            None,
-        );
+        load_image_png(world, sheet_path, sprite_sheet.texture_id, None);
 
         let sprite_sheet_handle = {
             let loader = world.read_resource::<Loader>();

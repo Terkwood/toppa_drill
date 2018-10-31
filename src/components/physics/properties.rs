@@ -1,6 +1,4 @@
-use amethyst::{
-    ecs::prelude::{Component, VecStorage},
-};
+use amethyst::ecs::prelude::{Component, VecStorage};
 
 /// A physics-affected entity need to have either friction, air resistance or both,
 /// otherwise it won't move.

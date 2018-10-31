@@ -1,22 +1,17 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        transform::components::{Parent, Transform},
         cgmath::Vector3,
+        transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
     renderer::Transparent,
 };
 
-use components::{
-    physics::PhysicalProperties,
-};
+use components::physics::PhysicalProperties;
 use entities::{EntityError, EntitySpriteRender};
 use resources::{
-    ingame::{
-        add_spriterender, get_spriterender,
-        GameSprites,
-    },
+    ingame::{add_spriterender, get_spriterender, GameSprites},
     ToppaSpriteSheet,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
@@ -126,14 +121,11 @@ pub fn new_drill(
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8), None);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(
-            22.0,
-            -32.0,
-            parent_transform.translation[2] - 1.0,
-        );
+        transform.translation += Vector3::new(22.0, -32.0, parent_transform.translation[2] - 1.0);
 
-        world.create_entity()
-            .with(Parent{entity: parent})
+        world
+            .create_entity()
+            .with(Parent { entity: parent })
             .with(transform)
             .with(Transparent)
             .with(sprite_render)

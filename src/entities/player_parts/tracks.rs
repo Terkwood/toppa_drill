@@ -1,22 +1,17 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        transform::components::{Parent, Transform},
         cgmath::Vector3,
+        transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
     renderer::Transparent,
 };
 
-use components::{
-    physics::{PhysicalProperties},
-};
+use components::physics::PhysicalProperties;
 use entities::{EntityError, EntitySpriteRender};
 use resources::{
-    ingame::{
-        add_spriterender, get_spriterender,
-        GameSprites,
-    },
+    ingame::{add_spriterender, get_spriterender, GameSprites},
     ToppaSpriteSheet,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
@@ -65,7 +60,11 @@ pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
 /// Creates new tracks associated with a player,
 /// requires the player-Entity-Struct to be passed as a parameter.
 /// TODO: Make tracks animated.
-pub fn new_tracks(world: &mut World, parent: Entity, parent_transform: &Transform) -> Result<(), EntityError> {
+pub fn new_tracks(
+    world: &mut World,
+    parent: Entity,
+    parent_transform: &Transform,
+) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating tracks for player {:?}.", parent);
 
@@ -75,14 +74,11 @@ pub fn new_tracks(world: &mut World, parent: Entity, parent_transform: &Transfor
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(500.0, None, Some(0.3), None);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(
-            0.0,
-            -56.0,
-            parent_transform.translation[2] + 5.0,
-        );
+        transform.translation += Vector3::new(0.0, -56.0, parent_transform.translation[2] + 5.0);
 
-        world.create_entity()
-            .with(Parent{entity: parent})
+        world
+            .create_entity()
+            .with(Parent { entity: parent })
             .with(transform)
             .with(Transparent)
             .with(sprite_render)

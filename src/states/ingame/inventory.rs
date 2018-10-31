@@ -35,7 +35,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
             let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
                 .build();
-            
+
             dispatcher.setup(&mut world.res);
             dispatcher
         });

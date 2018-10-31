@@ -1,9 +1,6 @@
 use amethyst::{
     assets::{Handle, ProgressCounter},
-    core::{
-        transform::components::Transform,
-        cgmath::Vector3,
-    },
+    core::{cgmath::Vector3, transform::components::Transform},
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
@@ -205,11 +202,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         entities::player_parts::init_player(world, None);
 
         let mut transform = Transform::default();
-        transform.translation = Vector3::new(
-            500.0,
-            400.0,
-            40.0
-        );
+        transform.translation = Vector3::new(500.0, 400.0, 40.0);
         if let Err(e) = entities::player_parts::new_player(
             world,
             &transform,

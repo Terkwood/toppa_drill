@@ -4,7 +4,7 @@ use amethyst::{
 };
 
 use resources::{
-    ingame::planet::{ChunkIndex, Planet, TileIndex, PlanetError},
+    ingame::planet::{ChunkIndex, Planet, PlanetError, TileIndex},
     RenderConfig,
 };
 

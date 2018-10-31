@@ -10,22 +10,15 @@ use components::{
     for_characters::{player::Position, Engine, FuelTank, TagGenerator},
     physics::{Dynamics, PhysicalProperties},
 };
-use entities::{camera, EntityError, EntitySpriteRender, player_parts::DrillTypes};
+use entities::{camera, player_parts::DrillTypes, EntityError, EntitySpriteRender};
 use events::planet_events::ChunkEvent;
 use resources::{
-    ingame::{
-        add_spriterender, get_spriterender,
-        GameSessionData, GameSprites,
-    },
+    ingame::{add_spriterender, get_spriterender, GameSessionData, GameSprites},
     RenderConfig, ToppaSpriteSheet,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
-use super::{
-    PlayerParts,
-    {init_drill, new_drill},
-    {init_tracks, new_tracks},
-};
+use super::{init_drill, init_tracks, new_drill, new_tracks, PlayerParts};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum PlayerError {
@@ -65,24 +58,24 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
             Some(progress_counter_ref),
         ) {
             let mut game_sprites = world.write_resource::<GameSprites>();
-            
+
             let sprites = [
                 (
                     0,
                     EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::NotImplemented)),
-                ),/*
-                (
-                    1,
-                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
-                ),
-                (
-                    2,
-                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
-                ),
-                (
-                    3,
-                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
-                ),*/
+                ), /*
+                   (
+                       1,
+                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
+                   ),
+                   (
+                       2,
+                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
+                   ),
+                   (
+                       3,
+                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
+                   ),*/
             ];
 
             for (sprite_number, entity_sprite_render) in sprites.iter() {
@@ -98,8 +91,7 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
         }
         init_drill(world, Some(progress_counter_ref));
         init_tracks(world, Some(progress_counter_ref));
-    }
-    else {
+    } else {
         let loader_info = SpriteLoaderInfo {
             tex_id: ToppaSpriteSheet::Player as u64,
             image_size: (128, 128),
@@ -107,31 +99,28 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
             sprite_render_size: (64.0, 64.0),
         };
 
-        if let Some(ss_handle) = load_sprites_from_spritesheet(
-            world,
-            "Assets/Textures/Drill.png",
-            loader_info,
-            None,
-        ) {
+        if let Some(ss_handle) =
+            load_sprites_from_spritesheet(world, "Assets/Textures/Drill.png", loader_info, None)
+        {
             let mut game_sprites = world.write_resource::<GameSprites>();
-            
+
             let sprites = [
                 (
                     0,
                     EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::NotImplemented)),
-                ),/*
-                (
-                    1,
-                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
-                ),
-                (
-                    2,
-                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
-                ),
-                (
-                    3,
-                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
-                ),*/
+                ), /*
+                   (
+                       1,
+                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
+                   ),
+                   (
+                       2,
+                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
+                   ),
+                   (
+                       3,
+                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
+                   ),*/
             ];
 
             for (sprite_number, entity_sprite_render) in sprites.iter() {
@@ -191,7 +180,8 @@ pub fn new_player(
                 debug!("| Initial player position from transform.");
 
                 {
-                    let mut chunk_event_channel = world.write_resource::<EventChannel<ChunkEvent>>();
+                    let mut chunk_event_channel =
+                        world.write_resource::<EventChannel<ChunkEvent>>();
                     chunk_event_channel.single_write(ChunkEvent::RequestingLoad(position.chunk));
                     /* THIS IS BROKEN, these entities are not affected by the hotloading system.
                     use std::u64;
@@ -261,7 +251,7 @@ pub fn new_player(
                 new_drill(world, player, DrillTypes::C45U, transform)?;
                 new_tracks(world, player, transform)?;
                 Ok(())
-            },
+            }
             Err(_e) => {
                 #[cfg(feature = "debug")]
                 debug!("| Could not get position from transform: {:?}", _e);

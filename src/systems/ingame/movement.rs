@@ -70,7 +70,6 @@ impl<'s> System<'s> for MovementSystem {
             let omega_cur = dynamic.omega;
             let delta_omega = Rad(dynamic.torque / inertia.value);
             dynamic.omega = omega_cur + delta_omega * dt;
-            position.rad = (delta_omega * dt * dt * 0.5 + dynamic.omega * dt + rot_cur).normalize();*/        
-        }
+            position.rad = (delta_omega * dt * dt * 0.5 + dynamic.omega * dt + rot_cur).normalize();*/        }
     }
 }

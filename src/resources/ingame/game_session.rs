@@ -1,18 +1,13 @@
-use std::{
-    fs,
-};
+use std::fs;
 
 use ron;
 use serde::Serializer;
 
-use amethyst::ecs::prelude::{Read};
+use amethyst::ecs::prelude::Read;
 
 use resources::RenderConfig;
 
-use super::{
-    planet::Planet,
-    SavegamePaths,
-};
+use super::{planet::Planet, SavegamePaths};
 
 /// Data specific to the current game,
 /// gets loaded or created when the User starts a new game.

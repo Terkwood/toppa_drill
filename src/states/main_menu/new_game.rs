@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    u64,
-};
+use std::{collections::HashMap, u64};
 
 use amethyst::{
     assets::Handle,
