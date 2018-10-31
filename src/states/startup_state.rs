@@ -6,11 +6,17 @@ use amethyst::{
     prelude::*,
     renderer::VirtualKeyCode,
     ui::{UiCreator, UiLoader, UiPrefab},
+    shrev::EventChannel,
 };
 
-use resources::RenderConfig;
+use resources::{
+    RenderConfig,
+    GameSprites,
+};
 use states::{main_menu, ToppaState};
 use ToppaGameData;
+use components::for_characters::TagGenerator;
+use events::planet_events::ChunkEvent;
 
 /// The default state after opening Toppa Drill.
 /// It should display a short amethyst logo, and then transist over to the Main Menu State.
@@ -121,13 +127,6 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
     fn on_start(&mut self, data: StateData<ToppaGameData>) {
         let StateData { world, data: _ } = data;
 
-        let ren_con = RenderConfig {
-            tile_base_render_dim: (64.0, 64.0),
-            chunk_render_distance: 1,
-            view_dim: (1920, 1080),
-        };
-        world.add_resource::<RenderConfig>(ren_con);
-
         self.current_screen = Some(world.exec(|mut creator: UiCreator| {
             creator.create("Prefabs/ui/StartupScreen/PoweredByAmethyst.ron", ())
         }));
@@ -146,6 +145,16 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
                 &mut self.progress_counter,
             )
         }));
+
+        let ren_con = RenderConfig {
+            tile_base_render_dim: (64.0, 64.0),
+            chunk_render_distance: 1,
+            view_dim: (1920, 1080),
+        };
+        world.add_resource::<RenderConfig>(ren_con);
+        world.add_resource::<TagGenerator>(TagGenerator::default());
+        world.add_resource::<GameSprites>(GameSprites::default());
+        world.add_resource(EventChannel::<ChunkEvent>::new());
     }
 
     // For the sake of completeness:

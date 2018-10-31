@@ -1,3 +1,5 @@
+use std::u64;
+
 use amethyst::{
     core::transform::components::Transform,
     ecs::prelude::{Component, VecStorage},
@@ -45,7 +47,7 @@ impl Default for Position {
     fn default() -> Self {
         #[cfg(feature = "debug")]
         debug!("Created default position.");
-        Self::new(ChunkIndex(0, 0), TileIndex(0, 0))
+        Self::new(ChunkIndex(u64::MAX, u64::MAX), TileIndex(0, 0))
     }
 }
 

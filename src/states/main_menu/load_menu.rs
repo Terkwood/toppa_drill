@@ -1,3 +1,8 @@
+use std::{
+    collections::HashMap,
+    path::PathBuf,
+};
+
 use amethyst::{
     assets::Handle,
     core::timing::Time,
@@ -5,21 +10,31 @@ use amethyst::{
     input::{is_close_requested, is_key_down},
     prelude::*,
     renderer::VirtualKeyCode,
-    ui::{UiEventType, UiPrefab},
+    ui::{UiEventType, UiLoader, UiPrefab},
 };
-use states::ToppaState;
-use std::collections::HashMap;
+
+use states::{
+    ToppaState,
+    ingame::IngameBaseState,
+};
 use systems::DummySystem;
 use ToppaGameData;
+use resources::{
+    ingame::{
+        GameSessionData,
+        SavegamePaths,
+    },
+    RenderConfig,
+};
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum LoadMenuButtons {
     Back,
+    Load,
 }
 
 /// The load state, form where savegames can be loaded.
 pub struct LoadMenuState<'d, 'e> {
-    menu_duration: f32,
     main_dispatcher: Option<Dispatcher<'d, 'e>>,
     current_screen: Option<Entity>,
     current_screen_prefab: Option<Handle<UiPrefab>>,
@@ -42,7 +57,6 @@ impl<'d, 'e> ToppaState<'d, 'e> for LoadMenuState<'d, 'e> {
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
         LoadMenuState {
-            menu_duration: 0.0,
             current_screen: None,
             current_screen_prefab: screen_opt,
             ui_buttons: HashMap::new(),
@@ -114,15 +128,14 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for LoadMenuState<
         let StateData { mut world, data } = data;
         self.dispatch(&world);
         data.update_menu(&world);
-        self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found {
             self.b_buttons_found =
-                self.insert_button(&mut world, LoadMenuButtons::Back, "menu_load_back_button");
-            Trans::None
-        } else {
-            Trans::None
+                self.insert_button(&mut world, LoadMenuButtons::Back, "menu_load_back_button") &&
+                self.insert_button(&mut world, LoadMenuButtons::Load, "menu_load_load_button");
         }
+
+        Trans::None
     }
 
     // Executed when this game state runs for the first time.
@@ -143,13 +156,14 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for LoadMenuState<
 impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e> {
     fn btn_click(
         &self,
-        _world: &mut World,
+        world: &mut World,
         target: Entity,
     ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         use self::LoadMenuButtons::*;
         if let Some(button) = self.ui_buttons.get(&target) {
             match button {
                 Back => self.btn_back(),
+                Load => self.btn_load(world),
             }
         } else {
             Trans::None
@@ -160,5 +174,38 @@ impl<'a, 'b, 'd, 'e> LoadMenuState<'d, 'e> {
         #[cfg(feature = "debug")]
         debug!("Returning to CentreState.");
         Trans::Pop
+    }
+
+    fn btn_load(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+        #[cfg(feature = "debug")]
+        debug!("Loading savegame.");
+
+        let mut path = PathBuf::new();
+        path.push("./");
+        path.push("savegames");
+        path.push("Mark");
+        path.push("session_data");
+        path.set_extension("ron");
+
+        let render_config = {
+            world.read_resource::<RenderConfig>().clone()
+        };
+
+        match GameSessionData::load(path.clone(), &render_config) {
+            Ok(data) => {
+                world.add_resource::<GameSessionData>(data);
+            },
+            Err(e) => {
+                error!("Error loading Savegame data at {:?}: {:?}", path, e);
+                return Trans::None;
+            }
+        }
+
+        let ingame_ui_prefab_handle =
+            Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));
+
+        Trans::Switch(Box::new({
+            IngameBaseState::new(world, ingame_ui_prefab_handle)
+        }))
     }
 }

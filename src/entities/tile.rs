@@ -4,9 +4,9 @@ use entities::EntitySpriteRender;
 use resources::{
     ingame::{
         planet::{ChunkIndex, TileIndex},
-        GameSprites,
     },
     ToppaSpriteSheet,
+    GameSprites,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 

@@ -23,7 +23,7 @@ use amethyst::{
 
 use components::for_ground_entities::TileBase;
 use entities::{tile::TileTypes, EntitySpriteRender};
-use resources::{ingame::GameSprites, RenderConfig};
+use resources::{GameSprites, RenderConfig};
 
 /// Internal use only (for the Chunk-Hotloading), do not use!
 pub struct TileGenerationStorages<'a> {
@@ -159,9 +159,11 @@ pub struct Planet {
     // A map of individual chunks of the planet, only a small number is loaded at a time.
     // Chunks that are too far from the player get serialized and stored to the disk.
     // Private to prevent users from meddling with it.
-    #[serde(skip_serializing, skip_deserializing)]
+    #[serde(skip_serializing, default = "serde_de_empty_hash_map")]
     chunks: HashMap<ChunkIndex, Chunk>,
 }
+
+pub fn serde_de_empty_hash_map() -> HashMap<ChunkIndex, Chunk> {HashMap::with_capacity(9)}
 
 // public interface
 impl Planet {
@@ -430,6 +432,10 @@ impl Planet {
         #[cfg(feature = "debug")]
         debug!("| Iterating over chunks.");
         self.chunks.iter()
+    }
+
+    pub fn clear_chunks(&mut self) {
+        self.chunks.clear();
     }
 }
 

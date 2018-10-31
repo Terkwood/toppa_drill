@@ -13,8 +13,9 @@ use components::{
 use entities::{camera, player_parts::DrillTypes, EntityError, EntitySpriteRender};
 use events::planet_events::ChunkEvent;
 use resources::{
-    ingame::{add_spriterender, get_spriterender, GameSessionData, GameSprites},
+    add_spriterender, get_spriterender, GameSprites,
     RenderConfig, ToppaSpriteSheet,
+    ingame::GameSessionData,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
@@ -159,11 +160,11 @@ pub fn new_player(
             let mut tag_resource = world.write_resource::<TagGenerator>();
             tag_resource.new_player_tag()
         };
-        let (position_res, view_dim, _chunk_render_distance) = {
+        let (position, view_dim, _chunk_render_distance) = {
             let ren_con = &world.read_resource::<RenderConfig>();
             let planet = &world.read_resource::<GameSessionData>().planet;
             (
-                Position::from_transform(&transform, ren_con, planet),
+                Position::default(),
                 ren_con.view_dim,
                 ren_con.chunk_render_distance,
             )
@@ -174,92 +175,82 @@ pub fn new_player(
         let engine = Engine::new(Vector2::new(150000.0, 250000.0), 0.90, 0.0005);
         let fuel_tank = FuelTank::new(5000.0, 5000.0, 0.1);
 
-        match position_res {
-            Ok(position) => {
-                #[cfg(feature = "debug")]
-                debug!("| Initial player position from transform.");
+        #[cfg(feature = "debug")]
+        debug!("| Initial player position from transform.");
 
-                {
-                    let mut chunk_event_channel =
-                        world.write_resource::<EventChannel<ChunkEvent>>();
-                    chunk_event_channel.single_write(ChunkEvent::RequestingLoad(position.chunk));
-                    /* THIS IS BROKEN, these entities are not affected by the hotloading system.
-                    use std::u64;
-                    //dealing with over- and underflow
-                    let lower_y = {
-                        if position.chunk.0 >= _chunk_render_distance{
-                            position.chunk.0 - _chunk_render_distance
-                        }
-                        else{
-                            0
-                        }
-                    };
-                    let lower_x = {
-                        if position.chunk.1 >= _chunk_render_distance{
-                            position.chunk.1 - _chunk_render_distance
-                        }
-                        else{
-                            // TODO: World-wrapping
-                            0
-                        }
-                    };
-                    
-                    let upper_y = {
-                        let buff = position.chunk.0 + _chunk_render_distance;
-                        if buff >= position.chunk.0 {
-                            buff
-                        }
-                        else{
-                            u64::MAX
-                        }
-                    };
-                    let upper_x = {
-                        let buff = position.chunk.1 + _chunk_render_distance;
-                        if buff >= position.chunk.1 {
-                            buff
-                        }
-                        else{
-                            // TODO: World-wrapping
-                            u64::MAX
-                        }
-                    };
-                    
-                    for y in lower_y..=upper_y
-                    {
-                        for x in lower_x..=upper_x
-                        {
-                            chunk_event_channel.single_write(ChunkEvent::RequestingLoad(ChunkIndex(y, x)));
-                        }
-                    }
-                    */
+        /* THIS IS BROKEN, these entities are not affected by the hotloading system.
+        {
+            
+            let mut chunk_event_channel =
+                world.write_resource::<EventChannel<ChunkEvent>>();
+
+            use std::u64;
+            //dealing with over- and underflow
+            let lower_y = {
+                if position.chunk.0 >= _chunk_render_distance{
+                    position.chunk.0 - _chunk_render_distance
                 }
-
-                let player = world
-                    .create_entity()
-                    .with(transform.clone())
-                    .with(Transparent)
-                    .with(sprite_render)
-                    .with(player_tag)
-                    .with(position)
-                    .with(physical_properties)
-                    .with(dynamics)
-                    .with(engine)
-                    .with(fuel_tank)
-                    .build();
-
-                camera::init(world, view_dim, player, transform);
-                new_drill(world, player, DrillTypes::C45U, transform)?;
-                new_tracks(world, player, transform)?;
-                Ok(())
-            }
-            Err(_e) => {
-                #[cfg(feature = "debug")]
-                debug!("| Could not get position from transform: {:?}", _e);
-                Err(EntityError::PlayerProblem(
-                    PlayerError::NoPositionFromTransform,
-                ))
+                else{
+                    0
+                }
+            };
+            let lower_x = {
+                if position.chunk.1 >= _chunk_render_distance{
+                    position.chunk.1 - _chunk_render_distance
+                }
+                else{
+                    // TODO: World-wrapping
+                    0
+                }
+            };
+            
+            let upper_y = {
+                let buff = position.chunk.0 + _chunk_render_distance;
+                if buff >= position.chunk.0 {
+                    buff
+                }
+                else{
+                    u64::MAX
+                }
+            };
+            let upper_x = {
+                let buff = position.chunk.1 + _chunk_render_distance;
+                if buff >= position.chunk.1 {
+                    buff
+                }
+                else{
+                    // TODO: World-wrapping
+                    u64::MAX
+                }
+            };
+            
+            for y in lower_y..=upper_y
+            {
+                for x in lower_x..=upper_x
+                {
+                    chunk_event_channel.single_write(ChunkEvent::RequestingLoad(ChunkIndex(y, x)));
+                }
             }
         }
+        */
+
+        let player = world
+            .create_entity()
+            .with(transform.clone())
+            .with(Transparent)
+            .with(sprite_render)
+            .with(player_tag)
+            .with(position)
+            .with(physical_properties)
+            .with(dynamics)
+            .with(engine)
+            .with(fuel_tank)
+            .build();
+
+        camera::init(world, view_dim, player, transform);
+        new_drill(world, player, DrillTypes::C45U, transform)?;
+        new_tracks(world, player, transform)?;
+        Ok(())
     } else {
         Err(EntityError::PlayerProblem(
             PlayerError::MissingSpriteRender(ship_type),

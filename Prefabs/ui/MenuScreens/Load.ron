@@ -51,5 +51,27 @@ Container(
                 press_sound: None,
             )
         ),
+        // Load Button
+        Button(
+            transform: (
+                id: "menu_load_load_button",
+                width: 128.,
+                height: 64.,
+                tab_order: 1,
+                anchor: Middle,
+                mouse_reactive: true,
+            ),
+            button: (
+                text: "Load Mark",
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+                font_size: 20.,
+                normal_text_color: (0.75, 0.75, 0.9, 1.0),
+                normal_image: File("Assets/Ui/UiElements/Button_normal.png", Png, (channel: Srgb)),
+                hover_image: File("Assets/Ui/UiElements/Button_hovered.png", Png, (channel: Srgb)),
+                press_image: File("Assets/Ui/UiElements/Button_pressed.png", Png, (channel: Srgb)),
+                hover_sound: None,
+                press_sound: None,
+            )
+        ),
     ]
 )

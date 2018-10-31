@@ -23,9 +23,10 @@ use events::planet_events::ChunkEvent;
 use resources::{
     ingame::{
         planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
-        GameSessionData, GameSprites, SavegamePaths,
+        GameSessionData, SavegamePaths,
     },
     RenderConfig,
+    GameSprites, 
 };
 
 /// TODO: Deletion of initial chunks not working properly.

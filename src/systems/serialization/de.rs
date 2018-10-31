@@ -23,9 +23,10 @@ use events::planet_events::ChunkEvent;
 use resources::{
     ingame::{
         planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
-        GameSessionData, GameSprites, SavegamePaths,
+        GameSessionData, SavegamePaths,
     },
     RenderConfig,
+    GameSprites, 
 };
 
 /// TODO: Everything.
@@ -36,19 +37,21 @@ impl<'a> System<'a> for DeSavegameSystem {
     type SystemData = (
         Option<Write<'a, GameSessionData>>,
         Option<Read<'a, SavegamePaths>>,
+        Option<Read<'a, RenderConfig>>,
     );
 
     fn run(&mut self,(
             session_data,
             paths,
+            render_config,
         ): Self::SystemData,
     ) {
         #[cfg(feature = "debug")]
         debug!("+------------");
 
-        match (session_data, paths) {
-            (Some(mut session_data), Some(paths)) => {
-                match GameSessionData::load(&paths){
+        match (session_data, paths, render_config) {
+            (Some(mut session_data), Some(paths), Some(render_config)) => {
+                match GameSessionData::load(paths.savegame_file_path.clone(), &render_config){
                     Ok(data) => {
                         let mut buffer = session_data.deref_mut();
                         *buffer = data;
@@ -58,8 +61,8 @@ impl<'a> System<'a> for DeSavegameSystem {
                     }
                 }
             },
-            (None, Some(paths)) => {
-                match GameSessionData::load(&paths){
+            (None, Some(paths), Some(render_config)) => {
+                match GameSessionData::load(paths.savegame_file_path.clone(), &render_config){
                     Ok(data) => {
                         /*
                         let mut buffer = session_data;

@@ -42,6 +42,8 @@ impl SavegamePaths {
 
         dir_exists = savegame_dir_path.exists();
         if dir_exists {
+            // TODO: Ask for savegame overwrite!
+            /*
             #[cfg(feature = "debug")]
             debug!("Overwriting old savegame: {:?}.", game_name);
             for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap() {
@@ -78,6 +80,7 @@ impl SavegamePaths {
                     error!("Error reading dir '{:?}' entry!", savegame_dir_path.clone());
                 }
             }
+            */
         } else {
             if let Ok(_) = fs::create_dir_all(chunk_dir_path.clone()) {
             } else {

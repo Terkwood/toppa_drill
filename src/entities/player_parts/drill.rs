@@ -11,7 +11,7 @@ use amethyst::{
 use components::physics::PhysicalProperties;
 use entities::{EntityError, EntitySpriteRender};
 use resources::{
-    ingame::{add_spriterender, get_spriterender, GameSprites},
+    add_spriterender, get_spriterender, GameSprites,
     ToppaSpriteSheet,
 };
 use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};

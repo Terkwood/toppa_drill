@@ -10,12 +10,12 @@ use amethyst::{
     ui::{UiEventType, UiLoader, UiPrefab},
 };
 
-use components::for_characters::TagGenerator;
 use resources::{
-    ingame::{GameSessionData, GameSprites},
+    ingame::{GameSessionData},
     RenderConfig,
+    GameSprites,
 };
-use states::{ingame, ToppaState};
+use states::{ingame::IngameBaseState, ToppaState};
 use systems::DummySystem;
 use ToppaGameData;
 
@@ -215,8 +215,6 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
         #[cfg(feature = "debug")]
         debug!("Creating new game.");
         // NOTE: Think about how to do this better
-        world.add_resource::<TagGenerator>(TagGenerator::default());
-        world.add_resource::<GameSprites>(GameSprites::default());
 
         let ren_con = &world.read_resource::<RenderConfig>().clone();
         let session_data = GameSessionData::new(
@@ -225,22 +223,13 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
             self.game_info.chunk_dim,
             ren_con,
         );
-
-        // TODO: Get rid
-        use amethyst::shrev::EventChannel;
-        use components::for_characters::{player::Position, PlayerBase};
-        use events::planet_events::ChunkEvent;
-        world.register::<PlayerBase>();
-        world.register::<Position>();
-        world.add_resource(EventChannel::<ChunkEvent>::new());
         world.add_resource::<GameSessionData>(session_data);
-        // end: get rid
 
         let ingame_ui_prefab_handle =
             Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));
 
         Trans::Switch(Box::new({
-            ingame::IngameBaseState::new(world, ingame_ui_prefab_handle)
+            IngameBaseState::new(world, ingame_ui_prefab_handle)
         }))
     }
 }
