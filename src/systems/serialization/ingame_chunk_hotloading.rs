@@ -17,7 +17,7 @@ use amethyst::{
     shrev::EventChannel,
 };
 
-use components::{for_characters::PlayerBase, for_ground_entities::TileBase};
+use components::{for_characters::PlayerBase, for_ground_entities::TileBase, IsIngameEntity};
 use entities::tile::TileTypes;
 use events::planet_events::ChunkEvent;
 use resources::{
@@ -52,6 +52,7 @@ impl<'a> System<'a> for HotChunkSystem {
         WriteStorage<'a, TileBase>,
         WriteStorage<'a, SpriteRender>,
         WriteStorage<'a, Transform>,
+        WriteStorage<'a, IsIngameEntity>,
         Option<Write<'a, GameSessionData>>,
         Option<Write<'a, EventChannel<ChunkEvent>>>,
         Option<Read<'a, SavegamePaths>>,
@@ -66,6 +67,7 @@ impl<'a> System<'a> for HotChunkSystem {
             tag_tiles,
             sprite_renders,
             transforms,
+            ingame_entities,
             session_data,
             chunk_events,
             paths,
@@ -91,6 +93,7 @@ impl<'a> System<'a> for HotChunkSystem {
                 tile_base: tag_tiles,
                 sprite_render: sprite_renders,
                 transform: transforms,
+                ingame_entity: ingame_entities,
                 game_sprites: game_sprites,
                 render_config: render_config,
             };

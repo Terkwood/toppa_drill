@@ -137,33 +137,3 @@ pub fn prepare_spritesheet(
         }
     }
 }
-
-#[allow(dead_code)]
-pub fn create_ore_with_world(
-    _world: &mut World,
-    _chunk: ChunkIndex,
-    _index: TileIndex,
-    _tiletype: TileTypes,
-) {
-    // TODO: Get spriteSheetHandle from texture id.
-    // --: Get sprite from TileType
-    // --: Calculate transform based on TileIndex & ChunkIndex
-    /*
-    let drill_sprite = SpriteRender {
-        sprite_sheet: ss_handle,
-        sprite_number: 0,
-        flip_horizontal: false,
-        flip_vertical: false,
-    };
-    let mut transform = Transform::default();
-    transform.translation = Vector3::new(0.0, 0.0, 0.0);
-    
-    world
-        .create_entity()
-        .with(transform)
-        .with(Transparent)
-        .with(drill_sprite)
-        .build();
-    */
-    error!("Not implemented yet.");
-}

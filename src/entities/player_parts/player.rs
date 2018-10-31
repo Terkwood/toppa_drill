@@ -9,6 +9,7 @@ use amethyst::{
 use components::{
     for_characters::{player::Position, Engine, FuelTank, TagGenerator},
     physics::{Dynamics, PhysicalProperties},
+    IsIngameEntity,
 };
 use entities::{camera, player_parts::DrillTypes, EntityError, EntitySpriteRender};
 use events::planet_events::ChunkEvent;
@@ -236,6 +237,7 @@ pub fn new_player(
 
         let player = world
             .create_entity()
+            .with(IsIngameEntity)
             .with(transform.clone())
             .with(Transparent)
             .with(sprite_render)

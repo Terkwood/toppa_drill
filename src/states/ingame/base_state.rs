@@ -13,7 +13,7 @@ use resources::ingame::{GameSessionData, SavegamePaths};
 use states::ToppaState;
 use std::collections::HashMap;
 use systems::{
-    ingame::{EngineForceSystem, GravitationSystem, MovementSystem, PlayerPositionSystem},
+    ingame::{EngineForceSystem, GravitationSystem, MovementSystem, PlayerPositionSystem, CleanupOnCloseSystem},
     serialization::HotChunkSystem,
     DummySystem,
 };
@@ -217,6 +217,8 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);
+
+        CleanupOnCloseSystem.run_now(&world.res);
     }
 
     // Executed when another game state is pushed onto the stack.

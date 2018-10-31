@@ -8,7 +8,10 @@ use amethyst::{
     renderer::Transparent,
 };
 
-use components::physics::PhysicalProperties;
+use components::{
+    physics::PhysicalProperties,
+    IsIngameEntity,
+};
 use entities::{EntityError, EntitySpriteRender};
 use resources::{
     add_spriterender, get_spriterender, GameSprites,
@@ -78,6 +81,7 @@ pub fn new_tracks(
 
         world
             .create_entity()
+            .with(IsIngameEntity)
             .with(Parent { entity: parent })
             .with(transform)
             .with(Transparent)

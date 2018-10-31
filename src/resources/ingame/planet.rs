@@ -21,7 +21,10 @@ use amethyst::{
     shred::{DefaultProvider, FetchMut},
 };
 
-use components::for_ground_entities::TileBase;
+use components::{
+    for_ground_entities::TileBase,
+    IsIngameEntity,
+};
 use entities::{tile::TileTypes, EntitySpriteRender};
 use resources::{GameSprites, RenderConfig};
 
@@ -31,6 +34,7 @@ pub struct TileGenerationStorages<'a> {
     pub tile_base: Storage<'a, TileBase, FetchMut<'a, MaskedStorage<TileBase>>>,
     pub sprite_render: Storage<'a, SpriteRender, FetchMut<'a, MaskedStorage<SpriteRender>>>,
     pub transform: Storage<'a, Transform, FetchMut<'a, MaskedStorage<Transform>>>,
+    pub ingame_entity: Storage<'a, IsIngameEntity, FetchMut<'a, MaskedStorage<IsIngameEntity>>>,
     pub game_sprites: Read<'a, GameSprites, DefaultProvider>,
     pub render_config: Read<'a, RenderConfig, DefaultProvider>,
 }
@@ -531,7 +535,6 @@ impl Chunk {
         // NOTE: This is pretty ugly
         storages: &mut TileGenerationStorages,
     ) -> Chunk {
-        // TODO: create tiles according to render_configs chunk_dim and tile_base_render_dim using `self.add_tiles`
         let mut rv = Chunk {
             tile_entities: BTreeMap::new(),
             tile_index: BTreeMap::new(),
@@ -665,6 +668,7 @@ impl Chunk {
         let sprite_render_storage = &mut storages.sprite_render;
         let tile_base_storage = &mut storages.tile_base;
         let transform_storage = &mut storages.transform;
+        let ingame_entity = &mut storages.ingame_entity;
         let game_sprites = &storages.game_sprites;
         let render_config = &storages.render_config;
 
@@ -717,6 +721,7 @@ impl Chunk {
                             .with(tile_base, tile_base_storage)
                             .with(sprite_render.clone(), sprite_render_storage)
                             .with(transform, transform_storage)
+                            .with(IsIngameEntity, ingame_entity)
                             .build();
 
                         Ok((tile_type, entity))

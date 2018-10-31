@@ -2,6 +2,14 @@ use amethyst::ecs::prelude::{Component, NullStorage};
 
 /// This component is meant for entities that can be stored inside the player's inventory.
 #[derive(Default, Debug)]
+pub struct IsIngameEntity;
+
+impl Component for IsIngameEntity {
+    type Storage = NullStorage<Self>;
+}
+
+/// This component is meant for entities that can be stored inside the player's inventory.
+#[derive(Default, Debug)]
 pub struct TagCarriable;
 
 impl Component for TagCarriable {

@@ -15,7 +15,10 @@ use resources::{
 };
 use states::{main_menu, ToppaState};
 use ToppaGameData;
-use components::for_characters::TagGenerator;
+use components::{
+    for_characters::TagGenerator,
+    IsIngameEntity,
+};
 use events::planet_events::ChunkEvent;
 
 /// The default state after opening Toppa Drill.
@@ -155,6 +158,7 @@ impl<'a, 'b> State<ToppaGameData<'a, 'b>, StateEvent> for StartupState {
         world.add_resource::<TagGenerator>(TagGenerator::default());
         world.add_resource::<GameSprites>(GameSprites::default());
         world.add_resource(EventChannel::<ChunkEvent>::new());
+        world.register::<IsIngameEntity>();
     }
 
     // For the sake of completeness:
