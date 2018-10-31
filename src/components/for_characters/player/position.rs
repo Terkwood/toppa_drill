@@ -4,7 +4,7 @@ use amethyst::{
 };
 
 use resources::{
-    ingame::planet::{ChunkIndex, Planet, TileIndex},
+    ingame::planet::{ChunkIndex, Planet, TileIndex, PlanetError},
     RenderConfig,
 };
 
@@ -27,33 +27,17 @@ impl Position {
         transform: &Transform,
         render_config: &RenderConfig,
         planet: &Planet,
-    ) -> Option<Self> {
-        match ChunkIndex::from_transform(transform, render_config, planet) {
-            Ok(chunk_index) => {
-                match TileIndex::from_transform(transform, chunk_index, render_config, planet) {
-                    Ok(tile_index) => {
-                        let rv = Position {
-                            chunk: chunk_index,
-                            tile: tile_index,
-                        };
+    ) -> Result<Self, PlanetError> {
+        let chunk_id = ChunkIndex::from_transform(transform, render_config, planet)?;
+        let tile_id = TileIndex::from_transform(transform, chunk_id, render_config, planet)?;
+        let rv = Position {
+            chunk: chunk_id,
+            tile: tile_id,
+        };
 
-                        #[cfg(feature = "debug")]
-                        debug!("Created position from transform. {:?}", rv);
-                        Some(rv)
-                    }
-                    Err(e) => {
-                        #[cfg(feature = "debug")]
-                        debug!("No valid TileIndex from transform found: {:?}", e);
-                        None
-                    }
-                }
-            }
-            Err(e) => {
-                #[cfg(feature = "debug")]
-                debug!("No valid ChunkIndex from transform found: {:?}", e);
-                None
-            }
-        }
+        #[cfg(feature = "debug")]
+        debug!("| Created position from transform. {:?}", rv);
+        Ok(rv)
     }
 }
 

@@ -1,9 +1,11 @@
 // delete before releasing !!
-#![allow(dead_code, unused_imports, unused_variables, unused_mut, unused_parens)]
-// maybe keep?
-#![allow(unreachable_patterns)]
+#![allow(unused_imports, unused_variables, unused_mut, unused_parens)]
+#![allow(dead_code)]
 // Enable before releasing!
 // #![deny(missing_docs, warnings)]
+
+// TODO: Errorhandling! Seperate error module?
+// TODO: Reduce file operations in HotChunk and Serialize/DeserializeSystem
 
 extern crate amethyst;
 #[macro_use]
