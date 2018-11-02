@@ -5,9 +5,9 @@ use amethyst::{
     renderer::{Camera, Projection},
 };
 
-pub fn init(world: &mut World, view_dim: (u32, u32), parent: Entity, parent_transform: &Transform) {
+pub fn init(world: &mut World, view_dim: (u32, u32), parent: Entity) {
     let mut transform = Transform::default();
-    transform.translation[2] += (parent_transform.translation[2] + 100.0);
+    transform.translation[2] += 100.0;
 
     world
         .create_entity()

@@ -91,7 +91,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
             ui_buttons: HashMap::new(),
             b_buttons_found: false,
             main_dispatcher: None,
-            game_info: GameInfo::new("Mark", (128, 128), (32, 32)), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
+            game_info: GameInfo::new("Trumpet", (4, 3), (16, 16)), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
         }
     }
 

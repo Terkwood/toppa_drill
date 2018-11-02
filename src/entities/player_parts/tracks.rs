@@ -66,7 +66,6 @@ pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
 pub fn new_tracks(
     world: &mut World,
     parent: Entity,
-    parent_transform: &Transform,
 ) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating tracks for player {:?}.", parent);
@@ -77,7 +76,7 @@ pub fn new_tracks(
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(500.0, None, Some(0.3), None);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(0.0, -56.0, parent_transform.translation[2] + 5.0);
+        transform.translation += Vector3::new(0.0, -56.0, 5.0);
 
         world
             .create_entity()

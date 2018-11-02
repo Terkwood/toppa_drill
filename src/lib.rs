@@ -6,6 +6,7 @@
 
 // TODO: Errorhandling! Seperate error module?
 // TODO: Reduce file operations in HotChunk and Serialize/DeserializeSystem
+// TODO: Wrap world in x-direction.
 
 extern crate amethyst;
 #[macro_use]

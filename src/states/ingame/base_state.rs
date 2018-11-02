@@ -9,7 +9,10 @@ use amethyst::{
 };
 
 use entities;
-use resources::ingame::{GameSessionData, SavegamePaths};
+use resources::{
+    ingame::{GameSessionData, SavegamePaths},
+    RenderConfig,
+};
 use states::ToppaState;
 use std::collections::HashMap;
 use systems::{
@@ -191,18 +194,36 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher(&mut world);
+        self.enable_shadow_dispatcher(&mut world);
 
-        // TODO: Get rid.
         entities::tile::prepare_spritesheet(world, Some(&mut self.progress_counter));
-        {
-            let game_name = world.read_resource::<GameSessionData>().game_name.clone();
-            world.add_resource(SavegamePaths::init("./", game_name));
-        }
+        entities::player_parts::init_player(world, Some(&mut self.progress_counter));
 
-        entities::player_parts::init_player(world, None);
+        let (planet_dim, chunk_dim, tile_size) = {
+            let (game_name, planet_dim, chunk_dim, tile_size) = {
+                let session_data = world.read_resource::<GameSessionData>();
+                let render_config = world.read_resource::<RenderConfig>();
+                (
+                    session_data.game_name.clone(), 
+                    session_data.planet.planet_dim, 
+                    session_data.planet.chunk_dim,
+                    render_config.tile_base_render_dim
+                )
+            };
+            world.add_resource(SavegamePaths::init("./", game_name));
+            (planet_dim, chunk_dim, tile_size)
+        };
+
+        let x_middle_of_planet = (planet_dim.1 as f32 / 2.0) * (chunk_dim.1 as f32 * tile_size.1);
+        let y_surface_of_planet = planet_dim.0 as f32 * (chunk_dim.0 as f32 * tile_size.0) + 128.0;
+        let z_order = 40.0;
 
         let mut transform = Transform::default();
-        transform.translation = Vector3::new(500.0, 400.0, 40.0);
+        transform.translation = Vector3::new(
+            x_middle_of_planet,
+            y_surface_of_planet,
+            z_order
+        );
         if let Err(e) = entities::player_parts::new_player(
             world,
             &transform,

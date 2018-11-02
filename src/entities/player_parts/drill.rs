@@ -111,7 +111,6 @@ pub fn new_drill(
     world: &mut World,
     parent: Entity,
     drill_type: DrillTypes,
-    parent_transform: &Transform,
 ) -> Result<(), EntityError> {
     #[cfg(feature = "debug")]
     debug!("Creating drill for player {:?}.", parent);
@@ -124,7 +123,7 @@ pub fn new_drill(
     if let Some(sprite_render) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8), None);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(22.0, -32.0, parent_transform.translation[2] - 1.0);
+        transform.translation += Vector3::new(22.0, -32.0, -1.0);
 
         world
             .create_entity()

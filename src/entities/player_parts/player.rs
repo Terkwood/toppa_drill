@@ -43,7 +43,11 @@ pub enum ShipTypes {
     L14Ultra,
 }
 
+/// TODO: Error handling
+/// Loads the spritesheet and sprites for the player, adding them to GameSprites.
+/// Calls the `init`-functions of all the player sub-entities, like the drill and tracks.
 pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter>) {
+    // TODO: Not happy with this if-let for duplicating an Option<&mut ProgressCounter>
     if let Some(progress_counter_ref) = progress_counter_ref_opt {
         // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
         let loader_info = SpriteLoaderInfo {
@@ -249,9 +253,9 @@ pub fn new_player(
             .with(fuel_tank)
             .build();
 
-        camera::init(world, view_dim, player, transform);
-        new_drill(world, player, DrillTypes::C45U, transform)?;
-        new_tracks(world, player, transform)?;
+        camera::init(world, view_dim, player);
+        new_drill(world, player, DrillTypes::C45U)?;
+        new_tracks(world, player)?;
         Ok(())
     } else {
         Err(EntityError::PlayerProblem(
