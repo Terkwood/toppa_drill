@@ -8,14 +8,16 @@ use amethyst::{
     shrev::EventChannel,
 };
 
-use components::for_characters::{player, PlayerBase};
-use events::planet_events::ChunkEvent;
-use resources::{
-    ingame::{
-        planet::{ChunkIndex, PlanetError, TileError, TileIndex},
-        GameSessionData,
+use crate::{
+    components::for_characters::{player, PlayerBase},
+    events::planet_events::ChunkEvent,
+    resources::{
+        ingame::{
+            planet::{ChunkIndex, PlanetError, TileError, TileIndex},
+            GameSessionData,
+        },
+        RenderConfig,
     },
-    RenderConfig,
 };
 
 /// TODO: Less branching.
@@ -23,27 +25,27 @@ use resources::{
 /// Tries to calculate new `TileIndex` based on current `Transform` and previous `Position.chunk`-ChunkIndex.
 /// If that fails, calculates new ChunkIndex based only on current `Transform`, and then the new `TileIndex`.
 pub struct PlayerPositionSystem {
-    prev_chunks: HashSet<ChunkIndex>,
-    cur_chunks: HashSet<ChunkIndex>,
+    prev_chunks: HashSet<ChunkIndex,>,
+    cur_chunks:  HashSet<ChunkIndex,>,
 }
 
 impl Default for PlayerPositionSystem {
     fn default() -> Self {
         PlayerPositionSystem {
-            prev_chunks: HashSet::with_capacity(9),
-            cur_chunks: HashSet::with_capacity(9),
+            prev_chunks: HashSet::with_capacity(9,),
+            cur_chunks:  HashSet::with_capacity(9,),
         }
     }
 }
 
-impl<'s> System<'s> for PlayerPositionSystem {
+impl<'s,> System<'s,> for PlayerPositionSystem {
     type SystemData = (
-        ReadStorage<'s, Transform>,
-        ReadStorage<'s, PlayerBase>,
-        WriteStorage<'s, player::Position>,
-        Option<Read<'s, GameSessionData>>,
-        Option<Read<'s, RenderConfig>>,
-        Option<Write<'s, EventChannel<ChunkEvent>>>,
+        ReadStorage<'s, Transform,>,
+        ReadStorage<'s, PlayerBase,>,
+        WriteStorage<'s, player::Position,>,
+        Option<Read<'s, GameSessionData,>,>,
+        Option<Read<'s, RenderConfig,>,>,
+        Option<Write<'s, EventChannel<ChunkEvent,>,>,>,
     );
 
     fn run(
@@ -57,11 +59,11 @@ impl<'s> System<'s> for PlayerPositionSystem {
             chunk_event_channel,
         ): Self::SystemData,
     ) {
-        if let (Some(session_data), Some(render_config), Some(mut chunk_event_channel)) =
-            (session_data, render_config, chunk_event_channel)
+        if let (Some(session_data,), Some(render_config,), Some(mut chunk_event_channel,),) =
+            (session_data, render_config, chunk_event_channel,)
         {
-            for (transform, _player, mut player_pos) in
-                (&transforms, &players, &mut player_positions).join()
+            for (transform, _player, mut player_pos,) in
+                (&transforms, &players, &mut player_positions,).join()
             {
                 let planet_ref = &session_data.planet;
                 match TileIndex::from_transform(
@@ -70,18 +72,18 @@ impl<'s> System<'s> for PlayerPositionSystem {
                     &render_config,
                     planet_ref,
                 ) {
-                    Ok(tile_index) => {
+                    Ok(tile_index,) => {
                         #[cfg(feature = "trace")]
                         trace!("| Same chunk.");
                         // Player still on the same chunk. Easy-peasy
                         player_pos.tile = tile_index;
-                    }
-                    Err(e) => {
+                    },
+                    Err(e,) => {
                         #[cfg(feature = "trace")]
                         error!("| Maybe new chunk.");
 
                         match e {
-                            PlanetError::TileProblem(TileError::IndexOutOfBounds) => {
+                            PlanetError::TileProblem(TileError::IndexOutOfBounds,) => {
                                 #[cfg(feature = "debug")]
                                 debug!("+------------");
                                 #[cfg(feature = "debug")]
@@ -92,7 +94,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                     &render_config,
                                     planet_ref,
                                 ) {
-                                    Ok(chunk_index) => {
+                                    Ok(chunk_index,) => {
                                         #[cfg(feature = "debug")]
                                         debug!("| New {:?}.", chunk_index);
                                         match TileIndex::from_transform(
@@ -101,7 +103,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                             &render_config,
                                             planet_ref,
                                         ) {
-                                            Ok(tile_index) => {
+                                            Ok(tile_index,) => {
                                                 #[cfg(feature = "trace")]
                                                 trace!("| New {:?}.", tile_index);
 
@@ -125,7 +127,8 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                     {
                                                         chunk_index.0
                                                             - render_config.chunk_render_distance
-                                                    } else {
+                                                    }
+                                                    else {
                                                         0
                                                     }
                                                 };
@@ -135,7 +138,8 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                     {
                                                         chunk_index.1
                                                             - render_config.chunk_render_distance
-                                                    } else {
+                                                    }
+                                                    else {
                                                         // TODO: World-wrapping
                                                         0
                                                     }
@@ -146,7 +150,8 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                         + render_config.chunk_render_distance;
                                                     if buff >= chunk_index.0 {
                                                         buff
-                                                    } else {
+                                                    }
+                                                    else {
                                                         u64::MAX
                                                     }
                                                 };
@@ -155,28 +160,31 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                         + render_config.chunk_render_distance;
                                                     if buff >= chunk_index.1 {
                                                         buff
-                                                    } else {
+                                                    }
+                                                    else {
                                                         // TODO: World-wrapping
                                                         u64::MAX
                                                     }
                                                 };
 
                                                 // Populating the current chunk HashSet
-                                                for y in lower_y..=upper_y {
-                                                    for x in lower_x..=upper_x {
+                                                for y in lower_y ..= upper_y {
+                                                    for x in lower_x ..= upper_x {
                                                         // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
-                                                        let chunk_id = ChunkIndex(y, x);
-                                                        self.cur_chunks.insert(chunk_id);
+                                                        let chunk_id = ChunkIndex(y, x,);
+                                                        self.cur_chunks.insert(chunk_id,);
                                                     }
                                                 }
                                                 // Comparing the current and previous HashSets (`.difference()` returns only those NOT present in the other)
                                                 //let cur_chunks = self.cur_chunks.clone();
                                                 //let prev_chunks = self.prev_chunks.clone();
                                                 {
-                                                    let chunks_to_delete =
-                                                        self.prev_chunks.difference(&self.cur_chunks);
-                                                    let chunks_to_load =
-                                                        self.cur_chunks.difference(&self.prev_chunks);
+                                                    let chunks_to_delete = self
+                                                        .prev_chunks
+                                                        .difference(&self.cur_chunks,);
+                                                    let chunks_to_load = self
+                                                        .cur_chunks
+                                                        .difference(&self.prev_chunks,);
 
                                                     for &index in chunks_to_delete {
                                                         #[cfg(feature = "debug")]
@@ -185,7 +193,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                             index
                                                         );
                                                         chunk_event_channel.single_write(
-                                                            ChunkEvent::RequestingUnload(index),
+                                                            ChunkEvent::RequestingUnload(index,),
                                                         );
                                                     }
                                                     for &index in chunks_to_load {
@@ -195,7 +203,7 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                             index
                                                         );
                                                         chunk_event_channel.single_write(
-                                                            ChunkEvent::RequestingLoad(index),
+                                                            ChunkEvent::RequestingLoad(index,),
                                                         );
                                                     }
                                                 }
@@ -203,30 +211,33 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                 self.prev_chunks.clear();
                                                 for index in self.cur_chunks.drain() {
                                                     // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
-                                                    self.prev_chunks.insert(index);
+                                                    self.prev_chunks.insert(index,);
                                                 }
-                                            }
-                                            Err(e) => {
+                                            },
+                                            Err(e,) => {
                                                 error!("| Couldn't find TileIndex, although new ChunkIndex was calculated: {:?}", e);
-                                            }
+                                            },
                                         }
-                                    }
-                                    Err(e) => warn!(
-                                        "| Error calculating ChunkIndex from transform: {:?}",
-                                        e
-                                    ),
+                                    },
+                                    Err(e,) => {
+                                        warn!(
+                                            "| Error calculating ChunkIndex from transform: {:?}",
+                                            e
+                                        )
+                                    },
                                 }
                                 #[cfg(feature = "debug")]
                                 debug!("+------------");
-                            }
+                            },
                             _ => {
                                 error!("| Error: {:?}", e);
-                            }
+                            },
                         }
-                    }
+                    },
                 }
             }
-        } else {
+        }
+        else {
             error!("| Resources not found.");
         }
     }

@@ -13,7 +13,7 @@ pub struct PlayerBase {
 }
 
 impl Component for PlayerBase {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }
 
 /// This component is meant for npc entities.
@@ -23,7 +23,7 @@ pub struct NPCBase {
 }
 
 impl Component for NPCBase {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }
 
 /// A resource to generate new player and NPC tags with correct, unique IDs.
@@ -32,7 +32,7 @@ impl Component for NPCBase {
 #[derive(Debug, Default)]
 pub struct TagGenerator {
     player_count: usize,
-    npc_count: usize,
+    npc_count:    usize,
 }
 
 impl TagGenerator {
@@ -47,6 +47,8 @@ impl TagGenerator {
     #[allow(dead_code)]
     pub fn new_npc_tag(&mut self) -> NPCBase {
         self.npc_count += 1;
-        NPCBase { id: self.npc_count }
+        NPCBase {
+            id: self.npc_count,
+        }
     }
 }

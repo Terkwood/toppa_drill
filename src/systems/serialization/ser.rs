@@ -19,14 +19,16 @@ use amethyst::{
     ecs::prelude::*,
 };
 
-use components::for_characters::PlayerBase;
-use entities::tile::TileTypes;
-use resources::{
-    ingame::{
-        planet::{Chunk, ChunkIndex, Planet, TileIndex},
-        GameSessionData, SavegamePaths,
+use crate::{
+    components::for_characters::PlayerBase,
+    entities::tile::TileTypes,
+    resources::{
+        ingame::{
+            planet::{Chunk, ChunkIndex, Planet, TileIndex},
+            GameSessionData, SavegamePaths,
+        },
+        RenderConfig,
     },
-    RenderConfig,
 };
 
 /// TODO: Serialize players.
@@ -34,22 +36,23 @@ use resources::{
 /// Uses `.ron` format.
 pub struct SerSavegameSystem;
 
-impl<'a> System<'a> for SerSavegameSystem {
+impl<'a,> System<'a,> for SerSavegameSystem {
     type SystemData = (
-        Option<Read<'a, GameSessionData>>,
-        Option<Read<'a, RenderConfig>>,
-        Option<Read<'a, SavegamePaths>>,
+        Option<Read<'a, GameSessionData,>,>,
+        Option<Read<'a, RenderConfig,>,>,
+        Option<Read<'a, SavegamePaths,>,>,
     );
 
-    fn run(&mut self, (session_data, render_config, paths): Self::SystemData) {
+    fn run(&mut self, (session_data, render_config, paths,): Self::SystemData,) {
         #[cfg(feature = "debug")]
         debug!("+------------");
 
-        if let (Some(session_data), Some(_render_config), Some(paths)) =
-            (session_data, render_config, paths)
+        if let (Some(session_data,), Some(_render_config,), Some(paths,),) =
+            (session_data, render_config, paths,)
         {
-            session_data.save(&paths);
-        } else {
+            session_data.save(&paths,);
+        }
+        else {
             error!("| Resources not found.")
         }
         #[cfg(feature = "debug")]

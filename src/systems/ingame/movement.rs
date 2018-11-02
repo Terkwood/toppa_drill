@@ -7,7 +7,7 @@ use amethyst::{
     ecs::{Join, Read, ReadStorage, System, WriteStorage},
 };
 
-use components::physics::{Dynamics, PhysicalProperties};
+use crate::components::physics::{Dynamics, PhysicalProperties};
 
 /// TODO: Calculate inertia based on ShipParts' masses and distances
 /// --: Combine air-resistance/friction of individual parts
@@ -19,19 +19,22 @@ use components::physics::{Dynamics, PhysicalProperties};
 #[derive(Default)]
 pub struct MovementSystem;
 
-impl<'s> System<'s> for MovementSystem {
+impl<'s,> System<'s,> for MovementSystem {
     type SystemData = (
-        WriteStorage<'s, Transform>,
-        WriteStorage<'s, Dynamics>,
-        ReadStorage<'s, PhysicalProperties>,
-        Read<'s, Time>,
+        WriteStorage<'s, Transform,>,
+        WriteStorage<'s, Dynamics,>,
+        ReadStorage<'s, PhysicalProperties,>,
+        Read<'s, Time,>,
     );
 
-    fn run(&mut self, (mut transforms, mut dynamics, physical_properties, time): Self::SystemData) {
+    fn run(
+        &mut self,
+        (mut transforms, mut dynamics, physical_properties, time,): Self::SystemData,
+    ) {
         let dt = time.delta_seconds();
 
-        for (mut transform, mut dynamic, physical_property) in
-            (&mut transforms, &mut dynamics, &physical_properties).join()
+        for (mut transform, mut dynamic, physical_property,) in
+            (&mut transforms, &mut dynamics, &physical_properties,).join()
         {
             // Current values
             let pos_cur = transform.translation;
@@ -39,21 +42,21 @@ impl<'s> System<'s> for MovementSystem {
 
             // Calculating acceleration based on applied Force,
             // no potential part, since there is currently no spring attached to any entity making it `= 0`.
-            let mut accel = Vector2::new(0.0, 0.0);
-            match (physical_property.friction, physical_property.air_resistance) {
-                (Some(friction), Some(air_resistance)) => {
+            let mut accel = Vector2::new(0.0, 0.0,);
+            match (physical_property.friction, physical_property.air_resistance,) {
+                (Some(friction,), Some(air_resistance,),) => {
                     accel = (dynamic.force - 0.5 * (air_resistance + friction) * dynamic.vel)
                         / physical_property.mass;
-                }
-                (Some(friction), None) => {
+                },
+                (Some(friction,), None,) => {
                     accel = (dynamic.force - friction * dynamic.vel) / physical_property.mass;
-                }
-                (None, Some(air_resistance)) => {
+                },
+                (None, Some(air_resistance,),) => {
                     accel = (dynamic.force - air_resistance * dynamic.vel) / physical_property.mass;
-                }
-                (None, None) => {
+                },
+                (None, None,) => {
                     /*No acceleration if no dampening mechanism is in place. Otherwise vel of infinity is possible.*/
-                }
+                },
             }
 
             dynamic.vel = vel_cur + accel * dt.into();

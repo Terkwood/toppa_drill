@@ -10,13 +10,11 @@ use amethyst::{
     ui::{UiEventType, UiLoader, UiPrefab},
 };
 
-use resources::{
-    ingame::{GameSessionData},
-    RenderConfig,
-    GameSprites,
+use crate::{
+    resources::{ingame::GameSessionData, GameSprites, RenderConfig},
+    states::{ingame::IngameBaseState, ToppaState},
+    ToppaGameData,
 };
-use states::{ingame::IngameBaseState, ToppaState};
-use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum NewGameButtons {
@@ -25,23 +23,23 @@ pub enum NewGameButtons {
 }
 
 struct GameInfo {
-    pub name: &'static str,
-    pub planet_dim: (u64, u64),
-    pub chunk_dim: (u64, u64),
+    pub name:       &'static str,
+    pub planet_dim: (u64, u64,),
+    pub chunk_dim:  (u64, u64,),
 }
 
 impl Default for GameInfo {
     fn default() -> Self {
         GameInfo {
-            name: "Terra Incognita",
-            planet_dim: (16, 16),
-            chunk_dim: (16, 32),
+            name:       "Terra Incognita",
+            planet_dim: (16, 16,),
+            chunk_dim:  (16, 32,),
         }
     }
 }
 
 impl GameInfo {
-    pub fn new(name: &'static str, planet_dim: (u64, u64), chunk_dim: (u64, u64)) -> Self {
+    pub fn new(name: &'static str, planet_dim: (u64, u64,), chunk_dim: (u64, u64,),) -> Self {
         GameInfo {
             name,
             planet_dim,
@@ -52,16 +50,16 @@ impl GameInfo {
 
 /// The game creation state, where a new game can be started.
 /// TODO: Buttons and TextBoxes etc, to enter GameName, planet and chunk dimensions, ... .
-pub struct NewGameState<'d, 'e> {
-    menu_duration: f32,
-    main_dispatcher: Option<Dispatcher<'d, 'e>>,
+pub struct NewGameState<'d, 'e,> {
+    menu_duration:   f32,
+    main_dispatcher: Option<Dispatcher<'d, 'e,>,>,
 
     // The displayed Ui Entity, if any.
-    current_screen: Option<Entity>,
+    current_screen: Option<Entity,>,
     // The Handle of the Prefab for the displayed Ui Entity.
-    current_screen_prefab: Option<Handle<UiPrefab>>,
+    current_screen_prefab: Option<Handle<UiPrefab,>,>,
     // Map of the Ui Button entities and the corresponding button type.
-    ui_buttons: HashMap<Entity, NewGameButtons>,
+    ui_buttons:      HashMap<Entity, NewGameButtons,>,
     b_buttons_found: bool,
 
     // Info specific to the game about to be created.
@@ -69,14 +67,15 @@ pub struct NewGameState<'d, 'e> {
     game_info: GameInfo,
 }
 
-impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
+impl<'d, 'e,> ToppaState<'d, 'e,> for NewGameState<'d, 'e,> {
     type StateButton = NewGameButtons;
-    fn enable_dispatcher(&mut self, world: &mut World) {
+
+    fn enable_dispatcher(&mut self, world: &mut World,) {
         /*self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
                 .build();
-
+        
             dispatcher.setup(&mut world.res);
             dispatcher
         });*/
@@ -84,36 +83,36 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
         self.main_dispatcher = None;
     }
 
-    fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {
+    fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab,>,>,) -> Self {
         NewGameState {
-            menu_duration: 0.0,
-            current_screen: None,
+            menu_duration:         0.0,
+            current_screen:        None,
             current_screen_prefab: screen_opt,
-            ui_buttons: HashMap::new(),
-            b_buttons_found: false,
-            main_dispatcher: None,
-            game_info: GameInfo::new("Trumpet", (4, 3), (16, 16)), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
+            ui_buttons:            HashMap::new(),
+            b_buttons_found:       false,
+            main_dispatcher:       None,
+            game_info:             GameInfo::new("Trumpet", (4, 3,), (16, 16,),), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
         }
     }
 
-    fn get_screen_entity(&self) -> Option<Entity> {
+    fn get_screen_entity(&self) -> Option<Entity,> {
         self.current_screen
     }
 
-    fn set_screen_entity(&mut self, screen_entity: Option<Entity>) {
+    fn set_screen_entity(&mut self, screen_entity: Option<Entity,>,) {
         self.current_screen = screen_entity;
     }
 
-    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab>> {
+    fn get_screen_prefab(&self) -> Option<Handle<UiPrefab,>,> {
         self.current_screen_prefab.clone()
     }
 
-    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab>>) {
+    fn set_screen_prefab(&mut self, screen_prefab: Option<Handle<UiPrefab,>,>,) {
         self.current_screen_prefab = screen_prefab.clone();
     }
 
-    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e>>> {
-        Some(&mut self.main_dispatcher)
+    fn get_main_dispatcher(&mut self) -> Option<&mut Option<Dispatcher<'d, 'e,>,>,> {
+        Some(&mut self.main_dispatcher,)
     }
 
     fn reset_buttons(&mut self) {
@@ -121,49 +120,57 @@ impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
         self.ui_buttons.clear();
     }
 
-    fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton>> {
-        Some(&mut self.ui_buttons)
+    fn get_buttons(&mut self) -> Option<&mut HashMap<Entity, Self::StateButton,>,> {
+        Some(&mut self.ui_buttons,)
     }
 }
 
-impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'d, 'e> {
+impl<'a, 'b, 'd, 'e,> State<ToppaGameData<'a, 'b,>, StateEvent,> for NewGameState<'d, 'e,> {
     fn handle_event(
         &mut self,
-        data: StateData<ToppaGameData>,
+        data: StateData<'_, ToppaGameData<'_, '_,>,>,
         event: StateEvent,
-    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        let StateData { mut world, data: _ } = data;
+    ) -> Trans<ToppaGameData<'a, 'b,>, StateEvent,> {
+        let StateData {
+            mut world,
+            data: _,
+        } = data;
         match &event {
-            StateEvent::Window(wnd_event) => {
-                if is_close_requested(&wnd_event) || is_key_down(&wnd_event, VirtualKeyCode::Escape)
+            StateEvent::Window(wnd_event,) => {
+                if is_close_requested(&wnd_event,)
+                    || is_key_down(&wnd_event, VirtualKeyCode::Escape,)
                 {
                     Trans::Quit
-                } else {
+                }
+                else {
                     Trans::None
                 }
-            }
-            StateEvent::Ui(ui_event) => {
+            },
+            StateEvent::Ui(ui_event,) => {
                 use self::UiEventType::*;
                 match ui_event.event_type {
-                    Click => self.btn_click(&mut world, ui_event.target),
+                    Click => self.btn_click(&mut world, ui_event.target,),
                     _ => Trans::None,
                 }
-            }
+            },
         }
     }
 
     fn update(
         &mut self,
-        data: StateData<ToppaGameData>,
-    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
-        let StateData { mut world, data } = data;
-        self.dispatch(&world);
-        data.update_menu(&world);
+        data: StateData<'_, ToppaGameData<'_, '_,>,>,
+    ) -> Trans<ToppaGameData<'a, 'b,>, StateEvent,> {
+        let StateData {
+            mut world,
+            data,
+        } = data;
+        self.dispatch(&world,);
+        data.update_menu(&world,);
         self.menu_duration += world.read_resource::<Time>().delta_seconds();
 
         if !self.b_buttons_found {
             self.b_buttons_found =
-                self.insert_button(&mut world, NewGameButtons::Back, "menu_newgame_back_button")
+                self.insert_button(&mut world, NewGameButtons::Back, "menu_newgame_back_button",)
                     && self.insert_button(
                         &mut world,
                         NewGameButtons::CreateNewGame,
@@ -175,44 +182,51 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for NewGameState<'
     }
 
     // Executed when this game state runs for the first time.
-    fn on_start(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
-        self.enable_current_screen(&mut world);
-        self.enable_dispatcher(&mut world);
+    fn on_start(&mut self, data: StateData<'_, ToppaGameData<'_, '_,>,>,) {
+        let StateData {
+            mut world,
+            data: _,
+        } = data;
+        self.enable_current_screen(&mut world,);
+        self.enable_dispatcher(&mut world,);
     }
 
     // Executed when this game state gets popped.
-    fn on_stop(&mut self, data: StateData<ToppaGameData>) {
-        let StateData { mut world, data: _ } = data;
+    fn on_stop(&mut self, data: StateData<'_, ToppaGameData<'_, '_,>,>,) {
+        let StateData {
+            mut world,
+            data: _,
+        } = data;
         self.disable_dispatcher();
-        self.disable_current_screen(&mut world);
+        self.disable_current_screen(&mut world,);
     }
 }
 
-impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
+impl<'a, 'b, 'd, 'e,> NewGameState<'d, 'e,> {
     fn btn_click(
         &self,
         world: &mut World,
         target: Entity,
-    ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    ) -> Trans<ToppaGameData<'a, 'b,>, StateEvent,> {
         use self::NewGameButtons::*;
-        if let Some(button) = self.ui_buttons.get(&target) {
+        if let Some(button,) = self.ui_buttons.get(&target,) {
             match button {
                 Back => self.btn_back(),
-                CreateNewGame => self.btn_creategame(world),
+                CreateNewGame => self.btn_creategame(world,),
             }
-        } else {
+        }
+        else {
             Trans::None
         }
     }
 
-    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_back(&self) -> Trans<ToppaGameData<'a, 'b,>, StateEvent,> {
         #[cfg(feature = "debug")]
         debug!("Returning to CentreState.");
         Trans::Pop
     }
 
-    fn btn_creategame(&self, world: &mut World) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
+    fn btn_creategame(&self, world: &mut World,) -> Trans<ToppaGameData<'a, 'b,>, StateEvent,> {
         #[cfg(feature = "debug")]
         debug!("Creating new game.");
         // NOTE: Think about how to do this better
@@ -224,13 +238,14 @@ impl<'a, 'b, 'd, 'e> NewGameState<'d, 'e> {
             self.game_info.chunk_dim,
             ren_con,
         );
-        world.add_resource::<GameSessionData>(session_data);
+        world.add_resource::<GameSessionData>(session_data,);
 
-        let ingame_ui_prefab_handle =
-            Some(world.exec(|loader: UiLoader| loader.load("Prefabs/ui/Ingame/Base.ron", ())));
+        let ingame_ui_prefab_handle = Some(
+            world.exec(|loader: UiLoader<'_,>| loader.load("Prefabs/ui/Ingame/Base.ron", (),),),
+        );
 
         Trans::Switch(Box::new({
-            IngameBaseState::new(world, ingame_ui_prefab_handle)
-        }))
+            IngameBaseState::new(world, ingame_ui_prefab_handle,)
+        },),)
     }
 }

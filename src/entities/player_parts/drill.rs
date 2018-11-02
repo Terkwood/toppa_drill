@@ -8,16 +8,12 @@ use amethyst::{
     renderer::Transparent,
 };
 
-use components::{
-    physics::PhysicalProperties,
-    IsIngameEntity,
+use crate::{
+    components::{physics::PhysicalProperties, IsIngameEntity},
+    entities::{EntityError, EntitySpriteRender},
+    resources::{add_spriterender, get_spriterender, GameSprites, ToppaSpriteSheet},
+    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
 };
-use entities::{EntityError, EntitySpriteRender};
-use resources::{
-    add_spriterender, get_spriterender, GameSprites,
-    ToppaSpriteSheet,
-};
-use utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo};
 
 use super::PlayerParts;
 
@@ -25,7 +21,7 @@ use super::PlayerParts;
 pub enum DrillError {
     #[allow(dead_code)]
     NotImplemented,
-    MissingSpriteRender(DrillTypes),
+    MissingSpriteRender(DrillTypes,),
 }
 
 /// Different types of drill provide different drilling speeds and durability
@@ -48,16 +44,16 @@ pub enum DrillTypes {
     HS6_5_2_5Diamond,
 }
 
-pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter>) {
+pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter,>,) {
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
     let loader_info = SpriteLoaderInfo {
-        tex_id: ToppaSpriteSheet::Drill as u64,
-        image_size: (96, 64),
-        sprite_count: (3, 2),
-        sprite_render_size: (32.0, 32.0),
+        tex_id:             ToppaSpriteSheet::Drill as u64,
+        image_size:         (96, 64,),
+        sprite_count:       (3, 2,),
+        sprite_render_size: (32.0, 32.0,),
     };
 
-    if let Some(ss_handle) = load_sprites_from_spritesheet(
+    if let Some(ss_handle,) = load_sprites_from_spritesheet(
         world,
         "Assets/Textures/PlayerDrills.png",
         loader_info,
@@ -68,31 +64,31 @@ pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut Progr
         let sprites = [
             (
                 0,
-                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::NotImplemented)),
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::NotImplemented,),),
             ),
             (
                 1,
-                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C45U)),
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C45U,),),
             ),
             (
                 2,
-                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C105U)),
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C105U,),),
             ),
             (
                 3,
-                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2C)),
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2C,),),
             ),
             (
                 4,
-                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5)),
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5,),),
             ),
             (
                 5,
-                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5Diamond)),
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5Diamond,),),
             ),
         ];
 
-        for (sprite_number, entity_sprite_render) in sprites.iter() {
+        for (sprite_number, entity_sprite_render,) in sprites.iter() {
             add_spriterender(
                 *entity_sprite_render,
                 &mut game_sprites,
@@ -111,34 +107,37 @@ pub fn new_drill(
     world: &mut World,
     parent: Entity,
     drill_type: DrillTypes,
-) -> Result<(), EntityError> {
+) -> Result<(), EntityError,> {
     #[cfg(feature = "debug")]
     debug!("Creating drill for player {:?}.", parent);
 
     let sprite_render_opt = get_spriterender(
         world,
-        EntitySpriteRender::Player(PlayerParts::Drill(drill_type)),
+        EntitySpriteRender::Player(PlayerParts::Drill(drill_type,),),
     );
 
-    if let Some(sprite_render) = sprite_render_opt {
-        let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8), None);
+    if let Some(sprite_render,) = sprite_render_opt {
+        let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8,), None,);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(22.0, -32.0, -1.0);
+        transform.translation += Vector3::new(22.0, -32.0, -1.0,);
 
         world
             .create_entity()
-            .with(IsIngameEntity)
-            .with(Parent { entity: parent })
-            .with(transform)
-            .with(Transparent)
-            .with(sprite_render)
-            .with(physical_properties)
+            .with(IsIngameEntity,)
+            .with(Parent {
+                entity: parent,
+            },)
+            .with(transform,)
+            .with(Transparent,)
+            .with(sprite_render,)
+            .with(physical_properties,)
             .build();
 
-        Ok(())
-    } else {
+        Ok((),)
+    }
+    else {
         Err(EntityError::DrillProblem(DrillError::MissingSpriteRender(
             drill_type,
-        )))
+        ),),)
     }
 }

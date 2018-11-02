@@ -5,7 +5,7 @@ use amethyst::{
     ecs::prelude::{Component, VecStorage},
 };
 
-use resources::{
+use crate::resources::{
     ingame::planet::{ChunkIndex, Planet, PlanetError, TileIndex},
     RenderConfig,
 };
@@ -14,14 +14,14 @@ use resources::{
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Position {
     pub chunk: ChunkIndex,
-    pub tile: TileIndex,
+    pub tile:  TileIndex,
 }
 
 impl Position {
-    pub fn new(chunk_index: ChunkIndex, tile_index: TileIndex) -> Self {
+    pub fn new(chunk_index: ChunkIndex, tile_index: TileIndex,) -> Self {
         Position {
             chunk: chunk_index,
-            tile: tile_index,
+            tile:  tile_index,
         }
     }
 
@@ -29,17 +29,17 @@ impl Position {
         transform: &Transform,
         render_config: &RenderConfig,
         planet: &Planet,
-    ) -> Result<Self, PlanetError> {
-        let chunk_id = ChunkIndex::from_transform(transform, render_config, planet)?;
-        let tile_id = TileIndex::from_transform(transform, chunk_id, render_config, planet)?;
+    ) -> Result<Self, PlanetError,> {
+        let chunk_id = ChunkIndex::from_transform(transform, render_config, planet,)?;
+        let tile_id = TileIndex::from_transform(transform, chunk_id, render_config, planet,)?;
         let rv = Position {
             chunk: chunk_id,
-            tile: tile_id,
+            tile:  tile_id,
         };
 
         #[cfg(feature = "debug")]
         debug!("| Created position from transform. {:?}", rv);
-        Ok(rv)
+        Ok(rv,)
     }
 }
 
@@ -47,10 +47,10 @@ impl Default for Position {
     fn default() -> Self {
         #[cfg(feature = "debug")]
         debug!("Created default position.");
-        Self::new(ChunkIndex(u64::MAX, u64::MAX), TileIndex(0, 0))
+        Self::new(ChunkIndex(u64::MAX, u64::MAX,), TileIndex(0, 0,),)
     }
 }
 
 impl Component for Position {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }

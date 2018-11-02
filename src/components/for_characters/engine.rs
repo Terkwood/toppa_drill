@@ -17,7 +17,7 @@ pub struct Engine {
     /// specific to this machine, as it acts as an helicopter.
     ///
     /// If the machine is tilted, the rotational degree is required to map local directions of force to global.
-    pub max_force: Vector2<f64>,
+    pub max_force: Vector2<f64,>,
 
     /// Engine efficiency, defines how much fuel is transformed into force, and how much into heat.
     /// Values between 0.0 and 1.0 are legal.
@@ -34,21 +34,21 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn new(force: Vector2<f64>, fuel_efficiency: f64, fuel_consumption: f64) -> Engine {
+    pub fn new(force: Vector2<f64,>, fuel_efficiency: f64, fuel_consumption: f64,) -> Engine {
         Engine {
-            max_force: force,
+            max_force:   force,
             consumption: fuel_consumption,
-            efficiency: fuel_efficiency,
+            efficiency:  fuel_efficiency,
         }
     }
 }
 
 impl Default for Engine {
     fn default() -> Self {
-        Engine::new(Vector2::new(10000.0, 10000.0), 1.0, 1.0)
+        Engine::new(Vector2::new(10000.0, 10000.0,), 1.0, 1.0,)
     }
 }
 
 impl Component for Engine {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }

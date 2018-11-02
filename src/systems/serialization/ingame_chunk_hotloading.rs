@@ -17,47 +17,48 @@ use amethyst::{
     shrev::EventChannel,
 };
 
-use components::{for_characters::PlayerBase, for_ground_entities::TileBase, IsIngameEntity};
-use entities::tile::TileTypes;
-use events::planet_events::ChunkEvent;
-use resources::{
-    ingame::{
-        planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
-        GameSessionData, SavegamePaths,
+use crate::{
+    components::{for_characters::PlayerBase, for_ground_entities::TileBase, IsIngameEntity},
+    entities::tile::TileTypes,
+    events::planet_events::ChunkEvent,
+    resources::{
+        ingame::{
+            planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
+            GameSessionData, SavegamePaths,
+        },
+        GameSprites, RenderConfig,
     },
-    RenderConfig,
-    GameSprites, 
 };
 
 /// TODO: Deletion of initial chunks not working properly.
 pub struct HotChunkSystem {
-    event_reader: Option<ReaderId<ChunkEvent>>,
-    chunks_to_load: Vec<ChunkIndex>,
-    chunks_to_unload: Vec<ChunkIndex>,
+    event_reader:     Option<ReaderId<ChunkEvent,>,>,
+    chunks_to_load:   Vec<ChunkIndex,>,
+    chunks_to_unload: Vec<ChunkIndex,>,
 }
 
 impl HotChunkSystem {
     pub fn new() -> Self {
         HotChunkSystem {
-            event_reader: None,
-            chunks_to_load: Vec::with_capacity(10),
-            chunks_to_unload: Vec::with_capacity(10),
+            event_reader:     None,
+            chunks_to_load:   Vec::with_capacity(10,),
+            chunks_to_unload: Vec::with_capacity(10,),
         }
     }
 }
 
-impl<'a> System<'a> for HotChunkSystem {
+impl<'a,> System<'a,> for HotChunkSystem {
     type SystemData = (
-        Entities<'a>,
-        WriteStorage<'a, TileBase>,
-        WriteStorage<'a, SpriteRender>,
-        WriteStorage<'a, Transform>,
-        WriteStorage<'a, IsIngameEntity>,
-        Option<Write<'a, GameSessionData>>,
-        Option<Write<'a, EventChannel<ChunkEvent>>>,
-        Option<Read<'a, SavegamePaths>>,
-        Option<Read<'a, GameSprites>>,
-        Option<Read<'a, RenderConfig>>,
+        Entities<'a,>,
+        WriteStorage<'a, TileBase,>,
+        WriteStorage<'a, SpriteRender,>,
+        WriteStorage<'a, Transform,>,
+        WriteStorage<'a, IsIngameEntity,>,
+        Option<Write<'a, GameSessionData,>,>,
+        Option<Write<'a, EventChannel<ChunkEvent,>,>,>,
+        Option<Read<'a, SavegamePaths,>,>,
+        Option<Read<'a, GameSprites,>,>,
+        Option<Read<'a, RenderConfig,>,>,
     );
 
     fn run(
@@ -76,11 +77,11 @@ impl<'a> System<'a> for HotChunkSystem {
         ): Self::SystemData,
     ) {
         if let (
-            Some(mut session_data),
-            Some(chunk_events),
-            Some(paths),
-            Some(game_sprites),
-            Some(render_config),
+            Some(mut session_data,),
+            Some(chunk_events,),
+            Some(paths,),
+            Some(game_sprites,),
+            Some(render_config,),
         ) = (
             session_data,
             chunk_events,
@@ -89,38 +90,38 @@ impl<'a> System<'a> for HotChunkSystem {
             render_config,
         ) {
             let mut tile_gen = TileGenerationStorages {
-                entities: entities,
-                tile_base: tag_tiles,
+                entities:      entities,
+                tile_base:     tag_tiles,
                 sprite_render: sprite_renders,
-                transform: transforms,
+                transform:     transforms,
                 ingame_entity: ingame_entities,
-                game_sprites: game_sprites,
+                game_sprites:  game_sprites,
                 render_config: render_config,
             };
 
-            if let Some(ref mut event_reader) = self.event_reader {
-                for &event in chunk_events.read(event_reader) {
+            if let Some(ref mut event_reader,) = self.event_reader {
+                for &event in chunk_events.read(event_reader,) {
                     match event {
-                        ChunkEvent::RequestingLoad(chunk_index) => {
-                            self.chunks_to_load.push(chunk_index);
-                        }
-                        ChunkEvent::RequestingUnload(chunk_index) => {
-                            self.chunks_to_unload.push(chunk_index);
-                        }
+                        ChunkEvent::RequestingLoad(chunk_index,) => {
+                            self.chunks_to_load.push(chunk_index,);
+                        },
+                        ChunkEvent::RequestingUnload(chunk_index,) => {
+                            self.chunks_to_unload.push(chunk_index,);
+                        },
                         _ => continue,
                     };
                 }
 
-                for chunk_id in self.chunks_to_unload.drain(0..) {
+                for chunk_id in self.chunks_to_unload.drain(0 ..,) {
                     session_data
                         .planet
-                        .save_chunk(chunk_id, paths.chunk_dir_path.clone());
+                        .save_chunk(chunk_id, paths.chunk_dir_path.clone(),);
                     session_data
                         .planet
-                        .delete_chunk(chunk_id, &tile_gen.entities);
+                        .delete_chunk(chunk_id, &tile_gen.entities,);
                 }
 
-                for chunk_id in self.chunks_to_load.drain(0..) {
+                for chunk_id in self.chunks_to_load.drain(0 ..,) {
                     let chunk_file_path = paths
                         .chunk_dir_path
                         .clone()
@@ -130,7 +131,7 @@ impl<'a> System<'a> for HotChunkSystem {
                             }
                             .to_string(),
                         )
-                        .with_extension("ron");
+                        .with_extension("ron",);
 
                     if chunk_file_path.is_file() {
                         session_data.planet.load_chunk(
@@ -138,26 +139,30 @@ impl<'a> System<'a> for HotChunkSystem {
                             chunk_file_path.clone(),
                             &mut tile_gen,
                         );
-                    } else if chunk_file_path.is_dir() {
+                    }
+                    else if chunk_file_path.is_dir() {
                         error!("| Chunk file path is a directory?! {:?}", chunk_file_path);
-                    } else {
-                        session_data.planet.new_chunk(chunk_id, &mut tile_gen);
+                    }
+                    else {
+                        session_data.planet.new_chunk(chunk_id, &mut tile_gen,);
                     }
                 }
-            } else {
+            }
+            else {
                 error!("| No event ReaderId found for HotChunkSystem.");
             }
-        } else {
+        }
+        else {
             error!("| Resources not found.");
         }
     }
 
-    fn setup(&mut self, res: &mut Resources) {
-        Self::SystemData::setup(res);
+    fn setup(&mut self, res: &mut Resources,) {
+        Self::SystemData::setup(res,);
 
         //self.event_reader = Some(Write::<EventChannel<ChunkEvent>>::fetch(res).register_reader());
         self.event_reader = Some(
-            res.fetch_mut::<EventChannel<ChunkEvent>>()
+            res.fetch_mut::<EventChannel<ChunkEvent,>>()
                 .register_reader(),
         );
     }

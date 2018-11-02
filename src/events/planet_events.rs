@@ -1,4 +1,4 @@
-use resources::ingame::planet::{ChunkIndex, TileIndex};
+use crate::resources::ingame::planet::{ChunkIndex, TileIndex};
 
 /// TODO: Encompass error messages for the `failed` variants?
 /// Different events regarding [`Chunk`s](struct.Chunk.html)
@@ -7,19 +7,19 @@ use resources::ingame::planet::{ChunkIndex, TileIndex};
 pub enum ChunkEvent {
     /// An event requesting a chunk to be added to the [`planet`s](struct.Planet.html) `chunk`-HashMap,
     /// either by loading from disk, or generating a new chunk.
-    RequestingLoad(ChunkIndex),
+    RequestingLoad(ChunkIndex,),
     /// Sent if a chunk was successfully loaded/generated.
-    Loaded(ChunkIndex),
+    Loaded(ChunkIndex,),
     /// Sent if a chunk could not be loaded nor generated for the given [`ChunkIndex`](struct.ChunkIndex.html).
-    FailedLoad(ChunkIndex),
+    FailedLoad(ChunkIndex,),
 
     /// Counterpart to the [`RequestingLoad`](enum.ChunkEvent.html#variant.RequestingLoad).
     /// Saves a chunk to disk.
-    RequestingUnload(ChunkIndex),
+    RequestingUnload(ChunkIndex,),
     /// Sent if a chunk was sucessfully saved on disk.
-    Unloaded(ChunkIndex),
+    Unloaded(ChunkIndex,),
     /// Sent if a chunk could not be saved to disk.
-    FailedUnload(ChunkIndex),
+    FailedUnload(ChunkIndex,),
 }
 
 /// TODO: Encompass error messages for the `failed` variants?
@@ -29,16 +29,16 @@ pub enum ChunkEvent {
 pub enum TileEvent {
     /// Every `tile` that has not been visited by a player yet is covered under a `Fog of War`.
     /// This event should be sent when a player has vision on a `tile`.
-    RequestingUncover(TileIndex),
+    RequestingUncover(TileIndex,),
     /// Sent if a `tile`'s `Fog of War` has been sucessfully removed.
-    Uncovered(TileIndex),
+    Uncovered(TileIndex,),
     /// Sent if a `tile`'s `Fog of War` could not be removed.
-    FailedUncover(TileIndex),
+    FailedUncover(TileIndex,),
 
     /// When a player drills into a `tile` it should be deleted.
-    RequestDeletion(TileIndex),
+    RequestDeletion(TileIndex,),
     /// Sent it a `tile` has been successfully deleted.
-    Deleted(TileIndex),
+    Deleted(TileIndex,),
     /// Sent if a `tile` could not be deleted.
-    FailedDelete(TileIndex),
+    FailedDelete(TileIndex,),
 }

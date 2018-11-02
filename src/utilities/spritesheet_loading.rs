@@ -11,10 +11,10 @@ use amethyst::{
 
 #[derive(Debug, Clone)]
 pub struct SpriteLoaderInfo {
-    pub tex_id: u64,
-    pub image_size: (u64, u64),
-    pub sprite_count: (u64, u64),
-    pub sprite_render_size: (f32, f32),
+    pub tex_id:             u64,
+    pub image_size:         (u64, u64,),
+    pub sprite_count:       (u64, u64,),
+    pub sprite_render_size: (f32, f32,),
 }
 
 /// TODO: implement BmpFormat, JpgFormat, ...
@@ -22,14 +22,14 @@ pub fn load_image_png(
     world: &mut World,
     path: &str,
     id: u64,
-    progress_counter_ref_opt: Option<&mut ProgressCounter>,
+    progress_counter_ref_opt: Option<&mut ProgressCounter,>,
 ) {
     let loader = world.read_resource::<Loader>();
 
-    let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+    let texture_storage = world.read_resource::<AssetStorage<Texture,>>();
 
     let mut material_texture_set = world.write_resource::<MaterialTextureSet>();
-    if let Some(progress_counter_ref) = progress_counter_ref_opt {
+    if let Some(progress_counter_ref,) = progress_counter_ref_opt {
         let texture_handle = loader.load(
             path,
             PngFormat,
@@ -37,8 +37,9 @@ pub fn load_image_png(
             progress_counter_ref,
             &texture_storage,
         );
-        material_texture_set.insert(id, texture_handle);
-    } else {
+        material_texture_set.insert(id, texture_handle,);
+    }
+    else {
         let texture_handle = loader.load(
             path,
             PngFormat,
@@ -46,7 +47,7 @@ pub fn load_image_png(
             (),
             &texture_storage,
         );
-        material_texture_set.insert(id, texture_handle);
+        material_texture_set.insert(id, texture_handle,);
     }
 }
 
@@ -59,8 +60,8 @@ pub fn load_sprites_from_spritesheet(
     world: &mut World,
     sheet_path: &str,
     loader_info: SpriteLoaderInfo,
-    progress_counter_ref_opt: Option<&mut ProgressCounter>,
-) -> Option<SpriteSheetHandle> {
+    progress_counter_ref_opt: Option<&mut ProgressCounter,>,
+) -> Option<SpriteSheetHandle,> {
     // TODO: FIX padding ! top-most and right-most borders are broken,
     // subtract them from image-size first, before calculating sprite width/height
     let sprites_in_x = loader_info.sprite_count.0;
@@ -77,8 +78,8 @@ pub fn load_sprites_from_spritesheet(
 
     let mut sprites = Vec::new();
 
-    for y in 0..sprites_in_y {
-        for x in 0..sprites_in_x {
+    for y in 0 .. sprites_in_y {
+        for x in 0 .. sprites_in_x {
             let left = x as f32 * sprite_offset_x_in_image;
             let right = (x + 1) as f32 * sprite_offset_x_in_image;
 
@@ -95,20 +96,20 @@ pub fn load_sprites_from_spritesheet(
             let sprite = Sprite {
                 width: sprite_width as f32,
                 height: sprite_height as f32,
-                offsets: [sprite_width as f32 / 2.0, sprite_height as f32 / 2.0],
+                offsets: [sprite_width as f32 / 2.0, sprite_height as f32 / 2.0,],
                 tex_coords,
             };
 
-            sprites.push(sprite);
+            sprites.push(sprite,);
         }
     }
 
     let sprite_sheet = SpriteSheet {
         texture_id: loader_info.tex_id,
-        sprites: sprites,
+        sprites:    sprites,
     };
 
-    if let Some(progress_counter_ref) = progress_counter_ref_opt {
+    if let Some(progress_counter_ref,) = progress_counter_ref_opt {
         #[cfg(feature = "debug")]
         debug!("Loading spritesheet with ProgressCounter.");
 
@@ -116,28 +117,29 @@ pub fn load_sprites_from_spritesheet(
             world,
             sheet_path,
             sprite_sheet.texture_id,
-            Some(progress_counter_ref),
+            Some(progress_counter_ref,),
         );
 
         let sprite_sheet_handle = {
             let loader = world.read_resource::<Loader>();
-            let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
+            let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet,>>();
 
-            loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage)
+            loader.load_from_data(sprite_sheet, progress_counter_ref, &sprite_sheet_storage,)
         };
-        Some(sprite_sheet_handle)
-    } else {
+        Some(sprite_sheet_handle,)
+    }
+    else {
         #[cfg(feature = "debug")]
         debug!("Loading spritesheet without ProgressCounter.");
 
-        load_image_png(world, sheet_path, sprite_sheet.texture_id, None);
+        load_image_png(world, sheet_path, sprite_sheet.texture_id, None,);
 
         let sprite_sheet_handle = {
             let loader = world.read_resource::<Loader>();
-            let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet>>();
+            let sprite_sheet_storage = world.read_resource::<AssetStorage<SpriteSheet,>>();
 
-            loader.load_from_data(sprite_sheet, (), &sprite_sheet_storage)
+            loader.load_from_data(sprite_sheet, (), &sprite_sheet_storage,)
         };
-        Some(sprite_sheet_handle)
+        Some(sprite_sheet_handle,)
     }
 }

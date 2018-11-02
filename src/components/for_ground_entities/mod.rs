@@ -1,6 +1,6 @@
 use amethyst::ecs::prelude::{Component, VecStorage};
 
-use entities::tile::TileTypes;
+use crate::entities::tile::TileTypes;
 
 /// This component is meant for tiles.
 #[derive(Debug, Clone, Copy)]
@@ -9,5 +9,5 @@ pub struct TileBase {
 }
 
 impl Component for TileBase {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }

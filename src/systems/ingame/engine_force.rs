@@ -8,7 +8,7 @@ use amethyst::{
     input::InputHandler,
 };
 
-use components::{
+use crate::components::{
     for_characters::{Engine, FuelTank},
     physics::Dynamics,
 };
@@ -16,40 +16,40 @@ use components::{
 #[derive(Default)]
 pub struct EngineForceSystem;
 
-impl<'s> System<'s> for EngineForceSystem {
+impl<'s,> System<'s,> for EngineForceSystem {
     type SystemData = (
-        ReadStorage<'s, Transform>,
-        WriteStorage<'s, Dynamics>,
-        WriteStorage<'s, FuelTank>,
-        ReadStorage<'s, Engine>,
-        Read<'s, Time>,
-        Read<'s, InputHandler<String, String>>,
+        ReadStorage<'s, Transform,>,
+        WriteStorage<'s, Dynamics,>,
+        WriteStorage<'s, FuelTank,>,
+        ReadStorage<'s, Engine,>,
+        Read<'s, Time,>,
+        Read<'s, InputHandler<String, String,>,>,
     );
 
     fn run(
         &mut self,
-        (transforms, mut dynamics, mut fuel_tanks, engines, time, input): Self::SystemData,
+        (transforms, mut dynamics, mut fuel_tanks, engines, time, input,): Self::SystemData,
     ) {
         let dt = time.delta_seconds();
 
-        for (transform, mut dynamic, mut tank, engine) in
-            (&transforms, &mut dynamics, &mut fuel_tanks, &engines).join()
+        for (transform, mut dynamic, mut tank, engine,) in
+            (&transforms, &mut dynamics, &mut fuel_tanks, &engines,).join()
         {
             // Input gathering ( !! not multiplayer friendly, add playerID's, e.g. in ship_base !! )
-            let mut engine_scaling = Vector2::new(0.0, 0.0);
+            let mut engine_scaling = Vector2::new(0.0, 0.0,);
             {
-                let engine_scaling_x = input.axis_value("right");
-                let engine_scaling_y = input.axis_value("up");
+                let engine_scaling_x = input.axis_value("right",);
+                let engine_scaling_y = input.axis_value("up",);
 
-                if let Some(engine_scaling_x_temp) = engine_scaling_x {
+                if let Some(engine_scaling_x_temp,) = engine_scaling_x {
                     engine_scaling[0] = engine_scaling_x_temp as f64;
                 };
-                if let Some(engine_scaling_y_temp) = engine_scaling_y {
+                if let Some(engine_scaling_y_temp,) = engine_scaling_y {
                     engine_scaling[1] = engine_scaling_y_temp as f64;
                 };
             }
 
-            let mut engine_force_vec = engine.max_force.mul_element_wise(engine_scaling);
+            let mut engine_force_vec = engine.max_force.mul_element_wise(engine_scaling,);
             let engine_force_attempt = engine_force_vec.magnitude();
             {
                 let fuel_consumption =
@@ -62,7 +62,8 @@ impl<'s> System<'s> for EngineForceSystem {
 
                     let scaling = engine_force_actual / engine_force_attempt;
                     engine_force_vec *= scaling;
-                } else {
+                }
+                else {
                     // If enough fuel is present, only reduce fuel level.
                     tank.fuel_level -= fuel_consumption;
                 }
@@ -83,7 +84,7 @@ impl<'s> System<'s> for EngineForceSystem {
                 ),
             );
 
-            let world_force_vec = Vector2::new(world_force_x, world_force_y);
+            let world_force_vec = Vector2::new(world_force_x, world_force_y,);
 
             dynamic.force += world_force_vec;
         }

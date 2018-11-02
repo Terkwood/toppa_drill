@@ -1,41 +1,42 @@
 use std::{fs, path::*};
 
 pub struct SavegamePaths {
-    pub savegame_dir_path: PathBuf,
+    pub savegame_dir_path:  PathBuf,
     pub savegame_file_path: PathBuf,
-    pub chunk_dir_path: PathBuf,
+    pub chunk_dir_path:     PathBuf,
 }
 
 impl SavegamePaths {
-    pub fn init(base_path: &'static str, game_name: String) -> SavegamePaths {
+    pub fn init(base_path: &'static str, game_name: String,) -> SavegamePaths {
         // Directory of all savegames
-        let dir_path = Path::new("savegames");
+        let dir_path = Path::new("savegames",);
 
         // Directory of this savegame
-        let mut savegame_dir_path = PathBuf::from(base_path);
-        savegame_dir_path.push(dir_path);
-        savegame_dir_path.push(Path::new(&game_name));
+        let mut savegame_dir_path = PathBuf::from(base_path,);
+        savegame_dir_path.push(dir_path,);
+        savegame_dir_path.push(Path::new(&game_name,),);
         #[cfg(feature = "debug")]
         debug!("savegame_dir_path: {:?}", savegame_dir_path.clone());
 
         // Filepath for the serialized planet
         let mut savegame_file_path = PathBuf::new();
-        savegame_file_path.push(savegame_dir_path.clone());
-        savegame_file_path.push(Path::new("session_data"));
-        savegame_file_path.set_extension("ron");
+        savegame_file_path.push(savegame_dir_path.clone(),);
+        savegame_file_path.push(Path::new("session_data",),);
+        savegame_file_path.set_extension("ron",);
 
         // Directory-path for the serialized chunks, need to append the individual chunks Id
         let mut chunk_dir_path = PathBuf::new();
-        chunk_dir_path.push(savegame_dir_path.clone());
-        chunk_dir_path.push(Path::new("chunks"));
+        chunk_dir_path.push(savegame_dir_path.clone(),);
+        chunk_dir_path.push(Path::new("chunks",),);
 
         // NOTE: Maybe replace all these file operations with walk_dir crate?
         let mut dir_exists = dir_path.is_dir();
         if !dir_exists {
-            if let Ok(_) = fs::create_dir(dir_path) {
+            if let Ok(_,) = fs::create_dir(dir_path,) {
                 #[cfg(feature = "debug")]
                 debug!("Savegame dir has been created at {:?}.", dir_path);
-            } else {
+            }
+            else {
                 error!("Failed to create savegame dir at {:?}", dir_path);
             }
         }
@@ -81,9 +82,11 @@ impl SavegamePaths {
                 }
             }
             */
-        } else {
-            if let Ok(_) = fs::create_dir_all(chunk_dir_path.clone()) {
-            } else {
+        }
+        else {
+            if let Ok(_,) = fs::create_dir_all(chunk_dir_path.clone(),) {
+            }
+            else {
                 error!(
                     "Failed to create savegame '{:?}'s dir at {:?}",
                     game_name,

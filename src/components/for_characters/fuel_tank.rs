@@ -17,7 +17,7 @@ pub struct FuelTank {
 }
 
 impl FuelTank {
-    pub fn new(fuel_level: f64, capacity: f64, weight_per_fuel: f64) -> Self {
+    pub fn new(fuel_level: f64, capacity: f64, weight_per_fuel: f64,) -> Self {
         FuelTank {
             fuel_level,
             capacity,
@@ -27,5 +27,5 @@ impl FuelTank {
 }
 
 impl Component for FuelTank {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }

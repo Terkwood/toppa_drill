@@ -5,7 +5,7 @@ use amethyst::{
     renderer::{Camera, Projection},
 };
 
-pub fn init(world: &mut World, view_dim: (u32, u32), parent: Entity) {
+pub fn init(world: &mut World, view_dim: (u32, u32,), parent: Entity,) {
     let mut transform = Transform::default();
     transform.translation[2] += 100.0;
 
@@ -16,8 +16,10 @@ pub fn init(world: &mut World, view_dim: (u32, u32), parent: Entity) {
             (view_dim.0 as f32) / 2.0,
             (view_dim.1 as f32) / 2.0,
             -(view_dim.1 as f32) / 2.0,
-        )))
-        .with(transform)
-        .with(Parent { entity: parent })
+        ),),)
+        .with(transform,)
+        .with(Parent {
+            entity: parent,
+        },)
         .build();
 }

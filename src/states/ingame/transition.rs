@@ -52,7 +52,7 @@ impl<'d, 'e> ToppaState<'d, 'e> for GameStartTransitionState<'d, 'e> {
 impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTransitionState<'d, 'e> {
     fn handle_event(
         &mut self,
-        data: StateData<ToppaGameData>,
+        data: StateData<'_, ToppaGameData<'_, '_>>,
         event: StateEvent,
     ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data: _ } = data;
@@ -78,7 +78,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTrans
 
     fn update(
         &mut self,
-        data: StateData<ToppaGameData>,
+        data: StateData<'_, ToppaGameData<'_, '_>>,
     ) -> Trans<ToppaGameData<'a, 'b>, StateEvent> {
         let StateData { mut world, data: _ } = data;
         self.dispatch(&world);
@@ -95,18 +95,18 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for GameStartTrans
         Trans::None
     }
 
-    fn shadow_update(&mut self, data: StateData<ToppaGameData>) {
+    fn shadow_update(&mut self, data: StateData<'_, ToppaGameData<'_, '_>>) {
         let StateData { world, data: _ } = data;
         self.shadow_dispatch(&world);
     }
 
-    fn on_start(&mut self, data: StateData<ToppaGameData>) {
+    fn on_start(&mut self, data: StateData<'_, ToppaGameData<'_, '_>>) {
         let StateData { mut world, data: _ } = data;
         self.enable_current_screen(&mut world);
         self.enable_dispatcher(&mut world);
     }
 
-    fn on_stop(&mut self, data: StateData<ToppaGameData>) {
+    fn on_stop(&mut self, data: StateData<'_, ToppaGameData<'_, '_>>) {
         let StateData { mut world, data: _ } = data;
         self.disable_dispatcher();
         self.disable_current_screen(&mut world);

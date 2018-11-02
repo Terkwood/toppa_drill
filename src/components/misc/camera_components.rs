@@ -1,6 +1,6 @@
 use amethyst::ecs::prelude::{Component, VecStorage};
 
-use resources::RenderConfig;
+use crate::resources::RenderConfig;
 
 /// This component stores some data for the camera.
 /// - Zoom
@@ -17,7 +17,7 @@ pub struct CameraProperties {
     pub zoom_max: f32,
     pub zoom_min: f32,
 
-    pub offset_to_player: (f32, f32),
+    pub offset_to_player: (f32, f32,),
 }
 
 impl Default for CameraProperties {
@@ -29,7 +29,7 @@ impl Default for CameraProperties {
             zoom_max: 2.0,
             zoom_min: 0.5,
 
-            offset_to_player: (-480.0, -270.0),
+            offset_to_player: (-480.0, -270.0,),
         }
     }
 }
@@ -58,5 +58,5 @@ impl CameraProperties {
 }
 
 impl Component for CameraProperties {
-    type Storage = VecStorage<Self>;
+    type Storage = VecStorage<Self,>;
 }

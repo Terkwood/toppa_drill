@@ -5,7 +5,4 @@ mod game_session;
 mod savegame_path;
 
 pub mod planet;
-pub use self::{
-    game_session::GameSessionData,
-    savegame_path::SavegamePaths,
-};
+pub use self::{game_session::GameSessionData, savegame_path::SavegamePaths};
