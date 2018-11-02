@@ -18,7 +18,6 @@ use std::collections::HashMap;
 use systems::{
     ingame::{EngineForceSystem, GravitationSystem, MovementSystem, PlayerPositionSystem, CleanupOnCloseSystem},
     serialization::HotChunkSystem,
-    DummySystem,
 };
 use ToppaGameData;
 
@@ -51,7 +50,6 @@ impl<'d, 'e> ToppaState<'d, 'e> for IngameBaseState<'d, 'e> {
     fn enable_dispatcher(&mut self, world: &mut World) {
         self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
-                .with(DummySystem::default(), "dummy_system", &[])
                 .with(GravitationSystem, "gravitation_system", &[])
                 .with(
                     EngineForceSystem,
@@ -215,7 +213,7 @@ impl<'a, 'b, 'd, 'e> State<ToppaGameData<'a, 'b>, StateEvent> for IngameBaseStat
         };
 
         let x_middle_of_planet = (planet_dim.1 as f32 / 2.0) * (chunk_dim.1 as f32 * tile_size.1);
-        let y_surface_of_planet = planet_dim.0 as f32 * (chunk_dim.0 as f32 * tile_size.0) + 128.0;
+        let y_surface_of_planet = planet_dim.0 as f32 * (chunk_dim.0 as f32 * tile_size.0) - 128.0;
         let z_order = 40.0;
 
         let mut transform = Transform::default();

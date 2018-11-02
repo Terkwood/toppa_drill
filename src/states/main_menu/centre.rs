@@ -10,7 +10,6 @@ use amethyst::{
 };
 use states::ToppaState;
 use std::collections::HashMap;
-use systems::{DummySystem, ShadowDummySystem};
 use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
@@ -43,25 +42,29 @@ pub struct CentreState<'d, 'e> {
 impl<'d, 'e> ToppaState<'d, 'e> for CentreState<'d, 'e> {
     type StateButton = CentreButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
-        self.main_dispatcher = Some({
+        /*self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
                 .build();
 
             dispatcher.setup(&mut world.res);
             dispatcher
-        });
+        });*/
+
+        self.main_dispatcher = None;
     }
 
     fn enable_shadow_dispatcher(&mut self, world: &mut World) {
-        self.shadow_dispatcher = Some({
+        /*self.shadow_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
                 .with(ShadowDummySystem { counter: 0 }, "shadow_dummy_system", &[])
                 .build();
 
             dispatcher.setup(&mut world.res);
             dispatcher
-        });
+        });*/
+
+        self.shadow_dispatcher = None;
     }
 
     fn disable_current_screen(&mut self, world: &mut World) {

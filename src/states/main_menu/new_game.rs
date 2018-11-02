@@ -16,7 +16,6 @@ use resources::{
     GameSprites,
 };
 use states::{ingame::IngameBaseState, ToppaState};
-use systems::DummySystem;
 use ToppaGameData;
 
 #[derive(PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
@@ -73,14 +72,16 @@ pub struct NewGameState<'d, 'e> {
 impl<'d, 'e> ToppaState<'d, 'e> for NewGameState<'d, 'e> {
     type StateButton = NewGameButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
-        self.main_dispatcher = Some({
+        /*self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
                 .build();
 
             dispatcher.setup(&mut world.res);
             dispatcher
-        });
+        });*/
+
+        self.main_dispatcher = None;
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {

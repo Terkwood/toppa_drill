@@ -7,6 +7,8 @@
 // TODO: Errorhandling! Seperate error module?
 // TODO: Reduce file operations in HotChunk and Serialize/DeserializeSystem
 // TODO: Wrap world in x-direction.
+// TODO: Planet surface -> Hills, mountains with empty tiles?
+// TODO: Empty tiles -> Procedural structered look instead of a tile with a hole
 
 extern crate amethyst;
 #[macro_use]

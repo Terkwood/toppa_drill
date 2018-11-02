@@ -9,7 +9,6 @@ use amethyst::{
 use std::collections::HashMap;
 
 use states::ToppaState;
-use systems::DummySystem;
 use ToppaGameData;
 
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -31,6 +30,7 @@ pub struct InventoryState<'d, 'e> {
 impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
     type StateButton = InventoryButtons;
     fn enable_dispatcher(&mut self, world: &mut World) {
+        /*
         self.main_dispatcher = Some({
             let mut dispatcher = DispatcherBuilder::new()
                 .with(DummySystem { counter: 0 }, "dummy_system", &[])
@@ -39,6 +39,8 @@ impl<'d, 'e> ToppaState<'d, 'e> for InventoryState<'d, 'e> {
             dispatcher.setup(&mut world.res);
             dispatcher
         });
+        */
+        self.main_dispatcher = None;
     }
 
     fn new(_world: &mut World, screen_opt: Option<Handle<UiPrefab>>) -> Self {

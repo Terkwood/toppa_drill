@@ -18,7 +18,7 @@ use resources::{
     RenderConfig,
 };
 
-/// TODO: Reference swapping instead of toggle-magic! Reduces duplicate code.
+/// TODO: Less branching.
 /// Calculates the players position expressed in [`ChunkIndex`](struct.ChunkIndex.html) and [`TileIndex`](struct.TileIndex.html).
 /// Tries to calculate new `TileIndex` based on current `Transform` and previous `Position.chunk`-ChunkIndex.
 /// If that fails, calculates new ChunkIndex based only on current `Transform`, and then the new `TileIndex`.
@@ -105,12 +105,14 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                 #[cfg(feature = "trace")]
                                                 trace!("| New {:?}.", tile_index);
 
+                                                /*
                                                 self.prev_chunks.clear();
                                                 self.prev_chunks.insert(player_pos.chunk);
                                                 for index in self.cur_chunks.drain() {
                                                     // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
                                                     self.prev_chunks.insert(index);
                                                 }
+                                                */
 
                                                 // Updating player position component
                                                 player_pos.tile = tile_index;
@@ -170,30 +172,38 @@ impl<'s> System<'s> for PlayerPositionSystem {
                                                 // Comparing the current and previous HashSets (`.difference()` returns only those NOT present in the other)
                                                 //let cur_chunks = self.cur_chunks.clone();
                                                 //let prev_chunks = self.prev_chunks.clone();
-                                                let chunks_to_delete =
-                                                    self.prev_chunks.difference(&self.cur_chunks);
-                                                let chunks_to_load =
-                                                    self.cur_chunks.difference(&self.prev_chunks);
+                                                {
+                                                    let chunks_to_delete =
+                                                        self.prev_chunks.difference(&self.cur_chunks);
+                                                    let chunks_to_load =
+                                                        self.cur_chunks.difference(&self.prev_chunks);
 
-                                                for &index in chunks_to_delete {
-                                                    #[cfg(feature = "debug")]
-                                                    debug!(
-                                                        "| Requesting load for chunk {:?}.",
-                                                        index
-                                                    );
-                                                    chunk_event_channel.single_write(
-                                                        ChunkEvent::RequestingUnload(index),
-                                                    );
+                                                    for &index in chunks_to_delete {
+                                                        #[cfg(feature = "debug")]
+                                                        debug!(
+                                                            "| Requesting load for chunk {:?}.",
+                                                            index
+                                                        );
+                                                        chunk_event_channel.single_write(
+                                                            ChunkEvent::RequestingUnload(index),
+                                                        );
+                                                    }
+                                                    for &index in chunks_to_load {
+                                                        #[cfg(feature = "debug")]
+                                                        debug!(
+                                                            "| Requesting unload for chunk {:?}.",
+                                                            index
+                                                        );
+                                                        chunk_event_channel.single_write(
+                                                            ChunkEvent::RequestingLoad(index),
+                                                        );
+                                                    }
                                                 }
-                                                for &index in chunks_to_load {
-                                                    #[cfg(feature = "debug")]
-                                                    debug!(
-                                                        "| Requesting unload for chunk {:?}.",
-                                                        index
-                                                    );
-                                                    chunk_event_channel.single_write(
-                                                        ChunkEvent::RequestingLoad(index),
-                                                    );
+
+                                                self.prev_chunks.clear();
+                                                for index in self.cur_chunks.drain() {
+                                                    // No need to check the returned boolean, as the HashSet has been `.drain()`ed previously.
+                                                    self.prev_chunks.insert(index);
                                                 }
                                             }
                                             Err(e) => {
