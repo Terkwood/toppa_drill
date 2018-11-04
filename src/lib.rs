@@ -12,6 +12,30 @@
 // TODO: Planet surface -> Hills, mountains with empty tiles?
 // TODO: Empty tiles -> Procedural structered look instead of a tile with a hole
 
+// TODO: Creating game-> Set Name, planet_dim, chunk_dim, 
+// TODO: Parse "./savegames" for all existing savegames (<- containing savegame.ron) and display them in LoadGameState
+
+// TODO: aabb collision -> blocking bounding-box-component, overlapping bounding-box-component 
+// TODO: aabb collision -> collisions-system for all tiles surrounding player (check-distance based on vel?).
+// TODO: blocking bounding-box-component -> collision-forces: Damage to player based on vel on impact
+// TODO: overlapping bounding-box-component -> Explosion for gas-rock (overlapping bounding-box), heat for lava-rock
+
+// TODO: Drilling into entities -> when player is colliding with entity && on ground, moving in tile-dir should init drill-state
+// TODO: drill-state -> an ingame state, player loses movement control. Drags player to tile-middle based on force of drill
+// TODO: add tile-entities that were drilled to inventory, if they have TagCarriable; add TagInInventory, once it is in inventory
+
+// TODO: shopping-state for all shops -> selling and buying stuff (depends on each shop)
+
+// TODO: Sun -> with directional light (is lighting a thing in sprite-pass?)
+// TODO: SunSystem -> Move sun depending on ingame time
+// TODO: Ingame time!
+// (TODO: surrounding temperature based on sun?, far off in the future)
+
+// TODO: Fog of war -> initially only the surrounding "eye-visible"-tiles are visible (uncovered based on radius around player), 
+// TODO: Fog of war -> with scanner-module-component underground detection possible
+
+// TODO: re-enable gravity in GravitySystem
+
 extern crate amethyst;
 #[macro_use]
 extern crate log;

@@ -16,6 +16,14 @@ impl Component for TagCarriable {
     type Storage = NullStorage<Self,>;
 }
 
+/// This component is meant for entities that are currentlly stored inside the player's inventory.
+#[derive(Default, Debug)]
+pub struct TagInInventory;
+
+impl Component for TagInInventory {
+    type Storage = NullStorage<Self,>;
+}
+
 /// This component is meant for entities that can be bought or sold in the OreShop.
 #[derive(Default, Debug)]
 pub struct TagOreShopMerch;
