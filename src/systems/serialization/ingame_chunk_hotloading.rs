@@ -23,7 +23,7 @@ use crate::{
     events::planet_events::ChunkEvent,
     resources::{
         ingame::{
-            planet::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
+            game_world::{Chunk, ChunkIndex, Planet, TileGenerationStorages, TileIndex},
             GameSessionData, SavegamePaths,
         },
         GameSprites, RenderConfig,

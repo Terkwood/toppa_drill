@@ -6,7 +6,7 @@ use amethyst::{
 };
 
 use crate::resources::{
-    ingame::planet::{ChunkIndex, Planet, PlanetError, TileIndex},
+    ingame::game_world::{ChunkIndex, Planet, GameWorldError, TileIndex},
     RenderConfig,
 };
 
@@ -29,7 +29,7 @@ impl Position {
         transform: &Transform,
         render_config: &RenderConfig,
         planet: &Planet,
-    ) -> Result<Self, PlanetError,> {
+    ) -> Result<Self, GameWorldError,> {
         let chunk_id = ChunkIndex::from_transform(transform, render_config, planet,)?;
         let tile_id = TileIndex::from_transform(transform, chunk_id, render_config, planet,)?;
         let rv = Position {

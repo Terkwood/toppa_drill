@@ -5,9 +5,9 @@ use serde::{ser::SerializeStruct, Serializer};
 
 use amethyst::ecs::prelude::{Read, Write};
 
-use crate::resources::{ingame::planet::TileGenerationStorages, RenderConfig};
+use crate::resources::{ingame::game_world::TileGenerationStorages, RenderConfig};
 
-use super::{planet::Planet, SavegamePaths};
+use super::{game_world::Planet, SavegamePaths};
 
 /// Data specific to the current game,
 /// gets loaded or created when the User starts a new game.

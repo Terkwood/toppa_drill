@@ -24,7 +24,7 @@ use crate::{
     entities::tile::TileTypes,
     resources::{
         ingame::{
-            planet::{Chunk, ChunkIndex, Planet, TileIndex},
+            game_world::{Chunk, ChunkIndex, Planet, TileIndex},
             GameSessionData, SavegamePaths,
         },
         RenderConfig,

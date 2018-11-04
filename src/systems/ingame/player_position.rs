@@ -13,7 +13,7 @@ use crate::{
     events::planet_events::ChunkEvent,
     resources::{
         ingame::{
-            planet::{ChunkIndex, PlanetError, TileError, TileIndex},
+            game_world::{ChunkIndex, GameWorldError, TileError, TileIndex},
             GameSessionData,
         },
         RenderConfig,
@@ -83,7 +83,7 @@ impl<'s,> System<'s,> for PlayerPositionSystem {
                         error!("| Maybe new chunk.");
 
                         match e {
-                            PlanetError::TileProblem(TileError::IndexOutOfBounds,) => {
+                            GameWorldError::TileProblem(TileError::IndexOutOfBounds,) => {
                                 #[cfg(feature = "debug")]
                                 debug!("+------------");
                                 #[cfg(feature = "debug")]

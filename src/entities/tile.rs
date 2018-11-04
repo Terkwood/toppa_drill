@@ -3,7 +3,7 @@ use amethyst::{assets::ProgressCounter, prelude::*, renderer::SpriteRender};
 use crate::{
     entities::EntitySpriteRender,
     resources::{
-        ingame::planet::{ChunkIndex, TileIndex},
+        ingame::game_world::{ChunkIndex, TileIndex},
         GameSprites, ToppaSpriteSheet,
     },
     utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},

@@ -1,4 +1,4 @@
-use crate::resources::ingame::planet::{ChunkIndex, TileIndex};
+use crate::resources::ingame::game_world::{ChunkIndex, TileIndex};
 
 /// TODO: Encompass error messages for the `failed` variants?
 /// Different events regarding [`Chunk`s](struct.Chunk.html)
