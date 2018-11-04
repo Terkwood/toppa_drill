@@ -177,69 +177,13 @@ pub fn new_player(
             )
         };
 
-        let physical_properties = PhysicalProperties::new(1000.0, Some(1000.0,), None, Some(0.6,),);
+        let physical_properties = PhysicalProperties::new(7000.0, Some(1000.0,), None, Some(125.0,),);
         let dynamics = Dynamics::default();
-        let engine = Engine::new(Vector2::new(150000.0, 250000.0,), 0.90, 0.0005,);
-        let fuel_tank = FuelTank::new(5000.0, 5000.0, 0.1,);
+        let engine = Engine::new(Vector2::new(7200000.0, 4260000.0), 0.90, 0.0001,);
+        let fuel_tank = FuelTank::new(50000.0, 50000.0, 0.002);
 
         #[cfg(feature = "debug")]
         debug!("| Initial player position from transform.");
-
-        /* THIS IS BROKEN, these entities are not affected by the hotloading system.
-        {
-            
-            let mut chunk_event_channel =
-                world.write_resource::<EventChannel<ChunkEvent>>();
-        
-            use std::u64;
-            //dealing with over- and underflow
-            let lower_y = {
-                if position.chunk.0 >= _chunk_render_distance{
-                    position.chunk.0 - _chunk_render_distance
-                }
-                else{
-                    0
-                }
-            };
-            let lower_x = {
-                if position.chunk.1 >= _chunk_render_distance{
-                    position.chunk.1 - _chunk_render_distance
-                }
-                else{
-                    // TODO: World-wrapping
-                    0
-                }
-            };
-            
-            let upper_y = {
-                let buff = position.chunk.0 + _chunk_render_distance;
-                if buff >= position.chunk.0 {
-                    buff
-                }
-                else{
-                    u64::MAX
-                }
-            };
-            let upper_x = {
-                let buff = position.chunk.1 + _chunk_render_distance;
-                if buff >= position.chunk.1 {
-                    buff
-                }
-                else{
-                    // TODO: World-wrapping
-                    u64::MAX
-                }
-            };
-            
-            for y in lower_y..=upper_y
-            {
-                for x in lower_x..=upper_x
-                {
-                    chunk_event_channel.single_write(ChunkEvent::RequestingLoad(ChunkIndex(y, x)));
-                }
-            }
-        }
-        */
 
         let player = world
             .create_entity()

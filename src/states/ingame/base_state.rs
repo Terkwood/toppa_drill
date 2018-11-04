@@ -218,18 +218,13 @@ impl<'a, 'b, 'd, 'e,> State<ToppaGameData<'a, 'b,>, StateEvent,> for IngameBaseS
         entities::player_parts::init_player(world, Some(&mut self.progress_counter,),);
 
         let (planet_dim, chunk_dim, tile_size,) = {
-            let (game_name, planet_dim, chunk_dim, tile_size,) = {
-                let session_data = world.read_resource::<GameSessionData>();
-                let render_config = world.read_resource::<RenderConfig>();
-                (
-                    session_data.game_name.clone(),
-                    session_data.planet.planet_dim,
-                    session_data.planet.chunk_dim,
-                    render_config.tile_base_render_dim,
-                )
-            };
-            world.add_resource(SavegamePaths::init("./", game_name,),);
-            (planet_dim, chunk_dim, tile_size,)
+            let session_data = world.read_resource::<GameSessionData>();
+            let render_config = world.read_resource::<RenderConfig>();
+            (
+                session_data.planet.planet_dim,
+                session_data.planet.chunk_dim,
+                render_config.tile_base_render_dim,
+            )
         };
 
         let x_middle_of_planet = (planet_dim.1 as f32 / 2.0) * (chunk_dim.1 as f32 * tile_size.1);

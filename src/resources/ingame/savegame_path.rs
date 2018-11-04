@@ -7,7 +7,7 @@ pub struct SavegamePaths {
 }
 
 impl SavegamePaths {
-    pub fn init(base_path: &'static str, game_name: String,) -> SavegamePaths {
+    pub fn init(base_path: &'static str, game_name: String, override_existing: bool) -> SavegamePaths {
         // Directory of all savegames
         let dir_path = Path::new("savegames",);
 
@@ -43,45 +43,44 @@ impl SavegamePaths {
 
         dir_exists = savegame_dir_path.exists();
         if dir_exists {
-            // TODO: Ask for savegame overwrite!
-            /*
-            #[cfg(feature = "debug")]
-            debug!("Overwriting old savegame: {:?}.", game_name);
-            for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap() {
-                if let Ok(entry) = entry_result {
-                    let entry_path = entry.path();
-                    if entry_path.is_dir() {
-                        for sub_entry_res in fs::read_dir(entry_path.clone()).unwrap() {
-                            if let Ok(sub_entry) = sub_entry_res {
-                                if sub_entry.path().is_file() {
-                                    if let Err(e) = fs::remove_file(sub_entry.path()) {
-                                        error!(
-                                            "Error removing file '{:?}': {:?}",
-                                            sub_entry.path(),
-                                            e
-                                        );
+            if override_existing {
+                #[cfg(feature = "debug")]
+                debug!("Overwriting old savegame: {:?}.", game_name);
+                for entry_result in fs::read_dir(savegame_dir_path.clone()).unwrap() {
+                    if let Ok(entry) = entry_result {
+                        let entry_path = entry.path();
+                        if entry_path.is_dir() {
+                            for sub_entry_res in fs::read_dir(entry_path.clone()).unwrap() {
+                                if let Ok(sub_entry) = sub_entry_res {
+                                    if sub_entry.path().is_file() {
+                                        if let Err(e) = fs::remove_file(sub_entry.path()) {
+                                            error!(
+                                                "Error removing file '{:?}': {:?}",
+                                                sub_entry.path(),
+                                                e
+                                            );
+                                        }
+                                    } else {
+                                        error!("Found unexpected directory inside the savegame's chunk directory!");
                                     }
-                                } else {
-                                    error!("Found unexpected directory inside the savegame's chunk directory!");
                                 }
                             }
-                        }
-                    } else if entry_path.is_file() {
-                        if let Err(e) = fs::remove_file(entry_path.clone()) {
-                            error!("Error removing file '{:?}': {:?}", entry_path, e);
+                        } else if entry_path.is_file() {
+                            if let Err(e) = fs::remove_file(entry_path.clone()) {
+                                error!("Error removing file '{:?}': {:?}", entry_path, e);
+                            }
+                        } else {
+                            error!(
+                                "Error removing dir '{:?}' entry '{:?}!",
+                                savegame_dir_path.clone(),
+                                entry_path
+                            );
                         }
                     } else {
-                        error!(
-                            "Error removing dir '{:?}' entry '{:?}!",
-                            savegame_dir_path.clone(),
-                            entry_path
-                        );
+                        error!("Error reading dir '{:?}' entry!", savegame_dir_path.clone());
                     }
-                } else {
-                    error!("Error reading dir '{:?}' entry!", savegame_dir_path.clone());
                 }
             }
-            */
         }
         else {
             if let Ok(_,) = fs::create_dir_all(chunk_dir_path.clone(),) {

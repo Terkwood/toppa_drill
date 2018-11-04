@@ -203,6 +203,7 @@ impl<'a, 'b, 'd, 'e,> LoadMenuState<'d, 'e,> {
 
         match GameSessionData::load(path.clone(), &render_config,) {
             Ok(data,) => {
+                world.add_resource(SavegamePaths::init("./", data.game_name.clone(), false));
                 world.add_resource::<GameSessionData>(data,);
             },
             Err(e,) => {

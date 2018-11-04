@@ -11,7 +11,7 @@ use amethyst::{
 };
 
 use crate::{
-    resources::{ingame::GameSessionData, GameSprites, RenderConfig},
+    resources::{ingame::{GameSessionData, SavegamePaths}, GameSprites, RenderConfig},
     states::{ingame::IngameBaseState, ToppaState},
     ToppaGameData,
 };
@@ -91,7 +91,7 @@ impl<'d, 'e,> ToppaState<'d, 'e,> for NewGameState<'d, 'e,> {
             ui_buttons:            HashMap::new(),
             b_buttons_found:       false,
             main_dispatcher:       None,
-            game_info:             GameInfo::new("Trumpet", (4, 3,), (16, 16,),), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
+            game_info:             GameInfo::new("Mark", (6, 7,), (6, 9,),), //GameInfo::new("Trumpet", (2, 3), (3, 4)),
         }
     }
 
@@ -239,6 +239,7 @@ impl<'a, 'b, 'd, 'e,> NewGameState<'d, 'e,> {
             ren_con,
         );
         world.add_resource::<GameSessionData>(session_data,);
+        world.add_resource(SavegamePaths::init("./", self.game_info.name.to_string(), true));
 
         let ingame_ui_prefab_handle = Some(
             world.exec(|loader: UiLoader<'_,>| loader.load("Prefabs/ui/Ingame/Base.ron", (),),),
