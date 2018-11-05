@@ -62,9 +62,6 @@ impl ChunkIndex {
 
         match Planet::clamp_chunk_index(planet, chunk_id) {
             Ok(chunk_id) => {
-                #[cfg(feature = "debug")]
-                debug!("| From transform: {:?}", chunk_id);
-
                 Ok(chunk_id)
             }
             Err(e) => Err(e),
@@ -148,7 +145,7 @@ impl Chunk {
 
                 let tile_id = TileIndex(y, x);
                 if let Err(e) =
-                    Self::add_tile(planet, &mut rv, &base_transform, tile_id, None, storages)
+                    Self::add_tile(planet, &mut rv, chunk_id, &base_transform, tile_id, None, storages)
                 {
                     error!("Error creating {:?}: {:?}!", tile_id, e);
                 };
@@ -215,13 +212,14 @@ impl Chunk {
     pub fn add_tile(
         planet: &Planet,
         chunk: &mut Chunk,
+        chunk_id: ChunkIndex,
         base_transform: &Transform,
         tile_id: TileIndex,
         tile_type_opt: Option<TileTypes>,
         // NOTE: This is pretty ugly
         storages: &mut TileGenerationStorages<'_>,
     ) -> Result<(), self::GameWorldError> {
-        match Self::create_tile(planet, base_transform, tile_id, tile_type_opt, storages) {
+        match Self::create_tile(planet, chunk_id, base_transform, tile_id, tile_type_opt, storages) {
             Ok((tile_type, entity)) => {
                 chunk.tile_type.insert(tile_id, tile_type);
                 chunk.tile_index.insert(entity, tile_id);
@@ -237,9 +235,11 @@ impl Chunk {
 impl Chunk {
     // Creates a new tile at the given Index
     // Does not clamp the TileIndex, you have to do this yourself first.
+    // TODO: Guard against existing tiles.
     #[allow(dead_code)]
     fn create_tile(
         planet: &Planet,
+        chunk_id: ChunkIndex,
         base_transform: &Transform,
         tile_id: TileIndex,
         tile_type_opt: Option<TileTypes>,
@@ -259,27 +259,18 @@ impl Chunk {
                 // TODO: Proper algorithm to determine `TileTypes`, based on depth, etc.
                 let tile_type = match tile_type_opt {
                     Some(val) => val,
-                    None => match rand::thread_rng().gen_range(0, 16) {
-                        0 => TileTypes::Magnetite,
-                        1 => TileTypes::Pyrolusite,
-                        2 => TileTypes::Fossile,
-                        3 => TileTypes::Molybdenite,
-                        4 => TileTypes::Lava,
-                        5 => TileTypes::Rock,
-                        6 => TileTypes::Gas,
-                        7 => TileTypes::Galena,
-                        8 => TileTypes::Bornite,
-                        9 => TileTypes::Chromite,
-                        10 => TileTypes::Cassiterite,
-                        11 => TileTypes::Cinnabar,
-                        12 => TileTypes::Dirt,
-                        13 => TileTypes::Gold,
-                        14 => TileTypes::Empty,
-                        15 => TileTypes::Bauxite,
-                        _ => {
-                            #[cfg(feature = "debug")]
-                            debug!("Non-implemented TileType requested in `Chunk::create_tile`, defaulting to `Dirt`.");
-                            TileTypes::Dirt
+                    None => {                        
+                        if chunk_id.0 < (planet.planet_dim.0 - 1) {
+                            let chunk_count_y = planet.planet_dim.0 as f32;
+                            let relative_depth = (planet.planet_dim.0 - chunk_id.0) as f32 / chunk_count_y;
+
+                            // TODO: Meh.... <TEST>
+                            random_tile(relative_depth)
+                            // <\TEST>
+                        }
+                        else{
+                            // Upmost Chunk is always empty.
+                            TileTypes::Empty
                         }
                     },
                 };
@@ -316,4 +307,279 @@ impl Chunk {
             Err(e) => Err(e),
         }
     }
+}
+
+
+/// TODO: Banish this evil from our world!
+/// TODO: No. seriously.
+fn random_tile(rel_depth: f32) -> TileTypes {
+    let rng_section: usize = {rel_depth * 10000.0}.trunc() as usize;
+
+    let upper_bound = match rng_section {
+        section if section < 1250 => {
+            3
+        },
+        section if section >= 1250 && section < 2500 => {
+            4
+        },
+        section if section >= 2500 && section < 3750 => {
+            5
+        },
+        section if section >= 3750 && section < 5000 => {
+            6
+        },
+        section if section >= 5000 && section < 6250 => {
+            7
+        },
+        section if section >= 6250 && section < 7500 => {
+            8
+        },
+        section if section >= 7500 && section < 8750 => {
+            9
+        },
+        section if section >= 8750 && section < 10000 => {
+            10
+        },
+        _ => {
+            11
+        },
+    };
+
+    let out_of_hundred_one = rand::thread_rng().gen_range(0, 100);
+    let out_of_hundred_two = rand::thread_rng().gen_range(0, 100);
+    
+    match rand::thread_rng().gen_range(0, upper_bound) {
+        low if (low <= 3) => {
+            match out_of_hundred_one {
+                useless if useless < 35 => {
+                    match out_of_hundred_two {
+                        a if a < 99 => TileTypes::Dirt,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 35) && (ore < 92) => {
+                    match out_of_hundred_two {
+                        a if a < 50 => TileTypes::Magnetite,
+                        _ => TileTypes::Pyrolusite,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        4 => {
+            match out_of_hundred_one {
+                useless if useless < 30 => {
+                    match out_of_hundred_two {
+                        a if a < 90 => TileTypes::Dirt,
+                        b if (b >= 90) && (b < 98) => TileTypes::Rock,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 30) && (ore < 93) => {
+                    match out_of_hundred_two {
+                        a if a < 40 => TileTypes::Magnetite,
+                        b if (b >= 40) && (b < 80) => TileTypes::Pyrolusite,
+                        _ => TileTypes::Bauxite,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        5 => {
+            match out_of_hundred_one {
+                useless if useless < 30 => {
+                    match out_of_hundred_two {
+                        a if a < 85 => TileTypes::Dirt,
+                        b if (b >= 85) && (b < 98) => TileTypes::Rock,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 30) && (ore < 94) => {
+                    match out_of_hundred_two {
+                        a if a < 30 => TileTypes::Magnetite,
+                        b if (b >= 30) && (b < 60) => TileTypes::Pyrolusite,
+                        c if (c >= 60) && (c < 80) => TileTypes::Bauxite,
+                        _ => TileTypes::Cassiterite,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        6 => {
+            match out_of_hundred_one {
+                useless if useless < 30 => {
+                    match out_of_hundred_two {
+                        a if a < 70 => TileTypes::Dirt,
+                        b if (b >= 70) && (b < 94) => TileTypes::Rock,
+                        b if (b >= 94) && (b < 98) => TileTypes::Lava,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 30) && (ore < 95) => {
+                    match out_of_hundred_two {
+                        a if a < 20 => TileTypes::Magnetite,
+                        b if (b >= 20) && (b < 40) => TileTypes::Pyrolusite,
+                        c if (c >= 40) && (c < 62) => TileTypes::Bauxite,
+                        d if (d >= 62) && (d < 84) => TileTypes::Cassiterite,
+                        _ => TileTypes::Chromite,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        7 => {
+            match out_of_hundred_one {
+                useless if useless < 30 => {
+                    match out_of_hundred_two {
+                        a if a < 50 => TileTypes::Dirt,
+                        b if (b >= 50) && (b < 88) => TileTypes::Rock,
+                        b if (b >= 88) && (b < 97) => TileTypes::Lava,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 30) && (ore < 97) => {
+                    match out_of_hundred_two {
+                        a if a < 16 => TileTypes::Magnetite,
+                        b if (b >= 16) && (b < 32) => TileTypes::Pyrolusite,
+                        c if (c >= 32) && (c < 50) => TileTypes::Bauxite,
+                        d if (d >= 50) && (d < 68) => TileTypes::Cassiterite,
+                        e if (e >= 68) && (e < 84) => TileTypes::Chromite,
+                        _ => TileTypes::Bornite,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        8 => {
+            match out_of_hundred_one {
+                useless if useless < 40 => {
+                    match out_of_hundred_two {
+                        a if a < 36 => TileTypes::Dirt,
+                        b if (b >= 36) && (b < 86) => TileTypes::Rock,
+                        b if (b >= 86) && (b < 96) => TileTypes::Lava,
+                        b if (b == 96) => TileTypes::Gas,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 40) && (ore < 98) => {
+                    match out_of_hundred_two {
+                        a if a < 8 => TileTypes::Magnetite,
+                        b if (b >= 8) && (b < 16) => TileTypes::Pyrolusite,
+                        c if (c >= 16) && (c < 32) => TileTypes::Bauxite,
+                        d if (d >= 32) && (d < 48) => TileTypes::Cassiterite,
+                        e if (e >= 48) && (e < 68) => TileTypes::Chromite,
+                        f if (f >= 68) && (f < 88) => TileTypes::Bornite,
+                        _ => TileTypes::Galena,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        9 => {
+            match out_of_hundred_one {
+                useless if useless < 55 => {
+                    match out_of_hundred_two {
+                        a if a < 15 => TileTypes::Dirt,
+                        b if (b >= 15) && (b < 65) => TileTypes::Rock,
+                        c if (c >= 65) && (c < 82) => TileTypes::Lava,
+                        d if (d >= 82) && (d < 95) => TileTypes::Gas,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 55) && (ore < 99) => {
+                    match out_of_hundred_two {
+                        a if a < 4 => TileTypes::Magnetite,
+                        b if (b >= 4) && (b < 8) => TileTypes::Pyrolusite,
+                        c if (c >= 8) && (c < 14) => TileTypes::Bauxite,
+                        d if (d >= 14) && (d < 22) => TileTypes::Cassiterite,
+                        e if (e >= 22) && (e < 42) => TileTypes::Chromite,
+                        f if (f >= 42) && (f < 62) => TileTypes::Bornite,
+                        g if (g >= 62) && (g < 90) => TileTypes::Galena,
+                        _ => TileTypes::Molybdenite,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        10 => {
+            match out_of_hundred_one {
+                useless if useless < 64 => {
+                    match out_of_hundred_two {
+                        a if a < 10 => TileTypes::Dirt,
+                        b if (b >= 10) && (b < 55) => TileTypes::Rock,
+                        c if (c >= 55) && (c < 77) => TileTypes::Lava,
+                        d if (d >= 77) && (d < 97) => TileTypes::Gas,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 64) && (ore < 100) => {
+                    match out_of_hundred_two {
+                        a if a < 1 => TileTypes::Magnetite,
+                        b if (b >= 1) && (b < 2) => TileTypes::Pyrolusite,
+                        c if (c >= 2) && (c < 7) => TileTypes::Bauxite,
+                        d if (d >= 7) && (d < 12) => TileTypes::Cassiterite,
+                        e if (e >= 12) && (e < 32) => TileTypes::Chromite,
+                        f if (f >= 32) && (f < 52) => TileTypes::Bornite,
+                        g if (g >= 52) && (g < 70) => TileTypes::Galena,
+                        h if (h >= 70) && (h < 88) => TileTypes::Molybdenite,
+                        _ => TileTypes::Gold,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        11 => {
+            match out_of_hundred_one {
+                useless if useless < 72 => {
+                    match out_of_hundred_two {
+                        a if a < 1 => TileTypes::Dirt,
+                        b if (b >= 1) && (b < 42) => TileTypes::Rock,
+                        c if (c >= 42) && (c < 65) => TileTypes::Lava,
+                        d if (d >= 65) && (d < 99) => TileTypes::Gas,
+                        _ => TileTypes::Fossile,
+                    }
+                },
+                ore if (ore >= 72) && (ore < 100) => {
+                    match out_of_hundred_two {
+                        a if a < 1 => TileTypes::Magnetite,
+                        b if (b >= 1) && (b < 2) => TileTypes::Pyrolusite,
+                        c if (c >= 2) && (c < 4) => TileTypes::Bauxite,
+                        d if (d >= 4) && (d < 10) => TileTypes::Cassiterite,
+                        e if (e >= 10) && (e < 24) => TileTypes::Chromite,
+                        f if (f >= 24) && (f < 40) => TileTypes::Bornite,
+                        g if (g >= 40) && (g < 64) => TileTypes::Galena,
+                        h if (h >= 64) && (h < 80) => TileTypes::Molybdenite,
+                        _ => TileTypes::Gold,
+                    }
+                },
+                _ => TileTypes::Empty,
+            }
+        },
+        _ => {
+            #[cfg(feature = "debug")]
+            debug!("Non-implemented TileType requested in `Chunk::create_tile`, defaulting to `Empty`.");
+            TileTypes::Empty
+        }
+    }
+    /* Levels of ores
+    TileTypes::Empty, 0
+
+    TileTypes::Fossile, 0
+
+    TileTypes::Dirt, 0
+    TileTypes::Lava, 6
+    TileTypes::Rock, 4
+    TileTypes::Gas, 8
+    
+    TileTypes::Magnetite, 3
+    TileTypes::Pyrolusite, 3
+    TileTypes::Molybdenite, 9 
+    TileTypes::Galena, 8
+    TileTypes::Bornite, 7
+    TileTypes::Chromite, 6
+    TileTypes::Cassiterite, 5
+    TileTypes::Cinnabar, 5
+    TileTypes::Bauxite, 4
+    TileTypes::Gold, 10
+    */
 }

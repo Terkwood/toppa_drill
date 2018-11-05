@@ -92,7 +92,7 @@ impl Planet {
         index: ChunkIndex,
     ) -> Result<ChunkIndex, GameWorldError> {
         #[cfg(feature = "trace")]
-        error!("ChunkIndex clamping.");
+        trace!("clamping: {}, planet_dim.0: {}", index, planet.planet_dim.0);
 
         let mut rv = index;
         if rv.0 >= planet.planet_dim.0 {
@@ -195,7 +195,7 @@ impl Planet {
         };
 
         let tiles: BTreeMap<TileIndex, TileTypes> = match ron::de::from_reader(&file) {
-            Ok(chunk) => chunk,
+            Ok(tiles) => tiles,
             Err(e) => {
                 error!(
                     "| Error deserializing {:?}: {:?}.",
@@ -206,7 +206,7 @@ impl Planet {
             }
         };
 
-        let mut chunk = Chunk::empty();
+        let mut resulting_chunk = Chunk::empty();
         let base_transform = {
             let render_config = &storages.render_config;
             let mut transform = Transform::default();
@@ -229,7 +229,8 @@ impl Planet {
         for (&tile_id, &tile_type) in tiles.iter() {
             if let Err(e) = Chunk::add_tile(
                 &self,
-                &mut chunk,
+                &mut resulting_chunk,
+                chunk_id,
                 &base_transform,
                 tile_id,
                 Some(tile_type),
@@ -243,7 +244,7 @@ impl Planet {
             }
         }
 
-        self.chunks.insert(chunk_id, chunk);
+        self.chunks.insert(chunk_id, resulting_chunk);
 
         #[cfg(feature = "debug")]
         debug!("+------------");
@@ -271,7 +272,7 @@ impl Planet {
                 self.chunks.insert(clamped_id, chunk);
             }
             Err(e) => {
-                error!("| Requested index {:?}: {:?}.", chunk_id, e);
+                error!("| Requested {:?}: {:?}.", chunk_id, e);
             }
         };
     }

@@ -88,7 +88,7 @@ pub fn prepare_spritesheet(
 
     if let Some(ss_handle,) = load_sprites_from_spritesheet(
         world,
-        "Assets/Textures/Ores.png",
+        "Assets/Textures/Tiles.png",
         loader_info.clone(),
         progress_counter_ref_opt,
     ) {
