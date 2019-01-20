@@ -28,6 +28,27 @@ Container(
                 font: File("Assets/Fonts/square.ttf", Ttf, ()),
             ),
         ),
+        // Text field to enter game name
+        Text(
+            transform: (
+                id: "menu_newgame_gamename_text",
+                anchor: TopMiddle,
+                x: 0.,
+                y: -256.,
+                width: 600.,
+                height: 50.,
+                transparent: true,
+            ),
+            text: (
+                editable: (
+                    max_length: 24,
+                ),
+                text: "New Game Loading",
+                font_size: 25.,
+                color: (0.515, 0.650, 0.658, 1.),
+                font: File("Assets/Fonts/square.ttf", Ttf, ()),
+            ),
+        ),
         // Back Button
         Button(
             transform: (

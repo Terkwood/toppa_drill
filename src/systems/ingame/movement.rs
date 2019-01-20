@@ -1,6 +1,6 @@
 use amethyst::{
     core::{
-        cgmath::{Vector2, Vector3},
+        nalgebra::{Vector2, Vector3},
         timing::Time,
         transform::components::Transform,
     },
@@ -37,7 +37,6 @@ impl<'s,> System<'s,> for MovementSystem {
             (&mut transforms, &mut dynamics, &physical_properties,).join()
         {
             // Current values
-            let pos_cur = transform.translation;
             let vel_cur = dynamic.vel;
 
             // Calculating acceleration based on applied Force,
@@ -59,13 +58,13 @@ impl<'s,> System<'s,> for MovementSystem {
                 },
             }
 
-            dynamic.vel = vel_cur + accel * dt.into();
+            dynamic.vel = vel_cur + Vector2::new(accel.x * dt, accel.y * dt);
 
-            transform.translation = Vector3::new(
-                0.5 * accel[0] as f32 * dt * dt + dynamic.vel[0] as f32 * dt,
-                0.5 * accel[1] as f32 * dt * dt + dynamic.vel[1] as f32 * dt,
+            /*transform.move_global(Vector3::new(
+                0.5 * accel[0] * dt * dt + dynamic.vel[0] * dt,
+                0.5 * accel[1] * dt * dt + dynamic.vel[1] * dt,
                 0.0,
-            ) + pos_cur;
+            ));*/
 
             // Updating rotation
             /*
@@ -73,6 +72,7 @@ impl<'s,> System<'s,> for MovementSystem {
             let omega_cur = dynamic.omega;
             let delta_omega = Rad(dynamic.torque / inertia.value);
             dynamic.omega = omega_cur + delta_omega * dt;
-            position.rad = (delta_omega * dt * dt * 0.5 + dynamic.omega * dt + rot_cur).normalize();*/        }
+            position.rad = (delta_omega * dt * dt * 0.5 + dynamic.omega * dt + rot_cur).normalize();*/        
+        }
     }
 }

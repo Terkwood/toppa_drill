@@ -7,17 +7,17 @@ use amethyst::ecs::prelude::{Component, VecStorage};
 #[derive(Debug, Default, Clone)]
 pub struct FuelTank {
     /// Current fuel stored in this tank.
-    pub fuel_level: f64,
+    pub fuel_level: f32,
 
     /// Maximum fuel storable by this tank.
-    pub capacity: f64,
+    pub capacity: f32,
 
     /// weight of the fuel
-    pub weight_per_fuel: f64,
+    pub weight_per_fuel: f32,
 }
 
 impl FuelTank {
-    pub fn new(fuel_level: f64, capacity: f64, weight_per_fuel: f64,) -> Self {
+    pub fn new(fuel_level: f32, capacity: f32, weight_per_fuel: f32,) -> Self {
         FuelTank {
             fuel_level,
             capacity,

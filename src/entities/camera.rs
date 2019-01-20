@@ -7,7 +7,7 @@ use amethyst::{
 
 pub fn init(world: &mut World, view_dim: (u32, u32,), parent: Entity,) {
     let mut transform = Transform::default();
-    transform.translation[2] += 100.0;
+    transform.translate_z(100.0);
 
     world
         .create_entity()

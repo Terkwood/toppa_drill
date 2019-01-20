@@ -1,7 +1,7 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        cgmath::Vector3,
+        nalgebra::Vector3,
         transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
@@ -12,7 +12,7 @@ use crate::{
     components::{physics::PhysicalProperties, IsIngameEntity},
     entities::{EntityError, EntitySpriteRender},
     resources::{add_spriterender, get_spriterender, GameSprites, ToppaSpriteSheet},
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
+    utilities::{load_spritesheet, load_spritesheet_tracked},
 };
 
 use super::PlayerParts;
@@ -46,19 +46,13 @@ pub enum DrillTypes {
 
 pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter,>,) {
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
-    let loader_info = SpriteLoaderInfo {
-        tex_id:             ToppaSpriteSheet::Drill as u64,
-        image_size:         (96, 64,),
-        sprite_count:       (3, 2,),
-        sprite_render_size: (32.0, 32.0,),
-    };
 
-    if let Some(ss_handle,) = load_sprites_from_spritesheet(
-        world,
-        "Assets/Textures/PlayerDrills.png",
-        loader_info,
-        progress_counter_ref_opt,
-    ) {
+    if let Some(pc_ref) = progress_counter_ref_opt {
+        let ss_handle = load_spritesheet_tracked(
+            world,
+            "Assets/Textures/PlayerDrills".to_string(),
+            pc_ref,
+        );
         let mut game_sprites = world.write_resource::<GameSprites>();
 
         let sprites = [
@@ -94,8 +88,49 @@ pub fn init_drill(world: &mut World, progress_counter_ref_opt: Option<&mut Progr
                 &mut game_sprites,
                 ss_handle.clone(),
                 *sprite_number,
-                false,
-                false,
+            );
+        }
+    }
+    else {
+        let ss_handle = load_spritesheet(
+            world,
+            "Assets/Textures/PlayerDrills".to_string(),
+        );
+        let mut game_sprites = world.write_resource::<GameSprites>();
+
+        let sprites = [
+            (
+                0,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::NotImplemented,),),
+            ),
+            (
+                1,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C45U,),),
+            ),
+            (
+                2,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::C105U,),),
+            ),
+            (
+                3,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2C,),),
+            ),
+            (
+                4,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5,),),
+            ),
+            (
+                5,
+                EntitySpriteRender::Player(PlayerParts::Drill(DrillTypes::HS6_5_2_5Diamond,),),
+            ),
+        ];
+
+        for (sprite_number, entity_sprite_render,) in sprites.iter() {
+            add_spriterender(
+                *entity_sprite_render,
+                &mut game_sprites,
+                ss_handle.clone(),
+                *sprite_number,
             );
         }
     }
@@ -119,7 +154,7 @@ pub fn new_drill(
     if let Some(sprite_render,) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8,), None,);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(22.0, -32.0, -1.0,);
+        transform.move_global(Vector3::new(22.0, -32.0, -1.0,));
 
         world
             .create_entity()

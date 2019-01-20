@@ -1,6 +1,6 @@
 use amethyst::{
     assets::{Handle, ProgressCounter},
-    core::{cgmath::Vector3, transform::components::Transform},
+    core::{nalgebra::Vector3, transform::components::Transform},
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
@@ -232,7 +232,7 @@ impl<'a, 'b, 'd, 'e,> State<ToppaGameData<'a, 'b,>, StateEvent,> for IngameBaseS
         let z_order = 40.0;
 
         let mut transform = Transform::default();
-        transform.translation = Vector3::new(x_middle_of_planet, y_surface_of_planet, z_order,);
+        transform.set_position(Vector3::new(x_middle_of_planet, y_surface_of_planet, z_order,));
         if let Err(e,) = entities::player_parts::new_player(
             world,
             &transform,

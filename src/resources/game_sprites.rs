@@ -37,14 +37,10 @@ pub fn add_spriterender(
     game_sprites: &mut GameSprites,
     spritesheet_handle: SpriteSheetHandle,
     sprite_number: usize,
-    flip_horizontal: bool,
-    flip_vertical: bool,
 ) {
     let sprite_render = SpriteRender {
         sprite_sheet: spritesheet_handle,
         sprite_number,
-        flip_horizontal,
-        flip_vertical,
     };
     game_sprites.add(entity_sprite_render, sprite_render,);
 }

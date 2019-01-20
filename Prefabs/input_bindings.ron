@@ -11,7 +11,7 @@
     },
     actions:{
         "shoot": [
-            Key(Space),
+            [Key(Space),]
         ],
     },
 )

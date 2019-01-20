@@ -31,8 +31,8 @@ impl TileIndex {
         render_config: &RenderConfig,
         planet: &Planet,
     ) -> Result<Self, GameWorldError> {
-        let x_transl = transform.translation[0];
-        let y_transl = transform.translation[1];
+        let x_transl = transform.translation().x;
+        let y_transl = transform.translation().y;
 
         let tile_width_f32 = render_config.tile_base_render_dim.1;
         let tile_height_f32 = render_config.tile_base_render_dim.0;

@@ -1,6 +1,6 @@
 use amethyst::{
     core::{
-        cgmath::{dot, prelude::*, Vector2},
+        nalgebra::{base::Matrix, Vector2},
         timing::Time,
         transform::components::Transform,
     },
@@ -42,22 +42,23 @@ impl<'s,> System<'s,> for EngineForceSystem {
                 let engine_scaling_y = input.axis_value("up",);
 
                 if let Some(engine_scaling_x_temp,) = engine_scaling_x {
-                    engine_scaling[0] = engine_scaling_x_temp as f64;
+                    engine_scaling[0] = engine_scaling_x_temp as f32;
                 };
                 if let Some(engine_scaling_y_temp,) = engine_scaling_y {
-                    engine_scaling[1] = engine_scaling_y_temp as f64;
+                    engine_scaling[1] = engine_scaling_y_temp as f32;
                 };
             }
 
-            let mut engine_force_vec = engine.max_force.mul_element_wise(engine_scaling,);
+            let mut engine_force_vec = engine.max_force;
+            engine_force_vec.component_mul(&engine_scaling);
             let engine_force_attempt = engine_force_vec.magnitude();
             {
                 let fuel_consumption =
-                    (engine_force_attempt * engine.consumption * dt as f64) / engine.efficiency;
+                    (engine_force_attempt * engine.consumption * dt as f32) / engine.efficiency;
                 if fuel_consumption > tank.fuel_level {
                     // Provide as much force as the fuel allows and set the tank empty.
                     let engine_force_actual =
-                        engine.efficiency * tank.fuel_level / (engine.consumption * dt as f64);
+                        engine.efficiency * tank.fuel_level / (engine.consumption * dt as f32);
                     tank.fuel_level = 0.0;
 
                     let scaling = engine_force_actual / engine_force_attempt;
@@ -69,24 +70,28 @@ impl<'s,> System<'s,> for EngineForceSystem {
                 }
             }
             // Add engine force (player input) to *natural*/physical forces, e.g. gravitational force.
-            let world_force_x = dot(
-                engine_force_vec,
-                Vector2::new(
-                    transform.orientation().right[0] as f64,
-                    transform.orientation().right[1] as f64,
+            /*let world_force_x = Matrix::dot(
+                &engine_force_vec,
+                &Vector2::new(
+                    transform.orientation().right[0] as f32,
+                    transform.orientation().right[1] as f32,
                 ),
             );
-            let world_force_y = dot(
-                engine_force_vec,
-                Vector2::new(
-                    transform.orientation().up[0] as f64,
-                    transform.orientation().up[1] as f64,
+            let world_force_y = Matrix::dot(
+                &engine_force_vec,
+                &Vector2::new(
+                    transform.orientation().up[0] as f32,
+                    transform.orientation().up[1] as f32,
                 ),
             );
 
             let world_force_vec = Vector2::new(world_force_x, world_force_y,);
 
             dynamic.force += world_force_vec;
+
+            */
+
+            dynamic.force += engine_force_vec;
         }
     }
 }

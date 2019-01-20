@@ -1,7 +1,7 @@
 use amethyst::{
     assets::ProgressCounter,
     core::{
-        cgmath::Vector3,
+        nalgebra::Vector3,
         transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
@@ -12,7 +12,7 @@ use crate::{
     components::{physics::PhysicalProperties, IsIngameEntity},
     entities::{EntityError, EntitySpriteRender},
     resources::{add_spriterender, get_spriterender, GameSprites, ToppaSpriteSheet},
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
+    utilities::{load_spritesheet, load_spritesheet_tracked},
 };
 
 use super::PlayerParts;
@@ -26,19 +26,13 @@ pub enum TracksError {
 
 pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut ProgressCounter,>,) {
     // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
-    let loader_info = SpriteLoaderInfo {
-        tex_id:             ToppaSpriteSheet::Tracks as u64,
-        image_size:         (64, 16,),
-        sprite_count:       (1, 1,),
-        sprite_render_size: (64.0, 16.0,),
-    };
 
-    if let Some(ss_handle,) = load_sprites_from_spritesheet(
-        world,
-        "Assets/Textures/PlayerTracks.png",
-        loader_info,
-        progress_counter_ref_opt,
-    ) {
+    if let Some(pc_ref) = progress_counter_ref_opt  {
+        let ss_handle = load_spritesheet_tracked(
+            world,
+            "Assets/Textures/PlayerTracks".to_string(),
+            pc_ref
+        );
         let mut game_sprites = world.write_resource::<GameSprites>();
 
         let sprites = [(0, EntitySpriteRender::Player(PlayerParts::Tracks,),),];
@@ -49,8 +43,24 @@ pub fn init_tracks(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
                 &mut game_sprites,
                 ss_handle.clone(),
                 *sprite_number,
-                false,
-                false,
+            );
+        }
+    }
+    else {
+        let ss_handle = load_spritesheet(
+            world,
+            "Assets/Textures/PlayerTracks".to_string(),
+        );
+        let mut game_sprites = world.write_resource::<GameSprites>();
+
+        let sprites = [(0, EntitySpriteRender::Player(PlayerParts::Tracks,),),];
+
+        for (sprite_number, entity_sprite_render,) in sprites.iter() {
+            add_spriterender(
+                *entity_sprite_render,
+                &mut game_sprites,
+                ss_handle.clone(),
+                *sprite_number,
             );
         }
     }
@@ -69,7 +79,7 @@ pub fn new_tracks(world: &mut World, parent: Entity,) -> Result<(), EntityError,
     if let Some(sprite_render,) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(500.0, None, Some(0.3,), None,);
         let mut transform = Transform::default();
-        transform.translation += Vector3::new(0.0, -56.0, 5.0,);
+        transform.move_global(Vector3::new(0.0, -56.0, 5.0,));
 
         world
             .create_entity()

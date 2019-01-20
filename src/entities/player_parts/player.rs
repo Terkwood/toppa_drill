@@ -1,6 +1,6 @@
 use amethyst::{
     assets::ProgressCounter,
-    core::{cgmath::Vector2, transform::components::Transform},
+    core::{nalgebra::Vector2, transform::components::Transform},
     ecs::prelude::*,
     renderer::Transparent,
     shrev::EventChannel,
@@ -18,7 +18,7 @@ use crate::{
         add_spriterender, get_spriterender, ingame::GameSessionData, GameSprites, RenderConfig,
         ToppaSpriteSheet,
     },
-    utilities::{load_sprites_from_spritesheet, SpriteLoaderInfo},
+    utilities::{load_spritesheet_tracked, load_spritesheet, SpriteLoaderInfo},
 };
 
 use super::{init_drill, init_tracks, new_drill, new_tracks, PlayerParts};
@@ -52,37 +52,35 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
     if let Some(progress_counter_ref,) = progress_counter_ref_opt {
         // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
         let loader_info = SpriteLoaderInfo {
-            tex_id:             ToppaSpriteSheet::Player as u64,
-            image_size:         (128, 128,),
             sprite_count:       (1, 1,),
             sprite_render_size: (64.0, 64.0,),
         };
 
-        if let Some(ss_handle,) = load_sprites_from_spritesheet(
-            world,
-            "Assets/Textures/Drill.png",
-            loader_info,
-            Some(progress_counter_ref,),
-        ) {
+        {
+            let ss_handle = load_spritesheet_tracked(
+                world,
+                "Assets/Textures/Drill".to_string(),
+                progress_counter_ref,
+            );
             let mut game_sprites = world.write_resource::<GameSprites>();
 
             let sprites = [
                 (
                     0,
                     EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::NotImplemented,),),
-                ), /*
-                   (
-                       1,
-                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
-                   ),
-                   (
-                       2,
-                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
-                   ),
-                   (
-                       3,
-                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
-                   ),*/
+                ), 
+                /*(
+                    1,
+                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
+                ),
+                (
+                    2,
+                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
+                ),
+                (
+                    3,
+                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
+                ),*/
             ];
 
             for (sprite_number, entity_sprite_render,) in sprites.iter() {
@@ -91,8 +89,6 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
                     &mut game_sprites,
                     ss_handle.clone(),
                     *sprite_number,
-                    false,
-                    false,
                 );
             }
         }
@@ -101,34 +97,33 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
     }
     else {
         let loader_info = SpriteLoaderInfo {
-            tex_id:             ToppaSpriteSheet::Player as u64,
-            image_size:         (128, 128,),
             sprite_count:       (1, 1,),
             sprite_render_size: (64.0, 64.0,),
         };
 
-        if let Some(ss_handle,) =
-            load_sprites_from_spritesheet(world, "Assets/Textures/Drill.png", loader_info, None,)
         {
+            let ss_handle =
+                load_spritesheet(world, "Assets/Textures/Drill".to_string());
+            
             let mut game_sprites = world.write_resource::<GameSprites>();
 
             let sprites = [
                 (
                     0,
                     EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::NotImplemented,),),
-                ), /*
-                   (
-                       1,
-                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
-                   ),
-                   (
-                       2,
-                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
-                   ),
-                   (
-                       3,
-                       EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
-                   ),*/
+                ), 
+                /*(
+                    1,
+                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Mk1506)),
+                ),
+                (
+                    2,
+                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::Albatros)),
+                ),
+                (
+                    3,
+                    EntitySpriteRender::Player(PlayerParts::Ship(ShipTypes::L14Ultra)),
+                ),*/
             ];
 
             for (sprite_number, entity_sprite_render,) in sprites.iter() {
@@ -137,8 +132,6 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
                     &mut game_sprites,
                     ss_handle.clone(),
                     *sprite_number,
-                    false,
-                    false,
                 );
             }
         }

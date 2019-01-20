@@ -1,0 +1,106 @@
+(
+    spritesheet_width: 512,
+    spritesheet_height: 512,
+    sprites: [
+        //Top row
+        (
+            x: 0,
+            y: 0,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 128,
+            y: 0,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 256,
+            y: 0,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 384,
+            y: 0,
+            width: 128,
+            height: 128
+        ),
+        // second row
+        (
+            x: 0,
+            y: 128,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 128,
+            y: 128,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 256,
+            y: 128,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 384,
+            y: 128,
+            width: 128,
+            height: 128
+        ),
+        // third row
+        (
+            x: 0,
+            y: 256,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 128,
+            y: 256,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 256,
+            y: 256,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 384,
+            y: 256,
+            width: 128,
+            height: 128
+        ),
+        // fourth row
+        (
+            x: 0,
+            y: 384,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 128,
+            y: 384,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 256,
+            y: 384,
+            width: 128,
+            height: 128
+        ),
+        (
+            x: 384,
+            y: 384,
+            width: 128,
+            height: 128
+        ),
+    ]
+)

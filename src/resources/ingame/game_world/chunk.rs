@@ -6,7 +6,7 @@ use std::{
 use rand::*;
 
 use amethyst::{
-    core::{cgmath::Vector3, transform::components::Transform},
+    core::{nalgebra::Vector3, transform::components::Transform},
     ecs::prelude::*,
 };
 
@@ -38,8 +38,8 @@ impl ChunkIndex {
         render_config: &RenderConfig,
         planet: &Planet,
     ) -> Result<Self, GameWorldError> {
-        let x_transl = transform.translation[0];
-        let y_transl = transform.translation[1];
+        let x_transl = transform.translation().x;
+        let y_transl = transform.translation().y;
 
         let tile_width_f32 = render_config.tile_base_render_dim.1;
         let tile_height_f32 = render_config.tile_base_render_dim.0;
@@ -122,19 +122,19 @@ impl Chunk {
         let base_transform = {
             let render_config = &storages.render_config;
             let mut transform = Transform::default();
-            transform.translation = Vector3::new(
+            transform.set_position(Vector3::new(
                 chunk_id.1 as f32
                     * (planet.chunk_dim.1 as f32 * render_config.tile_base_render_dim.1),
                 chunk_id.0 as f32
                     * (planet.chunk_dim.0 as f32 * render_config.tile_base_render_dim.0),
                 0.0,
-            );
+            ));
             transform
         };
         #[cfg(feature = "trace")]
         trace!(
             "|\tbase translation: {:?}",
-            base_transform.translation.clone()
+            base_transform.translation().clone()
         );
 
         // TODO: Actual tile generation algorithm
@@ -279,15 +279,15 @@ impl Chunk {
                 match game_sprites.get(&entity_sprite_render) {
                     Some(sprite_render) => {
                         let mut transform = base_transform.clone();
-                        transform.translation += Vector3::new(
+                        transform.move_global(Vector3::new(
                             tile_id.1 as f32 * render_config.tile_base_render_dim.1,
                             tile_id.0 as f32 * render_config.tile_base_render_dim.0,
                             0.0,
-                        );
+                        ));
                         let tile_base = TileBase { kind: tile_type };
 
                         #[cfg(feature = "trace")]
-                        trace!("|\t{:?},\t{:?}", tile_type, transform.translation.clone());
+                        trace!("|\t{:?},\t{:?}", tile_type, transform.translation().clone());
 
                         let entity = entities
                             .build_entity()

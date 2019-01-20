@@ -8,7 +8,7 @@ use ron;
 use serde::Serializer;
 
 use amethyst::{
-    core::{cgmath::Vector3, transform::components::Transform},
+    core::{nalgebra::Vector3, transform::components::Transform},
     ecs::{prelude::*, world::EntitiesRes,},
     shred::DefaultProvider,
 };
@@ -97,14 +97,9 @@ impl Planet {
         let mut rv = index;
         if rv.0 >= planet.planet_dim.0 {
             Err(GameWorldError::ChunkProblem(ChunkError::IndexOutOfBounds))
+        } else if rv.1 >= planet.planet_dim.1{
+            return Err(GameWorldError::ChunkProblem(ChunkError::IndexOutOfBounds));
         } else {
-            if rv.1 >= planet.planet_dim.1 {
-                #[cfg(feature = "debug")]
-                let buff = rv.1;
-                rv.1 = rv.1 % planet.planet_dim.1;
-                #[cfg(feature = "debug")]
-                debug!("| Wrapping index from {:?} to {:?}.", buff, rv.1);
-            }
             Ok(rv)
         }
     }
@@ -210,20 +205,20 @@ impl Planet {
         let base_transform = {
             let render_config = &storages.render_config;
             let mut transform = Transform::default();
-            transform.translation = Vector3::new(
+            transform.set_position(Vector3::new(
                 chunk_id.1 as f32
                     * (self.chunk_dim.1 as f32 * render_config.tile_base_render_dim.1),
                 chunk_id.0 as f32
                     * (self.chunk_dim.0 as f32 * render_config.tile_base_render_dim.0),
                 0.0,
-            );
+            ));
             transform
         };
 
         #[cfg(feature = "trace")]
         trace!(
             "|\tbase translation: {:?}",
-            base_transform.translation.clone()
+            base_transform.translation().clone()
         );
 
         for (&tile_id, &tile_type) in tiles.iter() {
