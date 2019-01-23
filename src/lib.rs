@@ -7,10 +7,14 @@
 // #![deny(missing_docs, warnings)]
 
 // TODO: Errorhandling! Seperate error module?
+
 // TODO: Reduce file operations in HotChunk and Serialize/DeserializeSystem
+
 // TODO: Wrap world in x-direction.
+
 // TODO: Planet surface -> Hills, mountains with empty tiles?
 // TODO: Empty tiles -> Procedural structered look instead of a tile with a hole
+// TODO: Empty Tilemap for procedural cave generation (how to deal with surface and grass?)
 
 // TODO: Creating game-> Set Name, planet_dim, chunk_dim, 
 // TODO: Parse "./savegames" for all existing savegames (<- containing savegame.ron) and display them in LoadGameState
@@ -25,6 +29,9 @@
 // TODO: add tile-entities that were drilled to inventory, if they have TagCarriable; add TagInInventory, once it is in inventory
 
 // TODO: shopping-state for all shops -> selling and buying stuff (depends on each shop)
+// TODO: Ingame Options, Inventory and Mute functionality
+
+// TODO: Sound
 
 // TODO: Sun -> with directional light (is lighting a thing in sprite-pass?)
 // TODO: SunSystem -> Move sun depending on ingame time
@@ -34,7 +41,9 @@
 // TODO: Fog of war -> initially only the surrounding "eye-visible"-tiles are visible (uncovered based on radius around player), 
 // TODO: Fog of war -> with scanner-module-component underground detection possible
 
-// TODO: re-enable gravity in GravitySystem
+// TODO: Controller support
+
+// REMINDER: re-enable gravity in GravitySystem
 
 extern crate amethyst;
 #[macro_use]

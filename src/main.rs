@@ -1,10 +1,14 @@
 use std::env;
+use std::time::Duration;
 
 extern crate amethyst;
 extern crate pretty_env_logger;
 
 use amethyst::{
-    core::transform::bundle::TransformBundle,
+    core::{
+        transform::bundle::TransformBundle,
+        frame_limiter::FrameRateLimitStrategy
+    },
     input::InputBundle,
     prelude::*,
     renderer::{
@@ -57,7 +61,12 @@ fn main() -> Result<(), amethyst::Error,> {
                 .with_hide_hierarchy_system(),
         )?;
 
-    let mut game = Application::new("./", StartupState::new(2.0,), toppa_game_data,)?;
+    let mut game = Application::build("./", StartupState::new(2.0,))?
+        .with_frame_limit(
+            FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)),
+            60
+        )
+        .build(toppa_game_data)?;
 
     game.run();
 
