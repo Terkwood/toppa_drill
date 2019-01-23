@@ -2,7 +2,7 @@ use amethyst::{
     assets::ProgressCounter,
     core::{nalgebra::Vector2, transform::components::Transform},
     ecs::prelude::*,
-    renderer::Transparent,
+    renderer::{Transparent,Flipped},
     shrev::EventChannel,
 };
 
@@ -18,7 +18,7 @@ use crate::{
         add_spriterender, get_spriterender, ingame::GameSessionData, GameSprites, RenderConfig,
         ToppaSpriteSheet,
     },
-    utilities::{load_spritesheet_tracked, load_spritesheet, SpriteLoaderInfo},
+    utilities::{load_spritesheet_tracked, load_spritesheet},
 };
 
 use super::{init_drill, init_tracks, new_drill, new_tracks, PlayerParts};
@@ -51,11 +51,6 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
     // TODO: Not happy with this if-let for duplicating an Option<&mut ProgressCounter>
     if let Some(progress_counter_ref,) = progress_counter_ref_opt {
         // TODO: For moddability, not hardcoded path! Check some dir first, and fall back on hardcoded path if nothng is found.
-        let loader_info = SpriteLoaderInfo {
-            sprite_count:       (1, 1,),
-            sprite_render_size: (64.0, 64.0,),
-        };
-
         {
             let ss_handle = load_spritesheet_tracked(
                 world,
@@ -96,11 +91,6 @@ pub fn init_player(world: &mut World, progress_counter_ref_opt: Option<&mut Prog
         init_tracks(world, Some(progress_counter_ref,),);
     }
     else {
-        let loader_info = SpriteLoaderInfo {
-            sprite_count:       (1, 1,),
-            sprite_render_size: (64.0, 64.0,),
-        };
-
         {
             let ss_handle =
                 load_spritesheet(world, "Assets/Textures/Drill".to_string());
@@ -190,9 +180,10 @@ pub fn new_player(
             .with(dynamics,)
             .with(engine,)
             .with(fuel_tank,)
+            .with(Flipped::Vertical) //What's wrong with spritesheet prefabs? Are they only upside down? Is the offset changed?
             .build();
 
-        camera::init(world, view_dim, player,);
+        camera::init_camera(world, view_dim, player,);
         new_drill(world, player, DrillTypes::C45U,)?;
         new_tracks(world, player,)?;
         Ok((),)

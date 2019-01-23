@@ -7,12 +7,6 @@ use amethyst::{
     },
 };
 
-#[derive(Debug, Clone)]
-pub struct SpriteLoaderInfo {
-    pub sprite_count:       (u64, u64,),
-    pub sprite_render_size: (f32, f32,),
-}
-
 /// TODO: implement BmpFormat, JpgFormat, ...
 pub fn load_image_png(
     world: &mut World,

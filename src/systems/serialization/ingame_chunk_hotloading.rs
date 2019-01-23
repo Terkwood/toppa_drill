@@ -12,7 +12,7 @@ use serde::Serializer;
 use amethyst::{
     core::{timing::Time, transform::components::Transform},
     ecs::prelude::*,
-    renderer::SpriteRender,
+    renderer::{SpriteRender,Flipped},
     shred::Resources,
     shrev::EventChannel,
 };
@@ -54,6 +54,7 @@ impl<'a,> System<'a,> for HotChunkSystem {
         WriteStorage<'a, SpriteRender,>,
         WriteStorage<'a, Transform,>,
         WriteStorage<'a, IsIngameEntity,>,
+        WriteStorage<'a, Flipped,>,
         Option<Write<'a, GameSessionData,>,>,
         Option<Write<'a, EventChannel<ChunkEvent,>,>,>,
         Option<Read<'a, SavegamePaths,>,>,
@@ -69,6 +70,7 @@ impl<'a,> System<'a,> for HotChunkSystem {
             sprite_renders,
             transforms,
             ingame_entities,
+            flipped,
             session_data,
             chunk_events,
             paths,
@@ -90,13 +92,14 @@ impl<'a,> System<'a,> for HotChunkSystem {
             render_config,
         ) {
             let mut tile_gen = TileGenerationStorages {
-                entities:      entities,
-                tile_base:     tag_tiles,
-                sprite_render: sprite_renders,
-                transform:     transforms,
-                ingame_entity: ingame_entities,
-                game_sprites:  game_sprites,
-                render_config: render_config,
+                entities:           entities,
+                tile_base:          tag_tiles,
+                sprite_render:      sprite_renders,
+                transform:          transforms,
+                ingame_entity:      ingame_entities,
+                game_sprites:       game_sprites,
+                render_config:      render_config,
+                flipped_vertical:   flipped
             };
 
             if let Some(ref mut event_reader,) = self.event_reader {

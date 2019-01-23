@@ -50,7 +50,7 @@ pub fn get_spriterender(
     entity_sprite_render: EntitySpriteRender,
 ) -> Option<SpriteRender,> {
     let game_sprites = &world.read_resource::<GameSprites>();
-    let entity_sprite_render = entity_sprite_render;
+    //let entity_sprite_render = entity_sprite_render;
     if let Some(sprite_render,) = game_sprites.get(&entity_sprite_render,) {
         Some(sprite_render.clone(),)
     }

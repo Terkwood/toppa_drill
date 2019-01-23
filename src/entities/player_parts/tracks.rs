@@ -5,7 +5,7 @@ use amethyst::{
         transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
-    renderer::Transparent,
+    renderer::{Transparent,Flipped},
 };
 
 use crate::{
@@ -79,7 +79,7 @@ pub fn new_tracks(world: &mut World, parent: Entity,) -> Result<(), EntityError,
     if let Some(sprite_render,) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(500.0, None, Some(0.3,), None,);
         let mut transform = Transform::default();
-        transform.move_global(Vector3::new(0.0, -56.0, 5.0,));
+        transform.move_global(Vector3::new(0.0, 56.0, 5.0,));
 
         world
             .create_entity()
@@ -91,6 +91,7 @@ pub fn new_tracks(world: &mut World, parent: Entity,) -> Result<(), EntityError,
             .with(Transparent,)
             .with(sprite_render,)
             .with(physical_properties,)
+            .with(Flipped::Vertical) //.... why do i need this
             .build();
 
         Ok((),)

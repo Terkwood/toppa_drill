@@ -63,7 +63,7 @@ impl GameSessionData {
                 error!("| Error starting serialize for planet.");
             }
         }
-        // TODO: Write to file `{$savegame_name}/planet.ron`
+
         if let Err(e,) = fs::write(
             paths.savegame_file_path.clone(),
             ser_planet.into_output_string(),

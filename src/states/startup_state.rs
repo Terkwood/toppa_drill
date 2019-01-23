@@ -159,11 +159,8 @@ impl<'a, 'b,> State<ToppaGameData<'a, 'b,>, StateEvent,> for StartupState {
             )
         },),);
 
-        let ren_con = RenderConfig {
-            tile_base_render_dim:  (64.0, 64.0,),
-            chunk_render_distance: 1,
-            view_dim:              (1920, 1080,),
-        };
+        let ren_con = RenderConfig::new((128.0, 128.0), 1, (1920*2, 1080*2));
+
         world.add_resource::<RenderConfig>(ren_con,);
         world.add_resource::<TagGenerator>(TagGenerator::default(),);
         world.add_resource::<GameSprites>(GameSprites::default(),);

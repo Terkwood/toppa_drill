@@ -34,8 +34,8 @@ impl TileIndex {
         let x_transl = transform.translation().x;
         let y_transl = transform.translation().y;
 
-        let tile_width_f32 = render_config.tile_base_render_dim.1;
-        let tile_height_f32 = render_config.tile_base_render_dim.0;
+        let tile_width_f32 = render_config.tile_size.1;
+        let tile_height_f32 = render_config.tile_size.0;
         let chunk_width_f32 = planet.chunk_dim.1 as f32 * tile_width_f32;
         let chunk_height_f32 = planet.chunk_dim.0 as f32 * tile_height_f32;
 

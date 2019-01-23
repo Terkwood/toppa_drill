@@ -207,9 +207,9 @@ impl Planet {
             let mut transform = Transform::default();
             transform.set_position(Vector3::new(
                 chunk_id.1 as f32
-                    * (self.chunk_dim.1 as f32 * render_config.tile_base_render_dim.1),
+                    * (self.chunk_dim.1 as f32 * render_config.tile_size.1),
                 chunk_id.0 as f32
-                    * (self.chunk_dim.0 as f32 * render_config.tile_base_render_dim.0),
+                    * (self.chunk_dim.0 as f32 * render_config.tile_size.0),
                 0.0,
             ));
             transform

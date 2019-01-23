@@ -50,7 +50,7 @@ impl<'s,> System<'s,> for EngineForceSystem {
             }
 
             let mut engine_force_vec = engine.max_force;
-            engine_force_vec.component_mul(&engine_scaling);
+            engine_force_vec.component_mul_assign(&engine_scaling);
             let engine_force_attempt = engine_force_vec.magnitude();
             {
                 let fuel_consumption =
@@ -70,28 +70,25 @@ impl<'s,> System<'s,> for EngineForceSystem {
                 }
             }
             // Add engine force (player input) to *natural*/physical forces, e.g. gravitational force.
-            /*let world_force_x = Matrix::dot(
+            // TODO: Player rotation, as soon as its implemented
+            let world_force_x = Matrix::dot(
                 &engine_force_vec,
                 &Vector2::new(
-                    transform.orientation().right[0] as f32,
-                    transform.orientation().right[1] as f32,
-                ),
+                    1.0,
+                    0.0,
+                )
             );
             let world_force_y = Matrix::dot(
                 &engine_force_vec,
                 &Vector2::new(
-                    transform.orientation().up[0] as f32,
-                    transform.orientation().up[1] as f32,
-                ),
+                    0.0,
+                    -1.0,
+                )
             );
 
             let world_force_vec = Vector2::new(world_force_x, world_force_y,);
 
             dynamic.force += world_force_vec;
-
-            */
-
-            dynamic.force += engine_force_vec;
         }
     }
 }

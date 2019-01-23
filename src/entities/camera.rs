@@ -5,7 +5,7 @@ use amethyst::{
     renderer::{Camera, Projection},
 };
 
-pub fn init(world: &mut World, view_dim: (u32, u32,), parent: Entity,) {
+pub fn init_camera(world: &mut World, view_dim: (u32, u32,), parent: Entity,) {
     let mut transform = Transform::default();
     transform.translate_z(100.0);
 

@@ -80,7 +80,7 @@ impl<'s,> System<'s,> for PlayerPositionSystem {
                     },
                     Err(e,) => {
                         #[cfg(feature = "trace")]
-                        error!("| Maybe new chunk.");
+                        trace!("| Maybe new chunk.");
 
                         match e {
                             GameWorldError::TileProblem(TileError::IndexOutOfBounds,) => {

@@ -223,12 +223,12 @@ impl<'a, 'b, 'd, 'e,> State<ToppaGameData<'a, 'b,>, StateEvent,> for IngameBaseS
             (
                 session_data.planet.planet_dim,
                 session_data.planet.chunk_dim,
-                render_config.tile_base_render_dim,
+                render_config.tile_size,
             )
         };
 
         let x_middle_of_planet = (planet_dim.1 as f32 / 2.0) * (chunk_dim.1 as f32 * tile_size.1);
-        let y_surface_of_planet = planet_dim.0 as f32 * (chunk_dim.0 as f32 * tile_size.0) - 128.0;
+        let y_surface_of_planet = (chunk_dim.0 as f32 * tile_size.0) - 128.0;
         let z_order = 40.0;
 
         let mut transform = Transform::default();

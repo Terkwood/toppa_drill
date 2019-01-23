@@ -60,19 +60,13 @@ impl<'s,> System<'s,> for MovementSystem {
 
             dynamic.vel = vel_cur + Vector2::new(accel.x * dt, accel.y * dt);
 
-            /*transform.move_global(Vector3::new(
+            transform.move_global(Vector3::new(
                 0.5 * accel[0] * dt * dt + dynamic.vel[0] * dt,
                 0.5 * accel[1] * dt * dt + dynamic.vel[1] * dt,
                 0.0,
-            ));*/
+            ));    
 
-            // Updating rotation
-            /*
-            let rot_cur = position.rad;
-            let omega_cur = dynamic.omega;
-            let delta_omega = Rad(dynamic.torque / inertia.value);
-            dynamic.omega = omega_cur + delta_omega * dt;
-            position.rad = (delta_omega * dt * dt * 0.5 + dynamic.omega * dt + rot_cur).normalize();*/        
+            // Updating rotation   
         }
     }
 }

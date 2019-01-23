@@ -5,7 +5,7 @@ use amethyst::{
         transform::components::{Parent, Transform},
     },
     ecs::prelude::*,
-    renderer::Transparent,
+    renderer::{Transparent,Flipped},
 };
 
 use crate::{
@@ -26,7 +26,7 @@ pub enum DrillError {
 
 /// Different types of drill provide different drilling speeds and durability
 /// TODO: Make Drill retractable, retract when it is not used.
-/// --: Make Drill animated.
+/// TODO: Make Drill animated.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DrillTypes {
     /// Dummy, if a drill has no implementation yet
@@ -154,7 +154,7 @@ pub fn new_drill(
     if let Some(sprite_render,) = sprite_render_opt {
         let physical_properties = PhysicalProperties::new(250.0, None, Some(0.8,), None,);
         let mut transform = Transform::default();
-        transform.move_global(Vector3::new(22.0, -32.0, -1.0,));
+        transform.move_global(Vector3::new(22.0, 32.0, -1.0,));
 
         world
             .create_entity()
@@ -166,6 +166,7 @@ pub fn new_drill(
             .with(Transparent,)
             .with(sprite_render,)
             .with(physical_properties,)
+            .with(Flipped::Vertical) //.... why do i need this?
             .build();
 
         Ok((),)

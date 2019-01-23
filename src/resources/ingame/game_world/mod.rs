@@ -37,7 +37,7 @@ pub enum TileError {
 use amethyst::{
     core::transform::components::Transform,
     ecs::{prelude::*, storage::MaskedStorage, world::EntitiesRes, Storage},
-    renderer::SpriteRender,
+    renderer::{SpriteRender,Flipped},
     shred::{DefaultProvider, FetchMut},
 };
 
@@ -58,4 +58,5 @@ pub struct TileGenerationStorages<'a> {
     pub ingame_entity: Storage<'a, IsIngameEntity, FetchMut<'a, MaskedStorage<IsIngameEntity>>>,
     pub game_sprites: Read<'a, GameSprites, DefaultProvider>,
     pub render_config: Read<'a, RenderConfig, DefaultProvider>,
+    pub flipped_vertical: Storage<'a, Flipped, FetchMut<'a, MaskedStorage<Flipped>>>, 
 }

@@ -8,6 +8,7 @@ use rand::*;
 use amethyst::{
     core::{nalgebra::Vector3, transform::components::Transform},
     ecs::prelude::*,
+    renderer::Flipped,
 };
 
 use crate::{
@@ -41,8 +42,8 @@ impl ChunkIndex {
         let x_transl = transform.translation().x;
         let y_transl = transform.translation().y;
 
-        let tile_width_f32 = render_config.tile_base_render_dim.1;
-        let tile_height_f32 = render_config.tile_base_render_dim.0;
+        let tile_width_f32 = render_config.tile_size.1;
+        let tile_height_f32 = render_config.tile_size.0;
         let chunk_width_f32 = planet.chunk_dim.1 as f32 * tile_width_f32;
         let chunk_height_f32 = planet.chunk_dim.0 as f32 * tile_height_f32;
 
@@ -124,9 +125,9 @@ impl Chunk {
             let mut transform = Transform::default();
             transform.set_position(Vector3::new(
                 chunk_id.1 as f32
-                    * (planet.chunk_dim.1 as f32 * render_config.tile_base_render_dim.1),
+                    * (planet.chunk_dim.1 as f32 * render_config.tile_size.1),
                 chunk_id.0 as f32
-                    * (planet.chunk_dim.0 as f32 * render_config.tile_base_render_dim.0),
+                    * (planet.chunk_dim.0 as f32 * render_config.tile_size.0),
                 0.0,
             ));
             transform
@@ -253,6 +254,7 @@ impl Chunk {
         let ingame_entity = &mut storages.ingame_entity;
         let game_sprites = &storages.game_sprites;
         let render_config = &storages.render_config;
+        let flipped_storage = &mut storages.flipped_vertical;
 
         match Self::clamp_tile_index(planet, tile_id) {
             Ok(tile_id) => {
@@ -260,9 +262,10 @@ impl Chunk {
                 let tile_type = match tile_type_opt {
                     Some(val) => val,
                     None => {                        
-                        if chunk_id.0 < (planet.planet_dim.0 - 1) {
+                        //if chunk_id.0 < (planet.planet_dim.0 - 1) {
+                        if chunk_id.0 > 0 {
                             let chunk_count_y = planet.planet_dim.0 as f32;
-                            let relative_depth = (planet.planet_dim.0 - chunk_id.0) as f32 / chunk_count_y;
+                            let relative_depth = (chunk_id.0 as f32) / chunk_count_y;
 
                             // TODO: Meh.... <TEST>
                             random_tile(relative_depth)
@@ -280,8 +283,8 @@ impl Chunk {
                     Some(sprite_render) => {
                         let mut transform = base_transform.clone();
                         transform.move_global(Vector3::new(
-                            tile_id.1 as f32 * render_config.tile_base_render_dim.1,
-                            tile_id.0 as f32 * render_config.tile_base_render_dim.0,
+                            tile_id.1 as f32 * render_config.tile_size.1,
+                            tile_id.0 as f32 * render_config.tile_size.0,
                             0.0,
                         ));
                         let tile_base = TileBase { kind: tile_type };
@@ -295,6 +298,7 @@ impl Chunk {
                             .with(sprite_render.clone(), sprite_render_storage)
                             .with(transform, transform_storage)
                             .with(IsIngameEntity, ingame_entity)
+                            .with(Flipped::Vertical, flipped_storage) 
                             .build();
 
                         Ok((tile_type, entity))
